@@ -1,0 +1,80 @@
+# =============================================================================
+# jett-os.grub — Configurações do GRUB para o Jett OS
+# =============================================================================
+# Localização no sistema: /etc/default/grub.d/10-jett-os.cfg
+#   (ou aplicado diretamente em /etc/default/grub pelo install-grub.sh)
+#
+# Após qualquer alteração, regenere o grub.cfg:
+#   sudo grub-mkconfig -o /boot/grub/grub.cfg
+# =============================================================================
+
+# --- Entrada padrão e memória de seleção ------------------------------------
+
+# "saved" faz o GRUB usar a última entrada selecionada como padrão.
+# Funciona em conjunto com GRUB_SAVEDEFAULT=true abaixo.
+GRUB_DEFAULT=saved
+
+# Memoriza a última escolha do usuário em /boot/grub/grubenv.
+# A cada boot, o GRUB pré-seleciona o navegador escolhido na última vez.
+GRUB_SAVEDEFAULT=true
+
+# --- Timeout ----------------------------------------------------------------
+
+# Exibe o menu por 5 segundos antes de iniciar a entrada padrão.
+# Com GRUB_SAVEDEFAULT, o usuário só precisa interagir quando quer mudar o navegador.
+GRUB_TIMEOUT=5
+
+# "menu" garante que o menu sempre apareça na tela (não apenas com tecla pressionada).
+# Alternativa: "countdown" (mostra o contador sem o menu até uma tecla ser pressionada)
+GRUB_TIMEOUT_STYLE=menu
+
+# --- Identificação ----------------------------------------------------------
+
+# Nome do sistema exibido em ferramentas como os-prober e scripts de terceiros.
+GRUB_DISTRIBUTOR="Jett OS"
+
+# --- Parâmetros do kernel ---------------------------------------------------
+
+# Parâmetros passados ao kernel em modo normal.
+# "quiet" suprime mensagens de boot; "splash" ativa tela de splash (se disponível).
+# "loglevel=3" reduz verbosidade do kernel para acelerar o boot.
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3"
+
+# Parâmetros extras — sempre passados, inclusive no modo recovery.
+# Vazio por padrão; o instalador de cada navegador pode adicionar parâmetros aqui.
+GRUB_CMDLINE_LINUX=""
+
+# --- Interface gráfica ------------------------------------------------------
+
+# Modo gráfico do GRUB. "auto" usa a melhor resolução disponível via VESA/EFI GOP.
+# Para forçar uma resolução específica: "1920x1080" ou "1280x720"
+GRUB_GFXMODE=auto
+
+# Mantém o modo gráfico após o handoff para o kernel (evita flicker na tela de boot).
+GRUB_GFXPAYLOAD_LINUX=keep
+
+# Tema visual do menu — instalado pelo install-grub.sh.
+GRUB_THEME="/boot/grub/themes/jett-os/theme.txt"
+
+# Sem imagem de fundo separada — o tema define o fundo via desktop-color.
+GRUB_BACKGROUND=""
+
+# --- Comportamento do terminal -----------------------------------------------
+
+# Saída do GRUB em modo gráfico (suporte a temas e fontes).
+# "gfxterm" usa o terminal gráfico do GRUB2.
+GRUB_TERMINAL_OUTPUT="gfxterm"
+
+# --- Desabilitar entradas automáticas do os-prober ---------------------------
+
+# Evita que o os-prober adicione entradas de outros sistemas operacionais
+# detectados no disco. O Jett OS é um sistema dedicado — sem dual-boot.
+# Comente esta linha se precisar de dual-boot.
+GRUB_DISABLE_OS_PROBER=true
+
+# --- Recovery e entradas extras ---------------------------------------------
+
+# Desabilita a entrada de modo recovery gerada automaticamente pelo Debian.
+# O Jett OS usa um processo de recuperação próprio (Camada 2 — launcher).
+# Comente esta linha para manter a entrada de recovery padrão.
+GRUB_DISABLE_RECOVERY=true

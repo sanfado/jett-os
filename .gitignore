@@ -1,0 +1,99 @@
+# =============================================================================
+# .gitignore — Jett OS
+# =============================================================================
+# Convenções:
+#   Padrões sem barra → aplicados em qualquer nível da árvore
+#   Padrões com barra inicial (/) → relativos à raiz do repositório
+#   Padrões com barra final (/) → diretórios
+#   ! → exceção (inclui o que seria ignorado por uma regra anterior)
+# =============================================================================
+
+
+# =============================================================================
+# LOGS
+# Arquivos de log gerados pelos scripts de build, instalação e testes.
+# Logs de sistema (/var/log/) nunca devem entrar no repositório.
+# =============================================================================
+
+*.log
+/var/log/
+
+
+# =============================================================================
+# RESULTADOS DE TESTES
+# Saídas dos scripts em tests/ (ex: latency-test.sh gera relatórios em
+# tests/results/ durante execução).
+# =============================================================================
+
+/tests/results/
+
+
+# =============================================================================
+# ARQUIVOS TEMPORÁRIOS DE BUILD
+# *.tmp  — arquivos intermediários de qualquer etapa de build
+# *.deb  — pacotes Debian baixados durante instalação (ex: Thorium, Edge)
+# *.iso  — imagens de disco geradas pelo build da Camada 4
+#
+# EXCEÇÃO: build/output/ tem regra própria abaixo.
+# Os padrões *.deb e *.iso aqui ignoram esses arquivos em qualquer pasta,
+# incluindo build/output/. A pasta build/output/ é ignorada por completo
+# pela seção SAÍDA DE BUILD, tornando a exceção desnecessária.
+# =============================================================================
+
+*.tmp
+*.deb
+*.iso
+
+
+# =============================================================================
+# SAÍDA DE BUILD — ISOs e artefatos finais
+# A pasta build/output/ contém as ISOs produzidas pela Camada 4.
+# ISOs têm vários GiB e não devem ser rastreadas pelo Git.
+# Para distribuir ISOs, use releases do GitHub ou um servidor de artefatos.
+# =============================================================================
+
+/build/output/
+
+
+# =============================================================================
+# CHAVES GPG TEMPORÁRIAS
+# Os scripts de instalação baixam chaves GPG de repositórios externos
+# (Brave, Edge, Opera, Firefox, Thorium) e as salvam em /usr/share/keyrings/
+# durante a execução. Se algum script gerar arquivos .gpg localmente
+# (ex: em diretórios temporários dentro do projeto), eles são ignorados aqui.
+# As chaves em /usr/share/keyrings/ estão fora do repositório por definição.
+# =============================================================================
+
+*.gpg
+
+
+# =============================================================================
+# ARQUIVOS DE SISTEMA E EDITORES
+# Gerados automaticamente por Python, macOS, Windows e editores de texto.
+# Nenhum deles tem conteúdo relevante para o projeto.
+# =============================================================================
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editores — arquivos de swap e backup
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.orig

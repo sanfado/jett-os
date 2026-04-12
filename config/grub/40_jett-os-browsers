@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# =============================================================================
+# 40_jett-os-browsers — Script grub.d para entradas de navegadores do Jett OS
+# =============================================================================
+# Localização no sistema: /etc/grub.d/40_jett-os-browsers
+# Permissão requerida: executável (chmod +x)
+#
+# Este script é chamado por 'grub-mkconfig' durante a geração do grub.cfg.
+# Ele emite stanzas GRUB válidas para cada navegador suportado pelo Jett OS.
+#
+# Mecanismo de seleção de navegador:
+#   1. Cada entrada passa o parâmetro 'jett.browser=NOME' ao kernel Linux.
+#   2. No boot, o serviço 'jett-select-browser.service' lê /proc/cmdline,
+#      extrai o parâmetro e atualiza /etc/jett-os/navegador.conf.
+#   3. O serviço de kiosk (brave-kiosk.service ou cage-kiosk.service)
+#      lê o conf e inicia o navegador correto.
+#
+# Para regenerar o grub.cfg após editar este script:
+#   sudo grub-mkconfig -o /boot/grub/grub.cfg
+# =============================================================================
+
+set -e
+
+# Carrega a biblioteca de helpers do grub-mkconfig (grub-probe, etc.)
+# Esta biblioteca é parte do pacote 'grub-common' no Debian.
+# shellcheck disable=SC1091
+. /usr/share/grub/grub-mkconfig_lib
+
+# -----------------------------------------------------------------------------
+# DETECÇÃO DO SISTEMA DE ARQUIVOS E PARTIÇÕES
+# -----------------------------------------------------------------------------
+
+# Dispositivo que contém / (raiz do sistema)
+GRUB_DEVICE_ROOT="${GRUB_DEVICE:-$(${grub_probe} --target=device / 2>/dev/null)}"
+
+# Dispositivo que contém /boot — pode ser diferente de / se /boot for partição separada
+GRUB_DEVICE_BOOT="$(${grub_probe} --target=device /boot 2>/dev/null \
+    || ${grub_probe} --target=device / 2>/dev/null)"
+
+# UUID da partição raiz — usado no parâmetro root= do kernel
+ROOT_UUID="$(${grub_probe} --device "${GRUB_DEVICE_ROOT}" --target=fs_uuid 2>/dev/null \
+    || grub-probe --target=fs_uuid / 2>/dev/null)"
+
+# UUID da partição de boot — usado no search do GRUB
+BOOT_UUID="$(${grub_probe} --device "${GRUB_DEVICE_BOOT}" --target=fs_uuid 2>/dev/null)"
+
+# Tipo de filesystem da partição raiz (ex: ext4, btrfs, xfs)
+FS_TYPE="$(${grub_probe} --device "${GRUB_DEVICE_ROOT}" --target=fs 2>/dev/null || echo 'ext2')"
+
+# Verifica se /boot é uma partição separada de /
+# Isso muda onde o GRUB procura os arquivos vmlinuz e initrd
+BOOT_SEPARADO=false
+if [[ "${BOOT_UUID}" != "${ROOT_UUID}" && -n "${BOOT_UUID}" ]]; then
+    BOOT_SEPARADO=true
+fi
+
+# Encontra o kernel Linux mais recente instalado (pelo número de versão)
+VMLINUZ="$(ls -t /boot/vmlinuz-* 2>/dev/null | head -1)"
+INITRD="$(ls -t /boot/initrd.img-* 2>/dev/null | head -1)"
+
+if [[ -z "${VMLINUZ}" ]]; then
+    grub_warn "Jett OS: nenhum kernel encontrado em /boot. Entradas de navegador não geradas."
+    exit 0
+fi
+
+# Extrai apenas o nome do arquivo (sem o prefixo /boot/)
+VMLINUZ_FILE="$(basename "${VMLINUZ}")"
+INITRD_FILE="$(basename "${INITRD}")"
+
+# Define o prefixo de caminho dos arquivos de boot:
+# - Se /boot é partição separada, o GRUB monta /boot como raiz → sem prefixo /boot/
+# - Se /boot está em /, o GRUB usa / como raiz → prefixo /boot/
+if ${BOOT_SEPARADO}; then
+    BOOT_SEARCH="search --no-floppy --fs-uuid --set=root ${BOOT_UUID}"
+    LINUX_PATH="/${VMLINUZ_FILE}"
+    INITRD_PATH="/${INITRD_FILE}"
+else
+    BOOT_SEARCH="search --no-floppy --fs-uuid --set=root ${ROOT_UUID}"
+    LINUX_PATH="/boot/${VMLINUZ_FILE}"
+    INITRD_PATH="/boot/${INITRD_FILE}"
+fi
+
+# Parâmetros base do kernel (herdados do /etc/default/grub)
+CMDLINE_BASE="${GRUB_CMDLINE_LINUX_DEFAULT:-quiet splash loglevel=3} ${GRUB_CMDLINE_LINUX:-}"
+# Remove espaços duplos
+CMDLINE_BASE="$(echo "${CMDLINE_BASE}" | tr -s ' ' | sed 's/^ //;s/ $//')"
+
+# Detecta o tipo de partição para inserir os módulos corretos
+# GPT vs MBR, e o tipo de filesystem
+insmod_fs="ext2"       # fallback seguro
+case "${FS_TYPE}" in
+    ext2|ext3|ext4) insmod_fs="ext2" ;;
+    btrfs)          insmod_fs="btrfs" ;;
+    xfs)            insmod_fs="xfs" ;;
+    f2fs)           insmod_fs="f2fs" ;;
+    *)              insmod_fs="ext2" ;;
+esac
+
+# Detecta tipo de tabela de partição (GPT ou MSDOS/MBR)
+PART_TABLE="$(${grub_probe} --device "${GRUB_DEVICE_BOOT}" --target=partmap 2>/dev/null || echo 'msdos')"
+case "${PART_TABLE}" in
+    gpt)   insmod_part="part_gpt" ;;
+    msdos) insmod_part="part_msdos" ;;
+    *)     insmod_part="part_msdos" ;;
+esac
+
+# -----------------------------------------------------------------------------
+# DADOS DOS NAVEGADORES
+# Formato: "NOME_EXIBICAO|PARAMETRO_JETT|CLASSE_GRUB|ICONE_GRUB"
+# -----------------------------------------------------------------------------
+declare -a NAVEGADORES=(
+    "  Brave Browser|brave|brave|brave"
+    "  Microsoft Edge|edge|edge|edge"
+    "  Thorium Browser|thorium|thorium|thorium"
+    "  Opera GX|opera-gx|opera|opera"
+    "  Firefox|firefox|firefox|firefox"
+)
+
+# -----------------------------------------------------------------------------
+# GERAÇÃO DAS ENTRADAS DO MENU GRUB
+# -----------------------------------------------------------------------------
+
+# Emite um comentário de seção no grub.cfg gerado (visível ao inspecionar o arquivo)
+echo "### Jett OS — Entradas de navegadores (gerado por 40_jett-os-browsers) ###"
+echo ""
+
+for entrada in "${NAVEGADORES[@]}"; do
+    # Divide os campos da entrada
+    IFS='|' read -r nome_display param_jett classe_grub icone_grub <<< "${entrada}"
+
+    # Remove espaços desnecessários
+    nome_display="$(echo "${nome_display}" | sed 's/^  //')"
+
+    # Emite a stanza GRUB para este navegador
+    # --class: usado pelo tema GRUB para aplicar ícone ou estilo
+    # --id: identificador único para GRUB_DEFAULT e savedefault
+    cat <<EOF
+menuentry "${nome_display}" --class jett-os --class ${classe_grub} --id "jett-${param_jett}" {
+    # Salva esta entrada como padrão para o próximo boot (GRUB_SAVEDEFAULT)
+    savedefault
+
+    # Carrega módulos necessários
+    insmod gzio
+    insmod ${insmod_part}
+    insmod ${insmod_fs}
+
+    # Localiza a partição de boot pelo UUID
+    ${BOOT_SEARCH}
+
+    # Carrega o kernel com o parâmetro de seleção de navegador do Jett OS
+    # jett.browser=${param_jett} → lido pelo jett-select-browser.service no boot
+    linux   ${LINUX_PATH} root=UUID=${ROOT_UUID} ro ${CMDLINE_BASE} jett.browser=${param_jett}
+
+    # Carrega o initrd (imagem de disco RAM inicial)
+    initrd  ${INITRD_PATH}
+}
+
+EOF
+done
+
+echo "### Fim das entradas Jett OS ###"

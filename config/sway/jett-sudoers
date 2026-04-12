@@ -1,0 +1,22 @@
+# =============================================================================
+# jett-sudoers — Configuração de privilégios para o Jett OS
+# =============================================================================
+# Localização no sistema: /etc/sudoers.d/jett-launcher
+# Instalado por: launcher/install-launcher.sh ou build-base.sh
+#
+# Permite que o usuário 'jett' execute jett-switch.sh como root SEM senha.
+# Necessário porque jett-switch.sh precisa escrever em /etc/jett-os/ (root).
+#
+# IMPORTANTE: o path deve corresponder EXATAMENTE ao instalado pelo
+# install-launcher.sh (/usr/local/bin/jett-switch.sh).
+#
+# Instalação manual:
+#   sudo cp config/sway/jett-sudoers /etc/sudoers.d/jett-launcher
+#   sudo chmod 440 /etc/sudoers.d/jett-launcher
+#   sudo visudo -c  # valida sintaxe antes de usar
+# =============================================================================
+
+# Permite que jett execute jett-switch.sh como root, sem senha, sem TTY
+# O caminho deve ser absoluto e corresponder ao binário instalado
+Defaults!/usr/local/bin/jett-switch.sh !requiretty
+jett ALL=(root) NOPASSWD: /usr/local/bin/jett-switch.sh

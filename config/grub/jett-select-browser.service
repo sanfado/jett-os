@@ -1,0 +1,91 @@
+# =============================================================================
+# jett-select-browser.service — Seletor de navegador via parâmetro de kernel
+# =============================================================================
+# Localização no sistema: /etc/systemd/system/jett-select-browser.service
+#
+# Função:
+#   Lê o parâmetro 'jett.browser=NOME' passado pelo GRUB na linha de comando
+#   do kernel (/proc/cmdline) e atualiza os arquivos de configuração do Jett OS
+#   para que o serviço de kiosk inicie o navegador correto.
+#
+# Fluxo de execução:
+#   GRUB (jett.browser=brave)
+#     → kernel cmdline
+#       → este serviço lê /proc/cmdline
+#         → atualiza /etc/jett-os/navegador.conf
+#           → brave-kiosk.service ou cage-kiosk.service inicia o navegador
+#
+# Ordem de dependência:
+#   Deve rodar ANTES dos serviços de kiosk (brave-kiosk, cage-kiosk).
+#   Deve rodar APÓS o sistema de arquivos estar montado (local-fs.target).
+# =============================================================================
+
+[Unit]
+Description=Jett OS — Seletor de navegador via parâmetro do kernel (jett.browser=)
+Documentation=https://github.com/seuusuario/jett-os
+
+# Roda após o sistema de arquivos local estar disponível (para escrever o conf)
+After=local-fs.target
+
+# Roda antes dos serviços de kiosk para garantir que o conf já está atualizado
+Before=brave-kiosk.service cage-kiosk.service sway-kiosk.service
+
+# Obrigatório para os serviços de kiosk (eles dependem deste)
+# Desabilitar este serviço previne que os serviços de kiosk iniciem
+RequiredBy=brave-kiosk.service cage-kiosk.service sway-kiosk.service
+
+[Service]
+Type=oneshot
+
+# Roda como root — necessário para escrever em /etc/jett-os/
+User=root
+
+# Não reinicia — executa uma vez por boot
+RemainAfterExit=yes
+
+# Script inline de seleção de navegador
+# Lê jett.browser= do /proc/cmdline e atualiza /etc/jett-os/navegador.conf
+#
+# BUG 2 fix: heredoc (<< CONF) não funciona dentro de ExecStart com \ continuations
+# porque o systemd remove os \<newline> antes de passar ao bash, destruindo a
+# estrutura do heredoc. Substituído por printf com \n explícito — funciona
+# corretamente independente de como o systemd processa as continuações de linha.
+ExecStart=/bin/bash -c '\
+    set -euo pipefail; \
+    JETT_CONF_DIR=/etc/jett-os; \
+    mkdir -p "${JETT_CONF_DIR}"; \
+    BROWSER=$(tr " " "\\n" < /proc/cmdline | grep "^jett.browser=" | cut -d= -f2 | head -1 || true); \
+    if [[ -z "${BROWSER}" ]]; then \
+        if [[ -f "${JETT_CONF_DIR}/navegador.conf" ]]; then \
+            echo "jett-select-browser: sem jett.browser= no cmdline — mantendo conf atual"; \
+            exit 0; \
+        else \
+            BROWSER="firefox"; \
+            echo "jett-select-browser: primeiro boot sem parâmetro — fallback para firefox"; \
+        fi; \
+    fi; \
+    echo "jett-select-browser: navegador selecionado = ${BROWSER}"; \
+    case "${BROWSER}" in \
+        brave)    NAV_CMD="brave-browser --kiosk --no-first-run --disable-infobars --disable-translate --autoplay-policy=no-user-gesture-required --ozone-platform=wayland" ;; \
+        edge)     NAV_CMD="microsoft-edge --kiosk --no-first-run --ozone-platform=wayland" ;; \
+        thorium)  NAV_CMD="thorium-browser --kiosk --no-first-run --ozone-platform=wayland" ;; \
+        opera-gx) NAV_CMD="opera --kiosk --ozone-platform=wayland" ;; \
+        firefox)  NAV_CMD="firefox --kiosk" ;; \
+        *) echo "jett-select-browser: navegador desconhecido ${BROWSER} — fallback para firefox"; \
+           NAV_CMD="firefox --kiosk"; BROWSER="firefox" ;; \
+    esac; \
+    printf "# /etc/jett-os/navegador.conf\n# Gerado por jett-select-browser.service no boot.\n# Para mudar: selecione outro navegador no menu do GRUB.\nJETT_NAVEGADOR=\"%s\"\nJETT_NAVEGADOR_CMD=\"%s\"\n" \
+        "${BROWSER}" "${NAV_CMD}" > "${JETT_CONF_DIR}/navegador.conf"; \
+    if [[ "${BROWSER}" == "brave" && ! -f "${JETT_CONF_DIR}/brave.conf" ]]; then \
+        printf "# /etc/jett-os/brave.conf\nJETT_BRAVE_URL=\"about:blank\"\n" \
+            > "${JETT_CONF_DIR}/brave.conf"; \
+    fi; \
+    echo "jett-select-browser: ${JETT_CONF_DIR}/navegador.conf atualizado com sucesso"'
+
+# Saída para o journal (visível em: journalctl -u jett-select-browser)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jett-select-browser
+
+[Install]
+WantedBy=multi-user.target

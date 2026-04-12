@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash -n /c/Projects/Jett-OS/build/browsers/install-edge.sh)",
+      "Bash(bash -n /c/Projects/Jett-OS/build/browsers/install-thorium.sh)",
+      "Bash(bash -n /c/Projects/Jett-OS/build/browsers/install-opera-gx.sh)",
+      "Bash(bash -n /c/Projects/Jett-OS/build/browsers/install-firefox.sh)",
+      "Bash(bash -n /c/Projects/Jett-OS/build/install-all-browsers.sh)"
+    ]
+  }
+}

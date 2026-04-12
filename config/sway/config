@@ -1,0 +1,260 @@
+# =============================================================================
+# config — Configuração do Sway para o Jett OS
+# =============================================================================
+# Localização no sistema: /home/jett/.config/sway/config
+#                      ou /etc/sway/config (config global)
+#
+# Filosofia: Sway como compositor kiosk.
+#   - Zero decorações (bordas, títulos, barra de status)
+#   - Navegador ocupa 100% da tela em modo fullscreen
+#   - Super+B abre o mini-launcher de troca de navegador
+#   - XWayland habilitado para compatibilidade com jett-launcher.py (tkinter)
+#   - Nenhuma funcionalidade de gerenciador de janelas exposta ao usuário
+#
+# Instalação:
+#   sudo ./launcher/install-launcher.sh
+#   (ou manualmente: mkdir -p ~/.config/sway && cp config ~/.config/sway/config)
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VARIÁVEIS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Tecla modificadora — Mod4 = Super (tecla Windows/Command)
+# Mod1 = Alt (alternativa se Super não estiver disponível)
+set $mod Mod4
+
+# Caminhos dos scripts do Jett OS
+# Ajuste se o projeto foi instalado em local diferente
+set $jett_launcher  /usr/local/bin/jett-launcher
+set $jett_switch    /usr/local/bin/jett-switch.sh
+set $jett_conf      /etc/jett-os/navegador.conf
+
+# ─────────────────────────────────────────────────────────────────────────────
+# APARÊNCIA — ZERO DECORAÇÕES
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Remove bordas de todas as janelas por padrão
+default_border          none
+default_floating_border none
+
+# Sem gaps entre janelas e tela
+gaps inner 0
+gaps outer 0
+
+# Oculta bordas quando há apenas uma janela (redundante com 'none', mas explícito)
+hide_edge_borders both
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SAÍDA (OUTPUT) — FUNDO PRETO SÓLIDO
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Fundo preto sólido para todas as saídas (monitores)
+# Evita flash de tela branca antes do navegador carregar
+output * bg #000000 solid_color
+
+# Para configurar resolução específica, descomente e ajuste:
+# output eDP-1 resolution 1920x1080 position 0,0
+# output HDMI-A-1 resolution 1920x1080 position 0,0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENTRADA (INPUT) — TECLADO E MOUSE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Configuração de teclado
+# Ajuste xkb_layout para o layout do seu teclado (br, us, de, etc.)
+input type:keyboard {
+    # Layout do teclado
+    xkb_layout  br
+    xkb_variant abnt2
+
+    # Velocidade de repetição de tecla (atraso ms, intervalo ms)
+    repeat_delay  400
+    repeat_rate   30
+
+    # Sem Caps Lock (kiosk não precisa)
+    xkb_options caps:none
+}
+
+# Configuração do mouse/touchpad
+input type:pointer {
+    # Cursor oculto após inatividade (3000ms = 3 segundos)
+    # Mantém o cursor invisível durante o uso normal do kiosk
+}
+
+input type:touchpad {
+    tap enabled
+    natural_scroll disabled
+    # Cursor oculto no touchpad também
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# XWAYLAND — Necessário para jett-launcher.py (tkinter usa X11)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Habilita XWayland para suporte a aplicações X11 (tkinter, Java Swing, etc.)
+# Requer: sudo apt install xwayland
+xwayland enable
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REGRAS DE JANELA
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Navegadores: tela cheia automática ───────────────────────────────────────
+
+# Brave Browser (Wayland nativo — app_id)
+for_window [app_id="brave-browser"]      fullscreen enable, border none
+# Brave Browser (XWayland — class)
+for_window [class="Brave-browser"]       fullscreen enable, border none
+for_window [class="brave-browser"]       fullscreen enable, border none
+
+# Microsoft Edge (Wayland nativo)
+for_window [app_id="microsoft-edge"]     fullscreen enable, border none
+for_window [class="Microsoft-edge"]      fullscreen enable, border none
+
+# Thorium Browser
+for_window [app_id="thorium-browser"]    fullscreen enable, border none
+for_window [class="Thorium-browser"]     fullscreen enable, border none
+
+# Opera GX
+for_window [app_id="opera"]              fullscreen enable, border none
+for_window [class="Opera"]               fullscreen enable, border none
+
+# Firefox (Wayland nativo — app_id é 'firefox' ou 'Navigator')
+for_window [app_id="firefox"]            fullscreen enable, border none
+for_window [app_id="Navigator"]          fullscreen enable, border none
+for_window [class="firefox"]             fullscreen enable, border none
+for_window [class="Firefox"]             fullscreen enable, border none
+
+# ── Launcher: janela flutuante centralizada ───────────────────────────────────
+
+# jett-launcher.py identifica sua janela pelo título "Jett OS — Launcher"
+# Sway a coloca em modo flutuante e centraliza automaticamente
+for_window [title="Jett OS — Launcher"] {
+    floating   enable
+    border     none
+    move       position center
+    # Garante foco imediato ao abrir
+    focus
+}
+
+# ── Diálogos e pop-ups: flutuantes por padrão ────────────────────────────────
+
+# Janelas de diálogo são flutuantes para não interferir com o kiosk
+for_window [window_role="dialog"]   floating enable
+for_window [window_role="pop-up"]   floating enable
+for_window [window_type="dialog"]   floating enable
+for_window [window_type="utility"]  floating enable
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ATALHOS DE TECLADO
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Super+B — Abre o mini-launcher de navegadores ────────────────────────────
+# Atalho principal do Jett OS.
+# Abre o jett-launcher.py que permite trocar o navegador em uso.
+bindsym $mod+b exec $jett_launcher
+
+# ── Super+Shift+R — Recarrega a configuração do Sway ─────────────────────────
+# Útil durante desenvolvimento. Aplica mudanças no config sem reiniciar.
+bindsym $mod+Shift+r reload
+
+# ── Super+Shift+Q — Encerra a sessão Sway ────────────────────────────────────
+# Encerra o Sway completamente (e o sistema volta ao TTY).
+# Descomente para habilitar saída via teclado:
+# bindsym $mod+Shift+q exit
+
+# ── Super+F5 — Reinicia o navegador atual ────────────────────────────────────
+# Lê o navegador configurado em navegador.conf e o reinicia.
+# Útil para recuperar de travamentos sem reiniciar o sistema.
+bindsym $mod+F5 exec bash -c '\
+    source /etc/jett-os/navegador.conf 2>/dev/null; \
+    pkill -f "${JETT_NAVEGADOR:-firefox}" 2>/dev/null || true; \
+    sleep 0.5; \
+    exec ${JETT_NAVEGADOR_CMD:-firefox --kiosk}'
+
+# ── Super+F11 — Alterna fullscreen da janela focada ──────────────────────────
+# Permite temporariamente sair do fullscreen (para diagnóstico).
+bindsym $mod+F11 fullscreen toggle
+
+# ── Teclas de volume (para kiosks com áudio) ─────────────────────────────────
+bindsym XF86AudioRaiseVolume  exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume  exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute         exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+
+# ── Brilho (para laptops e dispositivos com backlight) ───────────────────────
+bindsym XF86MonBrightnessUp   exec brightnessctl set +10%
+bindsym XF86MonBrightnessDown exec brightnessctl set 10%-
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INICIALIZAÇÃO AUTOMÁTICA (exec)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 'exec' roda uma vez na inicialização do Sway.
+# 'exec_always' roda também ao recarregar a config (sway reload).
+
+# ── Servidor D-Bus (necessário para notificações e alguns navegadores) ────────
+exec dbus-launch --sh-syntax --exit-with-session
+
+# ── PulseAudio (instalado pelo build-base.sh) ─────────────────────────────────
+exec pulseaudio --start --daemonize=no
+
+# ── XDG autostart (compatibilidade com apps que usam xdg-open) ───────────────
+exec /usr/lib/xdg-user-dirs-update 2>/dev/null || true
+
+# ── Inicia o navegador configurado ───────────────────────────────────────────
+# Lê o navegador de /etc/jett-os/navegador.conf e o inicia.
+# 'exec_always' garante que o navegador reinicia ao recarregar o Sway (sway reload),
+# o que é útil para testar mudanças de configuração.
+#
+# Comportamento:
+#   1. Lê JETT_NAVEGADOR_CMD de navegador.conf
+#   2. Se o arquivo não existir, usa firefox como fallback
+#   3. Se o binário não for encontrado, exibe mensagem no sway log
+exec bash -c '\
+    # Aguarda o Sway estar pronto (pequeno delay de segurança)
+    sleep 0.3; \
+    \
+    # Carrega a configuração do navegador
+    if [[ -f /etc/jett-os/navegador.conf ]]; then \
+        source /etc/jett-os/navegador.conf; \
+    fi; \
+    \
+    # Usa a variável de comando ou fallback para firefox
+    CMD="${JETT_NAVEGADOR_CMD:-firefox --kiosk}"; \
+    \
+    # Verifica se o navegador está instalado antes de tentar iniciar
+    BINARIO=$(echo "$CMD" | awk "{print \$1}"); \
+    if command -v "$BINARIO" >/dev/null 2>&1; then \
+        exec ${CMD}; \
+    else \
+        # Fallback final: firefox
+        exec firefox --kiosk 2>/dev/null \
+            || echo "[jett-sway] ERRO: nenhum navegador encontrado" >&2; \
+    fi'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SEAT — Permissões de dispositivo de entrada
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Configura o seat padrão para o Sway ter acesso a dispositivos de entrada
+# Necessário em sistemas sem logind/elogind configurado
+# seat seat0 xcursor_theme default 24
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTAS DE INSTALAÇÃO
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Pacotes necessários para este config funcionar:
+#   sudo apt install sway xwayland python3-tk pulseaudio dbus-user-session
+#
+# Para instalar tudo automaticamente:
+#   sudo ./launcher/install-launcher.sh
+#
+# Para testar sem instalar (a partir do TTY, como usuário jett):
+#   sway -c /caminho/para/config/sway/config
+#
+# Logs do Sway (úteis para debug):
+#   journalctl --user -u sway
+#   ~/.local/share/sway/sway.log  (se configurado)
+# =============================================================================

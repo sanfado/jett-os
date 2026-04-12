@@ -1,0 +1,116 @@
+# =============================================================================
+# sway-kiosk.service — Serviço systemd do Sway Kiosk para o Jett OS (Camada 2)
+# =============================================================================
+# Localização no sistema: /etc/systemd/system/sway-kiosk.service
+# Instalado por: launcher/install-launcher.sh
+#
+# Função:
+#   Inicia o Sway como compositor Wayland para a Camada 2 do Jett OS.
+#   O Sway substitui o Cage ao ativar a Camada 2, pois:
+#     - Cage NÃO suporta XWayland (necessário para jett-launcher.py/tkinter)
+#     - Cage NÃO suporta keybindings customizados (necessário para Super+B)
+#     - Cage NÃO suporta múltiplos clientes Wayland simultâneos
+#   O Sway mantém o comportamento kiosk via suas regras de janela:
+#     - Navegador inicia em fullscreen automático (for_window)
+#     - Zero decorações, zero barra de status
+#     - Único atalho exposto: Super+B para o mini-launcher
+#
+# Conflito com serviços Cage:
+#   Este serviço declara Conflicts= com cage-kiosk.service e brave-kiosk.service.
+#   Apenas UM compositor Wayland pode rodar por vez por GPU/TTY.
+#   O install-launcher.sh desabilita os serviços Cage ao ativar este.
+#
+# Dependência de ordering:
+#   Requer jett-select-browser.service antes de iniciar, para garantir que
+#   /etc/jett-os/navegador.conf já contenha o navegador correto quando o
+#   exec_always do Sway ler o arquivo.
+#
+# Gerenciamento manual:
+#   sudo systemctl start   sway-kiosk   → inicia sessão Sway
+#   sudo systemctl stop    sway-kiosk   → encerra sessão Sway e navegador
+#   sudo systemctl restart sway-kiosk   → reinicia tudo
+#   sudo systemctl status  sway-kiosk   → estado e logs recentes
+#   journalctl -u sway-kiosk -f         → logs em tempo real
+# =============================================================================
+
+[Unit]
+Description=Jett OS — Sway Kiosk Session (Camada 2 — Launcher ativo)
+Documentation=https://github.com/seuusuario/jett-os
+
+# Inicia após rede, sessões de usuário e o seletor de navegador estarem prontos
+After=network.target multi-user.target systemd-user-sessions.service jett-select-browser.service
+
+# jett-select-browser DEVE ter completado com sucesso antes de iniciar o Sway.
+# Garante que /etc/jett-os/navegador.conf existe e tem o navegador correto.
+Requires=jett-select-browser.service
+
+# O diretório home do usuário deve estar montado (perfis dos navegadores ficam lá)
+RequiresMountsFor=/home
+
+# BUG 3 fix: Cage e Sway são compositors Wayland mutuamente exclusivos.
+# Apenas um pode ter acesso ao DRM/KMS por vez.
+# Declarar Conflicts= bidirecional garante que nunca rodam simultaneamente.
+Conflicts=cage-kiosk.service brave-kiosk.service
+
+[Service]
+# Executa como usuário kiosk — NUNCA como root
+User=jett
+Group=jett
+
+Type=simple
+
+# --- Variáveis de ambiente para sessão Wayland ----------------------------
+
+# XDG_RUNTIME_DIR: onde os sockets Wayland, PulseAudio e D-Bus vivem
+# UID 1000 = primeiro usuário não-root no Debian (usuário 'jett')
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=HOME=/home/jett
+Environment=USER=jett
+
+# Sway usa logind/elogind para acesso ao DRM sem root
+# XDG_SESSION_TYPE informa ao Sway que é uma sessão Wayland
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_CURRENT_DESKTOP=sway
+
+# Wayland nativo para os navegadores Chromium-based
+Environment=OZONE_PLATFORM=wayland
+Environment=GDK_BACKEND=wayland
+
+# VA-API para decodificação de vídeo por hardware (Intel/AMD)
+Environment=LIBVA_DRIVER_NAME=iHD
+
+# --- Pré-inicialização ---------------------------------------------------
+
+# Cria o runtime dir do usuário se não existir
+# (pode acontecer se sway-kiosk iniciar antes do pam_systemd)
+ExecStartPre=/bin/bash -c 'mkdir -p /run/user/1000 && chown jett:jett /run/user/1000 && chmod 700 /run/user/1000'
+
+# Aguarda dispositivo DRM/KMS estar disponível
+ExecStartPre=/bin/bash -c 'until ls /dev/dri/card* &>/dev/null; do sleep 0.3; done'
+
+# --- Comando principal ---------------------------------------------------
+# Sway lê /home/jett/.config/sway/config (instalado pelo install-launcher.sh)
+# que por sua vez lê /etc/jett-os/navegador.conf para iniciar o navegador certo.
+ExecStart=/usr/bin/sway
+
+# --- Comportamento em caso de falha -------------------------------------
+Restart=always
+RestartSec=3
+TimeoutStartSec=20
+
+# Não mata filhos imediatamente ao parar (permite que o navegador salve estado)
+KillMode=control-group
+KillSignal=SIGTERM
+TimeoutStopSec=10
+
+# --- Sandboxing --------------------------------------------------------
+ProtectSystem=strict
+ReadWritePaths=/home/jett /tmp /run/user/1000 /var/log /etc/jett-os
+
+# --- Saída ------------------------------------------------------------
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jett-sway-kiosk
+
+[Install]
+WantedBy=multi-user.target

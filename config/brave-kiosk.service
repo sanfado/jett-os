@@ -1,0 +1,153 @@
+# =============================================================================
+# brave-kiosk.service — Serviço systemd do Brave Kiosk para o Jett OS
+# =============================================================================
+#
+# Arquivo fonte do repositório Jett OS.
+# Instalado em /etc/systemd/system/ pelo script install-brave.sh.
+#
+# Este serviço inicia o Cage Wayland Compositor com o Brave Browser em modo
+# kiosk como usuário 'jett', diretamente no boot do sistema.
+#
+# Gerenciamento manual:
+#   sudo systemctl start   brave-kiosk   → inicia agora
+#   sudo systemctl stop    brave-kiosk   → encerra a sessão kiosk
+#   sudo systemctl restart brave-kiosk   → reinicia (ex: após mudar URL)
+#   sudo systemctl status  brave-kiosk   → exibe estado e últimas linhas de log
+#   sudo systemctl enable  brave-kiosk   → habilita no boot
+#   sudo systemctl disable brave-kiosk   → desabilita do boot
+#
+# Ver logs em tempo real:
+#   journalctl -u brave-kiosk -f
+# =============================================================================
+
+[Unit]
+Description=Jett OS — Brave Browser Kiosk via Cage Wayland
+Documentation=https://github.com/seuusuario/jett-os
+
+# Inicia apenas após estes targets estarem prontos
+After=network.target multi-user.target systemd-user-sessions.service
+
+# O diretório home do usuário deve estar montado e acessível
+RequiresMountsFor=/home
+
+# Não coexiste com o serviço genérico de kiosk do build-base.sh
+Conflicts=cage-kiosk.service
+
+[Service]
+# Executa como usuário kiosk — NUNCA como root por segurança
+User=jett
+Group=jett
+
+# Tipo simple: systemd considera o serviço iniciado assim que ExecStart roda
+Type=simple
+
+# --- Variáveis de ambiente para sessão Wayland nativa -----------------------
+
+# Diretório de runtime do usuário (sockets Wayland, PulseAudio, etc.)
+# %U é substituído pelo UID do usuário pelo systemd
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Display Wayland criado pelo Cage (sempre wayland-1 em single-compositor)
+Environment=WAYLAND_DISPLAY=wayland-1
+
+# Força o Brave (base Chromium) a usar o backend Wayland via Ozone
+# Sem isso, o Chromium tenta usar XWayland e degrada a performance
+Environment=OZONE_PLATFORM=wayland
+
+# Habilita renderização EGL nativa no Wayland
+Environment=EGL_PLATFORM=wayland
+
+# Driver VA-API para decodificação de vídeo por hardware (Intel/AMD Mesa)
+# iHD → Intel Gen 8+    |    radeonsi → AMD
+Environment=LIBVA_DRIVER_NAME=iHD
+
+# Diretório home explícito (necessário quando não há PAM session)
+Environment=HOME=/home/jett
+Environment=USER=jett
+
+# Carrega configurações customizadas do arquivo brave.conf se existir
+# O prefixo '-' faz com que a ausência do arquivo não seja um erro
+EnvironmentFile=-/etc/jett-os/brave.conf
+
+# --- Pré-inicialização -------------------------------------------------------
+
+# Cria o diretório de runtime do usuário se ainda não existir
+# (pode acontecer se o serviço iniciar antes do pam_systemd)
+ExecStartPre=/bin/bash -c 'mkdir -p /run/user/1000 && chown jett:jett /run/user/1000 && chmod 700 /run/user/1000'
+
+# Aguarda o dispositivo de vídeo estar disponível (DRM/KMS)
+ExecStartPre=/bin/bash -c 'until ls /dev/dri/card* &>/dev/null; do sleep 0.5; done'
+
+# --- Comando principal -------------------------------------------------------
+#
+# Cage abre o Wayland compositor em modo kiosk e passa o Brave como único app.
+# A variável JETT_BRAVE_URL pode ser sobrescrita em /etc/jett-os/brave.conf.
+#
+# Flags do Brave explicadas:
+#   --kiosk                              → tela cheia sem barra de endereços
+#   --no-first-run                       → sem wizard de boas-vindas
+#   --disable-infobars                   → sem barras de notificação
+#   --disable-translate                  → sem popup de tradução automática
+#   --autoplay-policy=no-user-gesture-required → autoplay de mídia liberado
+#   --disable-session-crashed-bubble     → sem popup de "sessão encerrada"
+#   --disable-features=TranslateUI       → UI de tradução desabilitada
+#   --no-default-browser-check           → sem pergunta de navegador padrão
+#   --disable-background-mode            → sem processos em background
+#   --disable-extensions                 → sem extensões (kiosk = segurança)
+#   --disable-sync                       → sem sync de conta Brave
+#   --password-store=basic               → sem popup de keyring
+#   --use-gl=egl                         → renderização EGL/Wayland
+#   --enable-features=VaapiVideoDecoder  → decodificação de vídeo por hardware
+#   --ozone-platform=wayland             → backend Wayland explícito
+#
+ExecStart=/usr/bin/cage -- /usr/bin/brave-browser \
+    --kiosk \
+    --no-first-run \
+    --disable-infobars \
+    --disable-translate \
+    --autoplay-policy=no-user-gesture-required \
+    --disable-session-crashed-bubble \
+    --disable-features=TranslateUI \
+    --no-default-browser-check \
+    --disable-background-mode \
+    --disable-extensions \
+    --disable-sync \
+    --password-store=basic \
+    --use-gl=egl \
+    --enable-features=VaapiVideoDecoder \
+    --ozone-platform=wayland \
+    ${JETT_BRAVE_URL:-about:blank}
+
+# --- Comportamento em caso de falha -----------------------------------------
+
+# Reinicia automaticamente se o Brave travar ou fechar inesperadamente
+Restart=always
+
+# Aguarda 3 segundos antes de tentar reiniciar (evita loop frenético)
+RestartSec=3
+
+# Tempo máximo para o serviço iniciar antes de ser considerado falho
+TimeoutStartSec=15
+
+# Não mata processos filhos ao parar (evita corrupção de perfil do Brave)
+KillMode=control-group
+KillSignal=SIGTERM
+
+# --- Sandboxing mínimo (compatível com Cage/Wayland) ------------------------
+
+# Impede escrita fora do diretório home e /tmp
+ProtectSystem=strict
+ReadWritePaths=/home/jett /tmp /run/user/1000 /var/log
+
+# Sem acesso a outros homes
+ProtectHome=read-only
+ReadWritePaths=/home/jett
+
+# --- Saída e logging --------------------------------------------------------
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jett-brave-kiosk
+
+[Install]
+# Inicia automaticamente no multi-user.target (boot padrão sem DE)
+WantedBy=multi-user.target

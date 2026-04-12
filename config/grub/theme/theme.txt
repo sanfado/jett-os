@@ -1,0 +1,169 @@
+# =============================================================================
+# theme.txt — Tema GRUB do Jett OS
+# =============================================================================
+# Estilo: minimalista, preto e branco
+# Resolução alvo: independente (usa posicionamento percentual)
+#
+# Fontes referenciadas (geradas pelo install-grub.sh via grub-mkfont):
+#   jett-bold-24    → título "JETT OS"
+#   jett-regular-16 → tagline, itens do menu e barra de contagem
+#   jett-bold-16    → item selecionado do menu
+#   jett-regular-12 → dica de teclas e contador de segundos
+#
+# Layout:
+#   ┌──────────────────────────────────────────┐
+#   │                                          │ 10%
+#   │              JETT OS                     │ ← título (branco, bold, 24)
+#   │           Como um jato.                  │ ← tagline (cinza, 16)
+#   │  ────────────────────────────────────    │ 28% (separador)
+#   │                                          │
+#   │    ▶ Brave Browser               ████   │ ← selecionado (bg branco)
+#   │      Microsoft Edge                      │ ← normal (cinza)
+#   │      Thorium Browser                     │
+#   │      Opera GX                            │
+#   │      Firefox                             │
+#   │                                          │
+#   │  ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │ 82% (barra de timeout)
+#   │       Iniciando em N segundos...         │
+#   │   ↑ ↓ Selecionar  Enter Confirmar        │ 90% (dica)
+#   └──────────────────────────────────────────┘
+# =============================================================================
+
+# --- Fundo ------------------------------------------------------------------
+# Fundo completamente preto — sem imagem, sem gradiente.
+desktop-color: "#000000"
+
+# Remove o título padrão do GRUB (usamos um label customizado abaixo).
+title-text: ""
+
+# =============================================================================
+# TÍTULO
+# =============================================================================
++ label {
+    # Posição: 10% do topo, centralizado horizontalmente
+    top  = 10%
+    left = 0
+    width = 100%
+    height = 48
+
+    text  = "JETT OS"
+    font  = "jett-bold-24"
+    color = "#FFFFFF"
+    align = center
+}
+
+# =============================================================================
+# TAGLINE
+# =============================================================================
++ label {
+    top  = 18%
+    left = 0
+    width = 100%
+    height = 28
+
+    text  = "Como um jato."
+    font  = "jett-regular-16"
+    color = "#666666"
+    align = center
+}
+
+# =============================================================================
+# SEPARADOR HORIZONTAL
+# =============================================================================
+# Linha fina gerada pelo install-grub.sh como separator.png (1×2 px branco).
+# Esticada horizontalmente pelo GRUB para cobrir 60% da largura da tela.
++ image {
+    top    = 27%
+    left   = 20%
+    width  = 60%
+    height = 1
+    file   = "separator.png"
+}
+
+# =============================================================================
+# MENU DE BOOT
+# =============================================================================
++ boot_menu {
+    # Posição e tamanho — centralizado, ocupa ~45% da altura da tela
+    left   = 25%
+    top    = 30%
+    width  = 50%
+    height = 45%
+
+    # Altura de cada item e espaçamento interno
+    item_height  = 36
+    item_padding = 14
+    item_spacing = 2
+
+    # --- Itens normais (não selecionados) ---
+    # Cinza médio sobre fundo preto — visíveis mas não dominantes
+    item_font  = "jett-regular-16"
+    item_color = "#777777"
+
+    # --- Item selecionado ---
+    # Fundo branco + texto preto = inversão de contraste máxima
+    selected_item_font  = "jett-bold-16"
+    selected_item_color = "#000000"
+
+    # Imagem de fundo do item selecionado (branco sólido, gerado pelo install-grub.sh)
+    # Formato: NOMEc.png = centro (única imagem, esticada para cobrir o item)
+    selected_item_pixmap_style = "select_c.png"
+
+    # Sem barra de rolagem — sempre 5 navegadores, cabe na tela
+    scrollbar = false
+}
+
+# =============================================================================
+# BARRA DE TIMEOUT
+# =============================================================================
++ progress_bar {
+    # ID especial "__timeout__" faz o GRUB atualizar esta barra automaticamente
+    id = "__timeout__"
+
+    left   = 25%
+    top    = 80%
+    width  = 50%
+    height = 2
+
+    # Barra de progresso: branco (tempo restante) sobre cinza escuro (total)
+    fg_color     = "#FFFFFF"
+    bg_color     = "#222222"
+    border_color = "#222222"
+
+    # Texto do contador de segundos (opcional — descomente para exibir)
+    # text       = "@{remaining} segundos"
+    # text_color = "#555555"
+    # font       = "jett-regular-12"
+    text = ""
+}
+
+# =============================================================================
+# CONTADOR DE SEGUNDOS (texto separado da barra)
+# =============================================================================
++ label {
+    top    = 84%
+    left   = 0
+    width  = 100%
+    height = 24
+
+    # @{remaining} é substituído pelo GRUB com os segundos restantes
+    text  = "Iniciando em @{remaining}s..."
+    font  = "jett-regular-12"
+    color = "#444444"
+    align = center
+}
+
+# =============================================================================
+# DICA DE TECLAS
+# =============================================================================
++ label {
+    top    = 90%
+    left   = 0
+    width  = 100%
+    height = 20
+
+    text  = "↑ ↓  Selecionar     Enter  Confirmar     Esc  Cancelar"
+    font  = "jett-regular-12"
+    color = "#333333"
+    align = center
+}
