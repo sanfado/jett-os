@@ -97,3 +97,13 @@ $RECYCLE.BIN/
 .idea/
 .vscode/
 *.orig
+
+
+# =============================================================================
+# CLAUDE CODE
+# Configurações locais do assistente geradas pelo Claude Code.
+# Contêm contexto de sessão específico da máquina — não devem ir para o
+# repositório público.
+# =============================================================================
+
+.claude/
