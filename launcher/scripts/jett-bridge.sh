@@ -62,6 +62,8 @@
 #
 #   window open <url>             — abre janela browser --app=URL (detecta navegador ativo)
 #
+#   updates status                — estado de atualizações (lê /tmp/jett-updates-available.json)
+#
 #   wizard install_browsers <nav> — instala/configura navegador em background (JSON imediato)
 #   wizard install_status         — progresso da instalação em andamento (JSON)
 #   wizard complete <nav> [senha] — cria firstboot.done, define nav padrão e senha admin
@@ -927,6 +929,19 @@ wizard_set_admin_password() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# UPDATES — Estado de atualizações disponíveis
+# ─────────────────────────────────────────────────────────────────────────────
+
+updates_status() {
+    local json_file="/tmp/jett-updates-available.json"
+    if [[ -f "$json_file" ]]; then
+        cat "$json_file"
+    else
+        printf '{"debian":0,"jett_os":false,"jett_versao_atual":"desconhecida","jett_versao_nova":"desconhecida","timestamp":0}\n'
+    fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # DESPACHO
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -1035,6 +1050,11 @@ case "$COMANDO" in
             complete)            wizard_complete "$ARG1" "$ARG2" ;;
             set_admin_password)  wizard_set_admin_password "$ARG1" ;;
             *)                   erro_json "subcomando de wizard inválido: ${SUBCOMANDO}" ;;
+        esac ;;
+    updates)
+        case "$SUBCOMANDO" in
+            status) updates_status ;;
+            *)      erro_json "subcomando de updates inválido: ${SUBCOMANDO}" ;;
         esac ;;
     *)
         erro_json "comando desconhecido: ${COMANDO:-vazio}" ;;

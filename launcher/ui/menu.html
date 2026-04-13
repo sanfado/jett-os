@@ -229,6 +229,17 @@
 
   /* ── Vazio genérico ── */
   .vazio { font-size: 11px; color: #1e1e1e; padding: 4px 0; }
+
+  /* ── Animação de atenção para deep-link de seção ── */
+  @keyframes piscar-atencao {
+    0%, 100% { border-color: transparent; }
+    50%       { border-color: #c73; }
+  }
+  .secao-atencao {
+    border: 1px solid transparent;
+    border-radius: 2px;
+    animation: piscar-atencao 0.7s ease 3;
+  }
 </style>
 </head>
 <body>
@@ -386,6 +397,16 @@ async function inicializar() {
     pwasCarregar(),
     sistemaCarregar(),
   ]);
+
+  // Deep-link: se aberto com #sistema, rola e destaca a seção
+  if (location.hash === '#sistema') {
+    const secao = document.getElementById('secao-sistema');
+    if (secao) {
+      secao.scrollIntoView({ behavior: 'smooth' });
+      secao.classList.add('secao-atencao');
+      setTimeout(() => secao.classList.remove('secao-atencao'), 2500);
+    }
+  }
 }
 
 // ── Status base (volume + navegadores) ───────────────────────────────────────

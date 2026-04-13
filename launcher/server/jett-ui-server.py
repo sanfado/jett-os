@@ -46,6 +46,8 @@
 #   POST /api/wizard/install-browsers → inicia instalação de navegador (body: {"nav":"brave"})
 #   POST /api/wizard/complete      → salva escolhas e cria firstboot.done
 #   POST /api/wizard/set-admin-password → define senha admin (body: {"senha":"..."})
+#   GET  /api/updates/status       → estado de atualizações (lê /tmp/jett-updates-available.json)
+#   POST /api/updates/notify       → recebe notificação do jett-updater (body: JSON)
 #   POST /api/volume/up            → aumenta volume 5%
 #   POST /api/volume/down          → diminui volume 5%
 #   POST /api/volume/mute          → alterna mudo
@@ -321,6 +323,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.responder_json(bridge('files', 'diskspace', path))
             return
 
+        if caminho == '/api/updates/status':
+            self.responder_json(bridge('updates', 'status'))
+            return
+
         self.send_response(404)
         self.end_headers()
 
@@ -487,6 +493,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(bridge('wizard', 'set_admin_password', senha))
             else:
                 self.responder_json({'erro': 'campo "senha" ausente'}, 400)
+
+        # Updates
+        elif caminho == '/api/updates/notify':
+            # jett-updater.sh já escreveu /tmp/jett-updates-available.json;
+            # este endpoint apenas confirma o recebimento da notificação.
+            self.responder_json({'ok': True})
 
         # Nav — controle da barra de navegação via xdotool
         elif caminho == '/api/nav/navigate':

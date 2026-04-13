@@ -1,0 +1,32 @@
+# =============================================================================
+# jett-updater.service — Daemon de atualizações do Jett OS
+# =============================================================================
+# Serviço de usuário (systemd --user) que verifica atualizações em background.
+#
+# Instalação:
+#   cp config/systemd/jett-updater.service ~/.config/systemd/user/
+#   systemctl --user enable --now jett-updater.service
+#
+# Instalado automaticamente por: build/base/05-sway.sh
+#
+# Logs:
+#   journalctl --user -u jett-updater
+#   cat /tmp/jett-updater.log
+# =============================================================================
+
+[Unit]
+Description=Jett OS — Daemon de Verificação de Atualizações
+After=default.target network-online.target sway-kiosk.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/jett-updater
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jett-updater
+
+[Install]
+WantedBy=default.target

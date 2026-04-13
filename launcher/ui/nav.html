@@ -151,6 +151,39 @@
   }
   #rede-dot.online  { background: #2a5; }
   #rede-dot.offline { background: #733; }
+
+  /* ── Botão sistema + dot de atualização ── */
+  #wrapper-sistema {
+    position: relative;
+    flex-shrink: 0;
+  }
+  #btn-sistema {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  #btn-sistema:hover { color: #888; border-color: #1e1e1e; background: #111; }
+  #dot-update {
+    display: none;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #c73;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -194,6 +227,12 @@
       <span id="vol-icone" class="icone">🔈</span>
       <span id="vol-valor" class="valor">--%</span>
     </div>
+  </div>
+
+  <!-- Botão sistema -->
+  <div id="wrapper-sistema">
+    <button id="btn-sistema" title="Sistema" onclick="abrirMenuAtualizacoes()">⚙</button>
+    <div id="dot-update"></div>
   </div>
 
 </div>
@@ -333,13 +372,38 @@ function fechar() {
   try { window.close(); } catch (_) {}
 }
 
+// ── Indicador de atualizações ─────────────────────────────────────────────────
+async function atualizarStatusAtualizacoes() {
+  try {
+    const res = await fetch('/api/updates/status');
+    if (!res.ok) return;
+    const d = await res.json();
+    const temUpdate = (d.debian > 0) || (d.jett_os === true);
+    document.getElementById('dot-update').style.display = temUpdate ? 'block' : 'none';
+  } catch (_) {}
+}
+
+async function abrirMenuAtualizacoes() {
+  resetarAutoHide();
+  try {
+    await fetch('/api/window/open', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: 'http://127.0.0.1:1312/menu#sistema' }),
+    });
+  } catch (_) {}
+  fechar();
+}
+
 // ── Inicialização ─────────────────────────────────────────────────────────────
 atualizarRelogio();
 atualizarStatus();
 atualizarIndicador();
+atualizarStatusAtualizacoes();
 
 setInterval(atualizarRelogio, 1000);
 setInterval(atualizarStatus, 5000);
+setInterval(atualizarStatusAtualizacoes, 60000);
 
 // Foca automaticamente o campo de endereço ao abrir
 window.addEventListener('load', () => {

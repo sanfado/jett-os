@@ -59,6 +59,7 @@ SWAYMIN
         ["launcher/scripts/jett-nav-toggle.sh"]="jett-nav-toggle"
         ["launcher/scripts/jett-menu-toggle.sh"]="jett-menu-toggle"
         ["launcher/scripts/jett-files-toggle.sh"]="jett-files-toggle"
+        ["launcher/scripts/jett-updater.sh"]="jett-updater"
         ["launcher/scripts/jett-firstboot.sh"]="jett-firstboot"
         ["launcher/server/jett-ui-server.py"]="jett-ui-server"
     )
@@ -186,6 +187,15 @@ WantedBy=default.target
 EOF
     log_info "Serviço cage-kiosk.service criado (fallback, desabilitado)."
 
+    # ── Instala serviço do daemon de atualizações ─────────────────────────────
+    local updater_svc="${PROJETO_DIR}/config/systemd/jett-updater.service"
+    if [[ -f "$updater_svc" ]]; then
+        cp "$updater_svc" "${systemd_user_dir}/jett-updater.service"
+        log_info "config/systemd/jett-updater.service → ${systemd_user_dir}/jett-updater.service"
+    else
+        log_aviso "config/systemd/jett-updater.service não encontrado — daemon de atualizações não instalado."
+    fi
+
     # ── Habilita linger e serviços ────────────────────────────────────────────
     log_info "Habilitando linger para o usuário '${USUARIO_JETT}'..."
     loginctl enable-linger "$USUARIO_JETT" >> "$LOG_ARQUIVO" 2>&1 \
@@ -195,9 +205,9 @@ EOF
     uid_jett=$(id -u "$USUARIO_JETT" 2>/dev/null || echo "")
     local systemctl_user="XDG_RUNTIME_DIR=/run/user/${uid_jett} systemctl --user"
 
-    log_info "Habilitando jett-ui-server.service e sway-kiosk.service..."
+    log_info "Habilitando jett-ui-server.service, sway-kiosk.service e jett-updater.service..."
     su -l "$USUARIO_JETT" -c \
-        "${systemctl_user} enable jett-ui-server.service sway-kiosk.service" \
+        "${systemctl_user} enable jett-ui-server.service sway-kiosk.service jett-updater.service" \
         >> "$LOG_ARQUIVO" 2>&1 \
         || log_aviso "Não foi possível habilitar serviços — serão ativados no próximo boot."
 
