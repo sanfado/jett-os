@@ -8,9 +8,9 @@
 # Comportamento:
 #   1. Aguarda o jett-ui-server estar disponível em 127.0.0.1:1312
 #   2. Se /etc/jett-os/firstboot.done existir: inicia diretamente o kiosk
-#   3. Caso contrário: abre o wizard em http://127.0.0.1:1312/wizard,
+#   3. Caso contrário: abre o wizard com --kiosk em http://127.0.0.1:1312/wizard,
 #      aguarda firstboot.done ser criado (via POST /api/wizard/complete),
-#      então inicia o kiosk com o navegador escolhido
+#      fecha janelas residuais, então inicia o kiosk com o navegador escolhido
 #
 # Arquivo de conclusão aceito em dois locais:
 #   /etc/jett-os/firstboot.done          (criado via sudo por bridge)
@@ -70,11 +70,13 @@ abrir_wizard() {
     )
     for bin in "${candidatos[@]}"; do
         if command -v "$bin" &>/dev/null; then
-            log "Abrindo wizard com $bin"
+            log "Abrindo wizard com $bin (kiosk)"
             if [[ "$bin" == "firefox" ]]; then
-                "$bin" --new-instance --new-window "$URL_WIZARD" &
+                # --kiosk remove barras e abre em tela cheia; --new-instance evita usar sessão existente
+                "$bin" --kiosk --new-instance "$URL_WIZARD" &
             else
-                "$bin" "--app=${URL_WIZARD}" --no-first-run &
+                # --app remove abas/barra de endereços; --kiosk bloqueia UI do browser
+                "$bin" "--app=${URL_WIZARD}" --kiosk --no-first-run &
             fi
             echo $!
             return 0
@@ -83,6 +85,27 @@ abrir_wizard() {
     log "ERRO: nenhum navegador encontrado para abrir o wizard"
     echo ""
     return 1
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fecha o wizard e limpa janelas residuais antes de iniciar o kiosk
+# ─────────────────────────────────────────────────────────────────────────────
+fechar_wizard() {
+    local pid="${1:-}"
+
+    # Mata o processo do wizard se ainda estiver rodando
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+        log "Fechando wizard (PID ${pid})..."
+        kill "$pid" 2>/dev/null || true
+        sleep 0.5
+        kill -9 "$pid" 2>/dev/null || true
+    fi
+
+    # Remove janelas residuais de todos os navegadores via Sway
+    for app in firefox chromium brave-browser "microsoft-edge-stable" "thorium-browser" opera; do
+        swaymsg "[app_id=\"${app}\"] kill" 2>/dev/null || true
+    done
+    sleep 0.5
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -106,11 +129,11 @@ iniciar_kiosk() {
 
     # Fallback: primeiro candidato disponível em modo kiosk
     local candidatos_kiosk=(
-        "brave-browser --kiosk"
-        "microsoft-edge-stable --kiosk --no-first-run"
-        "thorium-browser --kiosk"
+        "brave-browser --kiosk --no-session-restore"
+        "microsoft-edge-stable --kiosk --no-first-run --no-session-restore"
+        "thorium-browser --kiosk --no-session-restore"
         "opera --kiosk"
-        "chromium --kiosk"
+        "chromium --kiosk --no-session-restore"
         "firefox --kiosk"
     )
     for cmd_kiosk in "${candidatos_kiosk[@]}"; do
@@ -166,7 +189,9 @@ main() {
         fi
     done
 
-    log "Wizard concluído — iniciando kiosk."
+    log "Wizard concluído — fechando janelas residuais..."
+    fechar_wizard "$wizard_pid"
+    log "Iniciando kiosk."
     iniciar_kiosk
 }
 

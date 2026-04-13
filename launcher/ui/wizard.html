@@ -30,13 +30,13 @@ html, body {
   width: 24px; height: 24px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: bold;
-  background: #0d0d0d; color: #282828; border: 1px solid #141414;
+  background: #0d0d0d; color: #555; border: 1px solid #141414;
   transition: all 0.25s;
 }
 .passo-circulo.ativo { background: #fff; color: #000; border-color: #fff; }
-.passo-circulo.feito { background: #1e1e1e; color: #555; border-color: #1e1e1e; }
-.passo-label { font-size: 9px; color: #1c1c1c; letter-spacing: 1px; text-transform: uppercase; transition: color 0.25s; }
-.passo-label.ativo { color: #555; }
+.passo-circulo.feito { background: #1e1e1e; color: #666; border-color: #1e1e1e; }
+.passo-label { font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase; transition: color 0.25s; }
+.passo-label.ativo { color: #ccc; }
 .passo-linha { flex: 1; height: 1px; background: #0f0f0f; margin-top: 12px; }
 
 /* ── Conteúdo ───────────────────────────────────────────────────────────── */
@@ -45,18 +45,18 @@ html, body {
 
 /* ── Etapa 0: Boas-vindas ────────────────────────────────────────────────── */
 #logo-j { font-size: 80px; font-weight: 900; line-height: 1; color: #fff; letter-spacing: -4px; margin-bottom: 8px; }
-.titulo-os { font-size: 10px; letter-spacing: 9px; color: #282828; text-transform: uppercase; margin-bottom: 28px; }
-.tagline { font-size: 16px; color: #444; margin-bottom: 36px; font-style: italic; }
+.titulo-os { font-size: 10px; letter-spacing: 9px; color: #888; text-transform: uppercase; margin-bottom: 28px; }
+.tagline { font-size: 16px; color: #ccc; margin-bottom: 36px; font-style: italic; }
 .lista-passos { display: flex; flex-direction: column; gap: 10px; }
 .lista-passos li {
-  color: #1e1e1e; font-size: 11px; list-style: none;
+  color: #bbb; font-size: 11px; list-style: none;
   padding-left: 18px; position: relative;
 }
-.lista-passos li::before { content: '→'; position: absolute; left: 0; color: #1a1a1a; }
+.lista-passos li::before { content: '→'; position: absolute; left: 0; color: #888; }
 
 /* ── Etapa 1: Rede ───────────────────────────────────────────────────────── */
 .etapa-titulo { font-size: 19px; font-weight: bold; margin-bottom: 5px; }
-.etapa-sub { font-size: 11px; color: #2a2a2a; margin-bottom: 18px; }
+.etapa-sub { font-size: 11px; color: #999; margin-bottom: 18px; }
 
 .status-rede {
   display: flex; align-items: center; gap: 12px;
@@ -70,7 +70,7 @@ html, body {
 @keyframes pulsar { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 
 #wifi-lista-wrapper { display: none; flex: 1; flex-direction: column; overflow: hidden; }
-.wifi-sec-label { font-size: 10px; letter-spacing: 2px; color: #1e1e1e; text-transform: uppercase; margin-bottom: 6px; }
+.wifi-sec-label { font-size: 10px; letter-spacing: 2px; color: #888; text-transform: uppercase; margin-bottom: 6px; }
 #wifi-redes-wiz { flex: 1; overflow-y: auto; }
 .rede-item {
   display: flex; align-items: center; justify-content: space-between;
@@ -80,13 +80,13 @@ html, body {
 .rede-item:hover { border-color: #1e1e1e; }
 .rede-item.ativo { border-color: #2a7a2a; }
 .rede-nome { font-size: 12px; }
-.rede-info { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #282828; }
+.rede-info { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #888; }
 
 #wifi-senha-form-wiz {
   display: none; margin-top: 8px; padding: 11px 12px;
   background: #080808; border: 1px solid #0f0f0f; border-radius: 2px;
 }
-#wifi-senha-form-wiz label { font-size: 10px; letter-spacing: 2px; color: #2a2a2a; text-transform: uppercase; display: block; margin-bottom: 5px; }
+#wifi-senha-form-wiz label { font-size: 10px; letter-spacing: 2px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; }
 #wifi-senha-wiz {
   width: 100%; background: #000; border: 1px solid #1a1a1a; border-radius: 2px;
   color: #fff; font-family: inherit; font-size: 13px; padding: 7px 10px; outline: none;
@@ -107,25 +107,25 @@ html, body {
 .card-nav-wiz:hover { border-color: #1e1e1e; background: #0d0d0d; }
 .card-nav-wiz.selecionado { background: #fff; border-color: #fff; color: #000; font-weight: bold; }
 .card-nav-wiz .icone { font-size: 22px; }
-.card-nav-wiz .cnome { font-size: 10px; color: #444; }
+.card-nav-wiz .cnome { font-size: 10px; color: #ccc; }
 .card-nav-wiz.selecionado .cnome { color: #555; }
-.card-nav-wiz .csite { font-size: 9px; color: #1e1e1e; }
+.card-nav-wiz .csite { font-size: 9px; color: #777; }
 .card-nav-wiz.selecionado .csite { color: #888; }
 
 #instalar-area { flex-shrink: 0; }
 #barra-install-wrap { display: none; height: 2px; background: #0a0a0a; border-radius: 1px; margin-bottom: 7px; overflow: hidden; }
 #barra-install-fill { height: 100%; width: 0%; background: #fff; transition: width 0.5s ease; border-radius: 1px; }
-#instalar-msg { font-size: 10px; color: #2e2e2e; min-height: 14px; }
+#instalar-msg { font-size: 10px; color: #999; min-height: 14px; }
 
 /* ── Etapa 3: Pronto ─────────────────────────────────────────────────────── */
 #resumo-wiz {
   padding: 12px 16px; background: #080808; border: 1px solid #0f0f0f;
-  border-radius: 3px; font-size: 11px; line-height: 2.2; color: #333; margin-bottom: 18px;
+  border-radius: 3px; font-size: 11px; line-height: 2.2; color: #888; margin-bottom: 18px;
 }
-#resumo-wiz span { color: #666; }
+#resumo-wiz span { color: #ccc; }
 
 .campo-senha { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-.campo-senha label { font-size: 10px; letter-spacing: 2px; color: #2a2a2a; text-transform: uppercase; }
+.campo-senha label { font-size: 10px; letter-spacing: 2px; color: #999; text-transform: uppercase; }
 .campo-senha input {
   background: #080808; border: 1px solid #1a1a1a; border-radius: 2px;
   color: #fff; font-family: inherit; font-size: 13px; padding: 8px 12px; outline: none;
@@ -139,23 +139,23 @@ html, body {
   padding-top: 14px; border-top: 1px solid #0a0a0a; margin-top: auto; flex-shrink: 0;
 }
 #btn-pular {
-  font-size: 11px; color: #1e1e1e; background: none; border: none;
+  font-size: 11px; color: #888; background: none; border: none;
   cursor: pointer; padding: 4px 0; font-family: inherit;
 }
-#btn-pular:hover { color: #383838; }
+#btn-pular:hover { color: #bbb; }
 .btn-right { display: flex; gap: 8px; margin-left: auto; }
 .btn-sec {
   padding: 8px 18px; font-size: 12px; font-family: inherit;
-  background: #0d0d0d; color: #383838; border: 1px solid #1a1a1a;
+  background: #0d0d0d; color: #aaa; border: 1px solid #1a1a1a;
   border-radius: 2px; cursor: pointer;
 }
-.btn-sec:hover { color: #666; }
+.btn-sec:hover { color: #ccc; }
 .btn-instalar {
   padding: 8px 16px; font-size: 12px; font-family: inherit;
-  background: #0d0d0d; color: #444; border: 1px solid #1a1a1a;
+  background: #0d0d0d; color: #aaa; border: 1px solid #1a1a1a;
   border-radius: 2px; cursor: pointer; transition: all 0.15s;
 }
-.btn-instalar:hover { color: #777; border-color: #222; }
+.btn-instalar:hover { color: #ddd; border-color: #222; }
 .btn-instalar:disabled { opacity: 0.3; cursor: default; }
 .btn-pri {
   padding: 8px 22px; font-size: 12px; font-family: inherit;
@@ -163,7 +163,7 @@ html, body {
   border-radius: 2px; cursor: pointer;
 }
 .btn-pri:hover { background: #e0e0e0; }
-.btn-pri:disabled { background: #111; color: #333; cursor: default; }
+.btn-pri:disabled { background: #111; color: #555; cursor: default; }
 </style>
 </head>
 <body>
@@ -369,7 +369,7 @@ function atualizarBotoes() {
   const btnInstalar = document.getElementById('btn-instalar');
   const btnProx     = document.getElementById('btn-proximo');
 
-  btnAnt.style.display     = etapaAtual > 0 && etapaAtual < TOTAL_ETAPAS - 1 ? '' : 'none';
+  btnAnt.style.display     = etapaAtual > 0 ? '' : 'none';
   btnPular.style.display   = etapaAtual === 1 ? '' : 'none';
   btnInstalar.style.display= etapaAtual === 2 ? '' : 'none';
 
@@ -422,7 +422,7 @@ async function mostrarListaWifi() {
   const wrapper = document.getElementById('wifi-lista-wrapper');
   wrapper.style.display = 'flex';
   const el = document.getElementById('wifi-redes-wiz');
-  el.innerHTML = '<div style="font-size:10px;color:#1e1e1e;padding:8px 0">Buscando redes...</div>';
+  el.innerHTML = '<div style="font-size:10px;color:#888;padding:8px 0">Buscando redes...</div>';
 
   try {
     const res  = await fetch('/api/wifi/list');
@@ -430,7 +430,7 @@ async function mostrarListaWifi() {
     const redes = d.redes || [];
 
     if (!redes.length) {
-      el.innerHTML = '<div style="font-size:10px;color:#1e1e1e;padding:8px 0">Nenhuma rede encontrada.</div>';
+      el.innerHTML = '<div style="font-size:10px;color:#888;padding:8px 0">Nenhuma rede encontrada.</div>';
       return;
     }
 
@@ -456,7 +456,7 @@ async function mostrarListaWifi() {
       }
     }
   } catch (_) {
-    el.innerHTML = '<div style="font-size:10px;color:#1e1e1e;padding:8px 0">Erro ao listar redes.</div>';
+    el.innerHTML = '<div style="font-size:10px;color:#888;padding:8px 0">Erro ao listar redes.</div>';
   }
 }
 
@@ -551,11 +551,17 @@ async function instalarNavegador() {
 // ETAPA 3 — PRONTO
 // ─────────────────────────────────────────────────────────────────────────────
 function mostrarResumo() {
-  const navNome = BROWSERS.find(b => b.id === st.navSelecionado)?.nome || '—';
+  const nav = BROWSERS.find(b => b.id === st.navSelecionado);
+  const navNome = nav ? `${nav.icone} ${nav.nome}` : '—';
+  const instStatus = st.navInstalado
+    ? 'Concluída ✓'
+    : st.navSelecionado
+      ? `Não executada — ${nav.nome} será instalado no primeiro boot`
+      : 'Nenhum navegador selecionado';
   document.getElementById('resumo-wiz').innerHTML = `
     <div>Rede: <span>${st.redeOk ? 'Conectada ✓' : 'Sem conexão'}</span></div>
     <div>Navegador: <span>${esc(navNome)}</span></div>
-    <div>Instalação: <span>${st.navInstalado ? 'Concluída ✓' : 'Não executada'}</span></div>
+    <div>Instalação: <span>${esc(instStatus)}</span></div>
   `;
   atualizarBotoes();
 }
