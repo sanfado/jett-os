@@ -18,6 +18,16 @@
 #   GET  /wizard                   → wizard.html (assistente de primeiro boot)
 #   GET  /files                    → files.html (gerenciador de arquivos)
 #   GET  /api/status               → JSON com volume, rede, navegador, hora
+#   GET  /api/bluetooth/list       → dispositivos bluetooth pareados
+#   POST /api/bluetooth/scan       → busca novos dispositivos (5 s)
+#   POST /api/bluetooth/pair       → pareia dispositivo (body: {"address":"AA:BB:..."})
+#   POST /api/bluetooth/remove     → remove pareamento (body: {"address":"..."})
+#   GET  /api/files/list?path=     → lista diretório (padrão: /home/jett)
+#   POST /api/files/move           → move arquivo (body: {"src":"...","dst":"..."})
+#   POST /api/files/copy           → copia arquivo (body: {"src":"...","dst":"..."})
+#   POST /api/files/rename         → renomeia (body: {"src":"...","name":"..."})
+#   POST /api/files/delete         → remove (body: {"path":"..."})
+#   POST /api/files/mkdir          → cria dir (body: {"path":"..."})
 #   POST /api/volume/up            → aumenta volume 5%
 #   POST /api/volume/down          → diminui volume 5%
 #   POST /api/volume/mute          → alterna mudo
@@ -44,7 +54,7 @@ import subprocess
 import sys
 import threading
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIGURAÇÃO
@@ -225,6 +235,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(dados)
             return
 
+        if caminho == '/api/bluetooth/list':
+            dados = bridge('bluetooth', 'list')
+            if isinstance(dados, list):
+                self.responder_json({'dispositivos': dados})
+            else:
+                self.responder_json(dados)
+            return
+
+        if caminho == '/api/files/list':
+            params = parse_qs(parsed.query)
+            path = params.get('path', ['/home/jett'])[0]
+            self.responder_json(bridge('files', 'list', path))
+            return
+
         self.send_response(404)
         self.end_headers()
 
@@ -278,6 +302,67 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(bridge('usb', 'unmount', ponto))
             else:
                 self.responder_json({'erro': 'campo "point" ausente'}, 400)
+
+        # Bluetooth
+        elif caminho == '/api/bluetooth/scan':
+            self.responder_json(bridge('bluetooth', 'scan'))
+
+        elif caminho == '/api/bluetooth/pair':
+            corpo = self.ler_corpo_json()
+            addr = corpo.get('address', '')
+            if addr:
+                self.responder_json(bridge('bluetooth', 'pair', addr))
+            else:
+                self.responder_json({'erro': 'campo "address" ausente'}, 400)
+
+        elif caminho == '/api/bluetooth/remove':
+            corpo = self.ler_corpo_json()
+            addr = corpo.get('address', '')
+            if addr:
+                self.responder_json(bridge('bluetooth', 'remove', addr))
+            else:
+                self.responder_json({'erro': 'campo "address" ausente'}, 400)
+
+        # Arquivos
+        elif caminho == '/api/files/move':
+            corpo = self.ler_corpo_json()
+            src, dst = corpo.get('src', ''), corpo.get('dst', '')
+            if src and dst:
+                self.responder_json(bridge('files', 'move', src, dst))
+            else:
+                self.responder_json({'erro': 'campos "src" e "dst" são obrigatórios'}, 400)
+
+        elif caminho == '/api/files/copy':
+            corpo = self.ler_corpo_json()
+            src, dst = corpo.get('src', ''), corpo.get('dst', '')
+            if src and dst:
+                self.responder_json(bridge('files', 'copy', src, dst))
+            else:
+                self.responder_json({'erro': 'campos "src" e "dst" são obrigatórios'}, 400)
+
+        elif caminho == '/api/files/rename':
+            corpo = self.ler_corpo_json()
+            src, nome = corpo.get('src', ''), corpo.get('name', '')
+            if src and nome:
+                self.responder_json(bridge('files', 'rename', src, nome))
+            else:
+                self.responder_json({'erro': 'campos "src" e "name" são obrigatórios'}, 400)
+
+        elif caminho == '/api/files/delete':
+            corpo = self.ler_corpo_json()
+            path = corpo.get('path', '')
+            if path:
+                self.responder_json(bridge('files', 'delete', path))
+            else:
+                self.responder_json({'erro': 'campo "path" ausente'}, 400)
+
+        elif caminho == '/api/files/mkdir':
+            corpo = self.ler_corpo_json()
+            path = corpo.get('path', '')
+            if path:
+                self.responder_json(bridge('files', 'mkdir', path))
+            else:
+                self.responder_json({'erro': 'campo "path" ausente'}, 400)
 
         else:
             self.send_response(404)

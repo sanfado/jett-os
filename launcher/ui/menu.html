@@ -22,15 +22,15 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 20px;
-    gap: 18px;
   }
 
   /* ── Cabeçalho ── */
-  .cabecalho {
+  #cabecalho {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 16px 20px 10px;
+    flex-shrink: 0;
   }
   .titulo-menu {
     font-size: 11px;
@@ -49,35 +49,43 @@
   }
   #btn-fechar:hover { color: #888; }
 
-  /* ── Seção ── */
-  .secao {
+  /* ── Área de conteúdo scrollável ── */
+  #conteudo {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
+    /* barra de scroll discreta */
+    scrollbar-width: thin;
+    scrollbar-color: #1a1a1a transparent;
   }
+  #conteudo::-webkit-scrollbar { width: 3px; }
+  #conteudo::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
+
+  /* ── Rodapé — energia (fixo) ── */
+  #secao-energia {
+    padding: 10px 20px 16px;
+    flex-shrink: 0;
+    border-top: 1px solid #0d0d0d;
+  }
+
+  /* ── Seção genérica ── */
+  .secao { display: flex; flex-direction: column; gap: 8px; }
   .secao-titulo {
     font-size: 10px;
     letter-spacing: 2px;
-    color: #333;
+    color: #2a2a2a;
     text-transform: uppercase;
     padding-bottom: 4px;
     border-bottom: 1px solid #111;
   }
 
-  /* ── Linha de item ── */
-  .linha {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
   /* ── Volume ── */
-  #vol-label {
-    min-width: 28px;
-    text-align: right;
-    color: #888;
-    font-size: 12px;
-  }
+  .linha { display: flex; align-items: center; gap: 10px; }
+  #vol-label { min-width: 28px; text-align: right; color: #888; font-size: 12px; }
   #vol-slider {
     flex: 1;
     -webkit-appearance: none;
@@ -90,22 +98,17 @@
   }
   #vol-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     border-radius: 50%;
     background: #fff;
     cursor: pointer;
   }
   #vol-slider::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #fff;
-    border: none;
-    cursor: pointer;
+    width: 14px; height: 14px;
+    border-radius: 50%; background: #fff; border: none; cursor: pointer;
   }
   #btn-mudo {
-    min-width: 36px;
+    min-width: 40px;
     padding: 4px 8px;
     background: #111;
     color: #555;
@@ -118,30 +121,22 @@
   #btn-mudo:hover { background: #1a1a1a; color: #888; }
 
   /* ── Rede ── */
-  #rede-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .rede-linha {
+  .info-grid { display: flex; flex-direction: column; gap: 3px; }
+  .info-linha {
     display: flex;
     justify-content: space-between;
     color: #555;
     font-size: 11px;
   }
-  .rede-linha .chave { color: #333; }
+  .info-linha .chave { color: #2a2a2a; }
 
   /* ── Navegadores ── */
-  #lista-navegadores {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  #lista-navegadores { display: flex; flex-direction: column; gap: 5px; }
   .btn-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 7px 12px;
     background: #111;
     border: 1px solid #1a1a1a;
     border-radius: 2px;
@@ -152,27 +147,60 @@
     text-align: left;
   }
   .btn-nav:hover { background: #161616; color: #aaa; border-color: #2a2a2a; }
-  .btn-nav.ativo  {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
-    font-weight: bold;
+  .btn-nav.ativo { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
+  .btn-nav .badge-ativo { font-size: 9px; letter-spacing: 1px; color: #000; text-transform: uppercase; }
+
+  /* ── Bluetooth ── */
+  #bt-controles { display: flex; align-items: center; gap: 8px; }
+  #bt-status { flex: 1; font-size: 11px; color: #333; }
+  .btn-bt-acao {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-family: inherit;
+    background: #111;
+    border: 1px solid #1e1e1e;
+    border-radius: 2px;
+    color: #555;
+    cursor: pointer;
+    white-space: nowrap;
   }
-  .btn-nav .badge-ativo {
-    font-size: 9px;
-    letter-spacing: 1px;
-    color: #000;
-    text-transform: uppercase;
+  .btn-bt-acao:hover { background: #1a1a1a; color: #888; }
+  .btn-bt-acao:disabled { opacity: 0.4; cursor: default; }
+
+  #lista-bt { display: flex; flex-direction: column; gap: 5px; }
+  .item-bt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: #0d0d0d;
+    border: 1px solid #111;
+    border-radius: 2px;
   }
+  .bt-icone { font-size: 14px; flex-shrink: 0; }
+  .bt-info  { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+  .bt-nome  { font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bt-addr  { font-size: 9px;  color: #2a2a2a; letter-spacing: 1px; }
+  .bt-acoes { display: flex; gap: 5px; flex-shrink: 0; }
+  .btn-bt-item {
+    padding: 3px 8px;
+    font-size: 10px;
+    font-family: inherit;
+    background: #111;
+    border: 1px solid #1a1a1a;
+    border-radius: 2px;
+    color: #555;
+    cursor: pointer;
+  }
+  .btn-bt-item:hover { background: #161616; color: #888; }
+  .bt-conectado .bt-nome { color: #5a5; }
+  .bt-vazio { color: #222; font-size: 11px; padding: 6px 0; }
 
   /* ── Energia ── */
-  .botoes-energia {
-    display: flex;
-    gap: 8px;
-  }
+  .botoes-energia { display: flex; gap: 8px; }
   .btn-energia {
     flex: 1;
-    padding: 9px 0;
+    padding: 8px 0;
     background: #111;
     border: 1px solid #1e1e1e;
     border-radius: 2px;
@@ -189,66 +217,74 @@
 <body>
 
 <div id="menu">
-  <!-- Cabeçalho -->
-  <div class="cabecalho">
+
+  <!-- Cabeçalho fixo -->
+  <div id="cabecalho">
     <div class="titulo-menu">Sistema</div>
     <button id="btn-fechar" onclick="fechar()">✕</button>
   </div>
 
-  <!-- Volume -->
-  <div class="secao">
-    <div class="secao-titulo">Volume</div>
-    <div class="linha">
-      <span id="vol-icone">🔈</span>
-      <input type="range" id="vol-slider" min="0" max="100" value="50"
-             oninput="ajustarVolume(this.value)"
-             onchange="confirmarVolume(this.value)">
-      <span id="vol-label">50%</span>
-      <button id="btn-mudo" onclick="toggleMudo()">mudo</button>
-    </div>
-  </div>
+  <!-- Conteúdo scrollável -->
+  <div id="conteudo">
 
-  <!-- Rede -->
-  <div class="secao">
-    <div class="secao-titulo">Rede</div>
-    <div id="rede-info">
-      <div class="rede-linha">
-        <span class="chave">Interface</span>
-        <span id="rede-iface">—</span>
-      </div>
-      <div class="rede-linha">
-        <span class="chave">IP</span>
-        <span id="rede-ip">—</span>
-      </div>
-      <div class="rede-linha">
-        <span class="chave">Status</span>
-        <span id="rede-status">—</span>
+    <!-- Volume -->
+    <div class="secao">
+      <div class="secao-titulo">Volume</div>
+      <div class="linha">
+        <span id="vol-icone">🔈</span>
+        <input type="range" id="vol-slider" min="0" max="100" value="50"
+               oninput="ajustarVolume(this.value)"
+               onchange="confirmarVolume(this.value)">
+        <span id="vol-label">50%</span>
+        <button id="btn-mudo" onclick="toggleMudo()">mudo</button>
       </div>
     </div>
-  </div>
 
-  <!-- Navegadores -->
-  <div class="secao" id="secao-navs">
-    <div class="secao-titulo">Navegador</div>
-    <div id="lista-navegadores">
-      <div style="color:#333;font-size:11px">Carregando...</div>
+    <!-- Rede -->
+    <div class="secao">
+      <div class="secao-titulo">Rede</div>
+      <div class="info-grid">
+        <div class="info-linha"><span class="chave">Interface</span><span id="rede-iface">—</span></div>
+        <div class="info-linha"><span class="chave">IP</span><span id="rede-ip">—</span></div>
+        <div class="info-linha"><span class="chave">Status</span><span id="rede-status">—</span></div>
+      </div>
     </div>
-  </div>
 
-  <!-- Energia -->
-  <div class="secao" style="margin-top:auto">
-    <div class="secao-titulo">Energia</div>
+    <!-- Dispositivos — Bluetooth -->
+    <div class="secao">
+      <div class="secao-titulo">Dispositivos</div>
+      <div id="bt-controles">
+        <span id="bt-status">—</span>
+        <button class="btn-bt-acao" id="btn-bt-buscar" onclick="btBuscar()">Buscar</button>
+      </div>
+      <div id="lista-bt">
+        <div class="bt-vazio">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Navegadores -->
+    <div class="secao">
+      <div class="secao-titulo">Navegador</div>
+      <div id="lista-navegadores">
+        <div style="color:#333;font-size:11px">Carregando...</div>
+      </div>
+    </div>
+
+  </div><!-- fim #conteudo -->
+
+  <!-- Energia — fixo no rodapé -->
+  <div id="secao-energia">
     <div class="botoes-energia">
       <button class="btn-energia" onclick="poder('suspend')">Suspender</button>
       <button class="btn-energia" onclick="poder('reboot')">Reiniciar</button>
       <button class="btn-energia desligar" onclick="poder('shutdown')">Desligar</button>
     </div>
   </div>
+
 </div>
 
 <script>
 // ── Estado local ──────────────────────────────────────────────────────────────
-let _volAtual = 50;
 let _volTimeout = null;
 
 // ── Inicialização ─────────────────────────────────────────────────────────────
@@ -256,31 +292,30 @@ async function inicializar() {
   try {
     const res = await fetch('/api/status');
     if (!res.ok) return;
-    const dados = await res.json();
+    const d = await res.json();
 
     // Volume
-    if (dados.volume && !dados.volume.erro) {
-      _volAtual = dados.volume.volume ?? 50;
-      const mudo = dados.volume.mudo;
-      document.getElementById('vol-slider').value = _volAtual;
-      atualizarUIVolume(_volAtual, mudo);
+    if (d.volume && !d.volume.erro) {
+      document.getElementById('vol-slider').value = d.volume.volume ?? 50;
+      atualizarUIVolume(d.volume.volume ?? 50, d.volume.mudo);
     }
 
     // Rede
-    if (dados.rede) {
-      const r = dados.rede;
-      document.getElementById('rede-iface').textContent = r.interface || '—';
-      document.getElementById('rede-ip').textContent = r.ip || '—';
+    if (d.rede) {
+      const r = d.rede;
+      document.getElementById('rede-iface').textContent  = r.interface || '—';
+      document.getElementById('rede-ip').textContent     = r.ip        || '—';
       document.getElementById('rede-status').textContent =
         !r.conectado ? 'desconectado' :
         r.status === 'online' ? 'online' : 'sem internet';
     }
 
     // Navegadores
-    if (Array.isArray(dados.navegadores)) {
-      renderizarNavegadores(dados.navegadores);
-    }
+    if (Array.isArray(d.navegadores)) renderizarNavegadores(d.navegadores);
   } catch (e) {}
+
+  // Bluetooth
+  await btCarregar();
 }
 
 // ── Volume ────────────────────────────────────────────────────────────────────
@@ -288,13 +323,11 @@ function atualizarUIVolume(vol, mudo) {
   document.getElementById('vol-icone').textContent =
     mudo ? '🔇' : (vol < 30 ? '🔈' : '🔊');
   document.getElementById('vol-label').textContent = mudo ? 'mudo' : `${vol}%`;
-  document.getElementById('btn-mudo').textContent = mudo ? 'unmute' : 'mudo';
+  document.getElementById('btn-mudo').textContent  = mudo ? 'unmute' : 'mudo';
 }
 
 function ajustarVolume(val) {
-  _volAtual = parseInt(val);
-  atualizarUIVolume(_volAtual, false);
-  // Debounce: só envia após 200ms de pausa
+  atualizarUIVolume(parseInt(val), false);
   clearTimeout(_volTimeout);
   _volTimeout = setTimeout(() => confirmarVolume(val), 200);
 }
@@ -303,70 +336,143 @@ async function confirmarVolume(val) {
   try {
     await fetch('/api/volume/set', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ level: parseInt(val) }),
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({level: parseInt(val)}),
     });
   } catch (e) {}
 }
 
 async function toggleMudo() {
   try {
-    const res = await fetch('/api/volume/mute', { method: 'POST' });
-    const dados = await res.json();
-    if (dados.volume !== undefined) {
-      document.getElementById('vol-slider').value = dados.volume;
-      atualizarUIVolume(dados.volume, dados.mudo);
+    const res = await fetch('/api/volume/mute', {method:'POST'});
+    const d = await res.json();
+    if (d.volume !== undefined) {
+      document.getElementById('vol-slider').value = d.volume;
+      atualizarUIVolume(d.volume, d.mudo);
     }
   } catch (e) {}
 }
 
 // ── Navegadores ───────────────────────────────────────────────────────────────
 function renderizarNavegadores(lista) {
-  const container = document.getElementById('lista-navegadores');
+  const c = document.getElementById('lista-navegadores');
   if (!lista.length) {
-    container.innerHTML = '<div style="color:#333;font-size:11px">Nenhum navegador instalado</div>';
-    return;
+    c.innerHTML = '<div style="color:#333;font-size:11px">Nenhum instalado</div>'; return;
   }
-  container.innerHTML = lista.map(nav => `
-    <button class="btn-nav${nav.ativo ? ' ativo' : ''}"
-            onclick="trocarNavegador('${nav.id}')">
-      <span>${nav.nome}${nav.versao ? ` <small style="color:${nav.ativo?'#555':'#333'}">${nav.versao}</small>` : ''}</span>
-      ${nav.ativo ? '<span class="badge-ativo">● em uso</span>' : ''}
-    </button>
-  `).join('');
+  c.innerHTML = lista.map(n => `
+    <button class="btn-nav${n.ativo?' ativo':''}" onclick="trocarNavegador('${n.id}')">
+      <span>${n.nome}${n.versao?` <small style="color:${n.ativo?'#555':'#333'}">${n.versao}</small>`:''}</span>
+      ${n.ativo?'<span class="badge-ativo">● em uso</span>':''}
+    </button>`).join('');
 }
 
 async function trocarNavegador(id) {
   try {
     await fetch('/api/browser/switch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ browser: id }),
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({browser:id}),
     });
     fechar();
   } catch (e) {}
 }
 
+// ── Bluetooth ─────────────────────────────────────────────────────────────────
+async function btCarregar() {
+  document.getElementById('bt-status').textContent = '—';
+  document.getElementById('lista-bt').innerHTML = '<div class="bt-vazio">Carregando...</div>';
+  try {
+    const res = await fetch('/api/bluetooth/list');
+    const d   = await res.json();
+    const devs = d.dispositivos || [];
+    document.getElementById('bt-status').textContent =
+      devs.length ? `${devs.length} pareado(s)` : 'nenhum pareado';
+    renderizarBT(devs);
+  } catch (e) {
+    document.getElementById('bt-status').textContent = 'indisponível';
+    document.getElementById('lista-bt').innerHTML =
+      '<div class="bt-vazio">bluetoothctl não encontrado</div>';
+  }
+}
+
+async function btBuscar() {
+  const btn = document.getElementById('btn-bt-buscar');
+  btn.disabled = true;
+  btn.textContent = 'Buscando...';
+  document.getElementById('bt-status').textContent = 'buscando (5 s)...';
+  try {
+    const res = await fetch('/api/bluetooth/scan', {method:'POST'});
+    const d   = await res.json();
+    const devs = d.dispositivos || (Array.isArray(d) ? d : []);
+    document.getElementById('bt-status').textContent =
+      `${devs.length} dispositivo(s) encontrado(s)`;
+    renderizarBT(devs);
+  } catch (e) {
+    document.getElementById('bt-status').textContent = 'erro na busca';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Buscar';
+  }
+}
+
+function renderizarBT(lista) {
+  const c = document.getElementById('lista-bt');
+  if (!lista.length) {
+    c.innerHTML = '<div class="bt-vazio">Nenhum dispositivo encontrado</div>'; return;
+  }
+  c.innerHTML = lista.map(d => `
+    <div class="item-bt${d.conectado?' bt-conectado':''}">
+      <div class="bt-icone">${d.conectado ? '🔵' : '⚫'}</div>
+      <div class="bt-info">
+        <div class="bt-nome">${d.nome || 'Desconhecido'}</div>
+        <div class="bt-addr">${d.endereco}</div>
+      </div>
+      <div class="bt-acoes">
+        ${d.pareado
+          ? `<button class="btn-bt-item" onclick="btRemover('${d.endereco}')">Remover</button>`
+          : `<button class="btn-bt-item" onclick="btParear('${d.endereco}')">Parear</button>`
+        }
+      </div>
+    </div>`).join('');
+}
+
+async function btParear(addr) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    const res = await fetch('/api/bluetooth/pair', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({address: addr}),
+    });
+    const d = await res.json();
+    if (d.ok) await btCarregar();
+    else { btn.disabled = false; btn.textContent = 'Parear'; }
+  } catch (e) { btn.disabled = false; btn.textContent = 'Parear'; }
+}
+
+async function btRemover(addr) {
+  if (!confirm('Remover dispositivo pareado?')) return;
+  try {
+    await fetch('/api/bluetooth/remove', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({address: addr}),
+    });
+    await btCarregar();
+  } catch (e) {}
+}
+
 // ── Energia ───────────────────────────────────────────────────────────────────
 async function poder(acao) {
-  const msgs = { shutdown: 'Desligar?', reboot: 'Reiniciar?', suspend: 'Suspender?' };
+  const msgs = {shutdown:'Desligar?', reboot:'Reiniciar?', suspend:'Suspender?'};
   if (!confirm(msgs[acao] || acao)) return;
-  try {
-    await fetch(`/api/power/${acao}`, { method: 'POST' });
-  } catch (e) {}
+  try { await fetch(`/api/power/${acao}`, {method:'POST'}); } catch (e) {}
   fechar();
 }
 
 // ── Fechar ────────────────────────────────────────────────────────────────────
-function fechar() {
-  try { window.close(); } catch(e) {}
-}
+function fechar() { try { window.close(); } catch(e) {} }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fechar(); });
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') fechar();
-});
-
-// ── Iniciar ───────────────────────────────────────────────────────────────────
 inicializar();
 </script>
 </body>

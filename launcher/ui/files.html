@@ -22,15 +22,16 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 24px 28px 20px;
-    gap: 16px;
   }
 
   /* ── Cabeçalho ── */
-  .cabecalho {
+  #cabecalho {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 16px 20px 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #0d0d0d;
   }
   .titulo {
     font-size: 11px;
@@ -49,136 +50,181 @@
   }
   #btn-fechar:hover { color: #888; }
 
-  /* ── Dispositivos USB ── */
-  .secao-titulo {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: #222;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    padding-bottom: 4px;
+  /* ── Painéis ── */
+  #paineis {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .painel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    border-right: 1px solid #0d0d0d;
+  }
+  .painel:last-child { border-right: none; }
+
+  .painel-header {
+    padding: 10px 14px 8px;
+    flex-shrink: 0;
     border-bottom: 1px solid #0d0d0d;
   }
 
-  #lista-usb {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    overflow-y: auto;
-    flex-shrink: 0;
-    max-height: 180px;
+  .painel-titulo {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #2a2a2a;
+    text-transform: uppercase;
+    margin-bottom: 6px;
   }
 
-  .item-usb {
+  /* ── Breadcrumb ── */
+  .breadcrumb {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
+    gap: 4px;
+    font-size: 10px;
+    color: #333;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .breadcrumb-parte {
+    cursor: pointer;
+    color: #444;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+  }
+  .breadcrumb-parte:hover { color: #777; }
+  .breadcrumb-parte.atual { color: #555; cursor: default; flex-shrink: 0; }
+  .breadcrumb-sep { color: #1a1a1a; flex-shrink: 0; }
+
+  /* ── Atalhos internos ── */
+  .atalhos {
+    display: flex;
+    gap: 6px;
+    padding: 6px 14px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #0a0a0a;
+  }
+  .btn-atalho {
+    padding: 3px 10px;
+    font-size: 10px;
+    font-family: inherit;
     background: #0a0a0a;
     border: 1px solid #111;
     border-radius: 2px;
-  }
-
-  .usb-icone { font-size: 18px; flex-shrink: 0; }
-
-  .usb-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
-  }
-  .usb-nome {
-    font-size: 12px;
-    color: #888;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .usb-detalhe {
-    font-size: 10px;
     color: #333;
-  }
-
-  .usb-acoes { display: flex; gap: 6px; flex-shrink: 0; }
-
-  .btn-usb {
-    padding: 5px 14px;
-    font-size: 11px;
-    font-family: inherit;
-    background: #111;
-    border: 1px solid #1e1e1e;
-    border-radius: 2px;
-    color: #555;
     cursor: pointer;
-  }
-  .btn-usb:hover { background: #161616; color: #888; }
-  .btn-usb.montado { color: #3a3; border-color: #1a2a1a; background: #0a0f0a; }
-  .btn-usb.montado:hover { background: #0f150f; color: #4a4; }
-
-  /* ── Aviso sem dispositivos ── */
-  .vazio {
-    color: #222;
-    font-size: 11px;
-    padding: 20px 0;
-    text-align: center;
-  }
-
-  /* ── Área de conteúdo ── */
-  #area-conteudo {
-    flex: 1;
-    background: #050505;
-    border: 1px solid #0d0d0d;
-    border-radius: 2px;
-    overflow-y: auto;
-    padding: 12px;
-  }
-
-  #caminho-atual {
-    font-size: 10px;
-    color: #222;
-    padding: 6px 0 10px;
     letter-spacing: 1px;
-    word-break: break-all;
+  }
+  .btn-atalho:hover { color: #666; background: #111; }
+
+  /* ── Lista de arquivos ── */
+  .lista-arquivos {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #111 transparent;
+  }
+  .lista-arquivos.drag-over {
+    background: #050f05;
+    outline: 1px solid #1a2a1a;
+    outline-offset: -2px;
   }
 
   .item-arquivo {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 8px;
+    padding: 5px 8px;
     border-radius: 2px;
     cursor: default;
-    color: #666;
+    color: #555;
     font-size: 12px;
   }
-  .item-arquivo:hover { background: #0d0d0d; color: #aaa; }
-  .item-arquivo .arq-icone { font-size: 14px; flex-shrink: 0; }
-  .item-arquivo .arq-nome  { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item-arquivo .arq-tam   { font-size: 10px; color: #333; flex-shrink: 0; }
+  .item-arquivo:hover { background: #0d0d0d; color: #999; }
+  .item-arquivo.selecionado { background: #0d1a0d; color: #3a3; }
+  .item-arquivo[draggable="true"] { cursor: grab; }
+  .item-arquivo[draggable="true"]:active { cursor: grabbing; }
+  .item-arquivo.arrastando { opacity: 0.4; }
+
+  .arq-icone { font-size: 14px; flex-shrink: 0; }
+  .arq-nome  { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .arq-tam   { font-size: 10px; color: #2a2a2a; flex-shrink: 0; }
+
+  /* ── Painel direito: dispositivos ── */
+  .selector-dispositivo {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  #select-usb {
+    flex: 1;
+    background: #0a0a0a;
+    border: 1px solid #141414;
+    border-radius: 2px;
+    color: #444;
+    font-size: 11px;
+    font-family: inherit;
+    padding: 4px 8px;
+  }
+  #select-usb option { background: #0a0a0a; }
+  .btn-acao-usb {
+    padding: 4px 10px;
+    font-size: 10px;
+    font-family: inherit;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 2px;
+    color: #333;
+    cursor: pointer;
+  }
+  .btn-acao-usb:hover { color: #666; background: #0f0f0f; }
+  .btn-acao-usb.ejetar { color: #2a2a2a; }
+  .btn-acao-usb.ejetar:hover { color: #844; }
+
+  /* ── Vazio / carregando ── */
+  .vazio {
+    color: #1a1a1a;
+    font-size: 11px;
+    padding: 20px 0;
+    text-align: center;
+    letter-spacing: 1px;
+  }
 
   /* ── Rodapé ── */
   #rodape {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 8px 14px;
+    flex-shrink: 0;
+    border-top: 1px solid #0a0a0a;
   }
   #status-bar {
     font-size: 10px;
-    color: #222;
+    color: #1e1e1e;
     letter-spacing: 1px;
   }
   #btn-atualizar {
-    padding: 6px 16px;
-    background: #0d0d0d;
-    border: 1px solid #1a1a1a;
+    padding: 5px 14px;
+    background: #0a0a0a;
+    border: 1px solid #161616;
     border-radius: 2px;
-    color: #444;
-    font-size: 11px;
+    color: #333;
+    font-size: 10px;
     font-family: inherit;
     cursor: pointer;
+    letter-spacing: 1px;
   }
-  #btn-atualizar:hover { background: #111; color: #777; }
+  #btn-atualizar:hover { background: #111; color: #666; }
 </style>
 </head>
 <body>
@@ -186,148 +232,398 @@
 <div id="app">
 
   <!-- Cabeçalho -->
-  <div class="cabecalho">
+  <div id="cabecalho">
     <div class="titulo">Arquivos</div>
     <button id="btn-fechar" onclick="fechar()">✕</button>
   </div>
 
-  <!-- Dispositivos USB -->
-  <div>
-    <div class="secao-titulo">Dispositivos USB</div>
-    <div id="lista-usb">
-      <div class="vazio">Verificando dispositivos...</div>
-    </div>
-  </div>
+  <!-- Painéis -->
+  <div id="paineis">
 
-  <!-- Conteúdo do dispositivo montado -->
-  <div id="area-conteudo">
-    <div id="caminho-atual">Selecione um dispositivo para visualizar o conteúdo</div>
-    <div id="lista-arquivos"></div>
+    <!-- Painel esquerdo: armazenamento interno -->
+    <div class="painel" id="painel-esquerdo">
+      <div class="painel-header">
+        <div class="painel-titulo">Armazenamento</div>
+        <div class="breadcrumb" id="breadcrumb-interno"></div>
+      </div>
+      <div class="atalhos">
+        <button class="btn-atalho" onclick="navInterno('/home/jett')">Home</button>
+        <button class="btn-atalho" onclick="navInterno('/home/jett/Downloads')">Downloads</button>
+        <button class="btn-atalho" onclick="navInterno('/home/jett/Documentos')">Documentos</button>
+        <button class="btn-atalho" onclick="navInterno('/home/jett/Imagens')">Imagens</button>
+      </div>
+      <div class="lista-arquivos" id="lista-interno"
+           ondragover="dragOver(event,'interno')"
+           ondragleave="dragLeave(event,'interno')"
+           ondrop="drop(event,'interno')">
+        <div class="vazio">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Painel direito: mídia removível -->
+    <div class="painel" id="painel-direito">
+      <div class="painel-header">
+        <div class="painel-titulo">Removível</div>
+        <div class="selector-dispositivo">
+          <select id="select-usb" onchange="selecionarDispositivo()">
+            <option value="">— selecione —</option>
+          </select>
+          <button class="btn-acao-usb" onclick="montarSelecionado()">Montar</button>
+          <button class="btn-acao-usb ejetar" onclick="ejetarSelecionado()">Ejetar</button>
+        </div>
+        <div class="breadcrumb" id="breadcrumb-removivel"></div>
+      </div>
+      <div class="lista-arquivos" id="lista-removivel"
+           ondragover="dragOver(event,'removivel')"
+           ondragleave="dragLeave(event,'removivel')"
+           ondrop="drop(event,'removivel')">
+        <div class="vazio">Nenhum dispositivo selecionado</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Rodapé -->
   <div id="rodape">
     <span id="status-bar">—</span>
-    <button id="btn-atualizar" onclick="carregarDispositivos()">Atualizar</button>
+    <button id="btn-atualizar" onclick="atualizar()">Atualizar</button>
   </div>
 
 </div>
 
 <script>
-let dispositivoAtivo = null;
+// ── Estado ────────────────────────────────────────────────────────────────────
+const estado = {
+  caminhoInterno:    '/home/jett',
+  caminhoRemovivel:  null,
+  dispositivos:      [],   // { dispositivo, tamanho, montagem|null }
+  dispositivoAtivo:  null, // objeto do dispositivo selecionado
+  arrastando:        null, // { caminho, painel }
+};
 
-// ── Dispositivos USB ──────────────────────────────────────────────────────────
-async function carregarDispositivos() {
-  const lista = document.getElementById('lista-usb');
-  lista.innerHTML = '<div class="vazio">Verificando...</div>';
+// ── Painel interno ────────────────────────────────────────────────────────────
+async function navInterno(caminho) {
+  estado.caminhoInterno = caminho;
+  atualizarBreadcrumb('interno', caminho);
+  await listarPainel('interno', caminho);
+}
 
+async function listarPainel(painel, caminho) {
+  const listaEl = document.getElementById(`lista-${painel}`);
+  listaEl.innerHTML = '<div class="vazio">Lendo...</div>';
   try {
-    const res = await fetch('/api/usb/list');
+    const res = await fetch('/api/files/list?path=' + encodeURIComponent(caminho));
     const dados = await res.json();
-    const devs = dados.dispositivos || [];
-
-    if (!devs.length) {
-      lista.innerHTML = '<div class="vazio">Nenhum dispositivo USB detectado</div>';
-      atualizarStatus('Nenhum dispositivo USB');
+    if (dados.erro) {
+      listaEl.innerHTML = `<div class="vazio">${dados.erro}</div>`;
       return;
     }
-
-    lista.innerHTML = devs.map(dev => {
-      const montado = !!dev.montagem;
-      return `
-        <div class="item-usb">
-          <div class="usb-icone">💾</div>
-          <div class="usb-info">
-            <div class="usb-nome">${dev.dispositivo}</div>
-            <div class="usb-detalhe">${dev.tamanho}${montado ? ` — montado em ${dev.montagem}` : ''}</div>
-          </div>
-          <div class="usb-acoes">
-            ${montado
-              ? `<button class="btn-usb montado" onclick="verConteudo('${dev.dispositivo}','${dev.montagem}')">Abrir</button>
-                 <button class="btn-usb" onclick="desmontar('${dev.dispositivo}','${dev.montagem}')">Ejetar</button>`
-              : `<button class="btn-usb" onclick="montar('${dev.dispositivo}')">Montar</button>`
-            }
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    atualizarStatus(`${devs.length} dispositivo(s) encontrado(s)`);
+    // bridge retorna { caminho, entradas: [{nome, tipo, tamanho}] }
+    const entradas = dados.entradas || [];
+    if (!entradas.length) {
+      listaEl.innerHTML = '<div class="vazio">Pasta vazia</div>';
+      return;
+    }
+    // Adiciona campo caminho completo a cada entrada
+    const itens = entradas.map(e => ({
+      ...e,
+      caminho: caminho.replace(/\/$/, '') + '/' + e.nome,
+    }));
+    renderListaArquivos(listaEl, itens, painel, caminho);
   } catch(e) {
-    lista.innerHTML = '<div class="vazio">Erro ao carregar dispositivos</div>';
+    listaEl.innerHTML = '<div class="vazio">Erro ao listar</div>';
   }
 }
 
-async function montar(dispositivo) {
-  atualizarStatus(`Montando ${dispositivo}...`);
+function renderListaArquivos(el, itens, painel, caminhoBase) {
+  // Entrada para subir um nível
+  let html = '';
+  const partes = caminhoBase.split('/').filter(Boolean);
+  if (partes.length > 1) {
+    const pai = '/' + partes.slice(0, -1).join('/');
+    const navFn = painel === 'interno'
+      ? `navInterno('${escapar(pai)}')`
+      : `navRemovivel('${escapar(pai)}')`;
+    html += `
+      <div class="item-arquivo" onclick="${navFn}">
+        <span class="arq-icone">↩</span>
+        <span class="arq-nome" style="color:#2a2a2a">..</span>
+      </div>`;
+  }
+
+  itens.forEach(item => {
+    const caminho = item.caminho;
+    const nome    = item.nome;
+    const ehDir   = item.tipo === 'dir';
+    const icone   = ehDir ? '📁' : iconeArquivo(nome);
+    const tam     = ehDir ? '' : formatarTamanho(item.tamanho || 0);
+
+    const clicavel = ehDir
+      ? (painel === 'interno'
+          ? `navInterno('${escapar(caminho)}')`
+          : `navRemovivel('${escapar(caminho)}')`)
+      : '';
+
+    html += `
+      <div class="item-arquivo"
+           draggable="true"
+           data-caminho="${escapar(caminho)}"
+           data-painel="${painel}"
+           onclick="${clicavel}"
+           ondragstart="dragStart(event,'${escapar(caminho)}','${painel}')"
+           ondragend="dragEnd(event)">
+        <span class="arq-icone">${icone}</span>
+        <span class="arq-nome">${escaparHtml(nome)}</span>
+        ${tam ? `<span class="arq-tam">${tam}</span>` : ''}
+      </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ── Painel direito: removível ─────────────────────────────────────────────────
+async function carregarDispositivos() {
+  try {
+    const res = await fetch('/api/usb/list');
+    const dados = await res.json();
+    estado.dispositivos = dados.dispositivos || [];
+    renderSeletorUSB();
+  } catch(e) {
+    estado.dispositivos = [];
+    renderSeletorUSB();
+  }
+}
+
+function renderSeletorUSB() {
+  const sel = document.getElementById('select-usb');
+  const devs = estado.dispositivos;
+  sel.innerHTML = '<option value="">— selecione —</option>' +
+    devs.map(d => {
+      const label = d.montagem
+        ? `${d.dispositivo} (montado: ${d.montagem})`
+        : `${d.dispositivo} ${d.tamanho ? '[' + d.tamanho + ']' : ''}`;
+      return `<option value="${escaparHtml(d.dispositivo)}">${escaparHtml(label)}</option>`;
+    }).join('');
+
+  // Reseleciona o dispositivo ativo se ainda existir
+  if (estado.dispositivoAtivo) {
+    sel.value = estado.dispositivoAtivo.dispositivo;
+  }
+}
+
+async function selecionarDispositivo() {
+  const sel = document.getElementById('select-usb');
+  const dev = estado.dispositivos.find(d => d.dispositivo === sel.value);
+  estado.dispositivoAtivo = dev || null;
+
+  if (!dev) {
+    document.getElementById('lista-removivel').innerHTML =
+      '<div class="vazio">Nenhum dispositivo selecionado</div>';
+    atualizarBreadcrumb('removivel', '');
+    estado.caminhoRemovivel = null;
+    return;
+  }
+
+  if (dev.montagem) {
+    await navRemovivel(dev.montagem);
+  } else {
+    document.getElementById('lista-removivel').innerHTML =
+      '<div class="vazio">Dispositivo não montado — clique em Montar</div>';
+    atualizarBreadcrumb('removivel', '');
+    estado.caminhoRemovivel = null;
+  }
+}
+
+async function montarSelecionado() {
+  const sel = document.getElementById('select-usb');
+  if (!sel.value) { atualizarStatus('Selecione um dispositivo'); return; }
+  atualizarStatus(`Montando ${sel.value}...`);
   try {
     const res = await fetch('/api/usb/mount', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ device: dispositivo }),
+      body: JSON.stringify({ device: sel.value }),
     });
     const dados = await res.json();
     if (dados.ok) {
       await carregarDispositivos();
-      if (dados.montagem) verConteudo(dispositivo, dados.montagem);
+      if (dados.montagem) await navRemovivel(dados.montagem);
+      atualizarStatus('Dispositivo montado');
     } else {
       atualizarStatus(`Erro: ${dados.erro || 'falha ao montar'}`);
     }
   } catch(e) {
-    atualizarStatus('Erro ao montar dispositivo');
+    atualizarStatus('Erro ao montar');
   }
 }
 
-async function desmontar(dispositivo, ponto) {
-  atualizarStatus(`Ejetando ${dispositivo}...`);
+async function ejetarSelecionado() {
+  const dev = estado.dispositivoAtivo;
+  if (!dev || !dev.montagem) { atualizarStatus('Dispositivo não montado'); return; }
+  atualizarStatus(`Ejetando ${dev.dispositivo}...`);
   try {
     const res = await fetch('/api/usb/unmount', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ point: dispositivo }),
+      // bridge usa udisksctl unmount -b <dispositivo>, não o ponto de montagem
+      body: JSON.stringify({ point: dev.dispositivo }),
     });
     const dados = await res.json();
     if (dados.ok) {
-      if (dispositivoAtivo === dispositivo) limparConteudo();
+      estado.dispositivoAtivo = null;
+      estado.caminhoRemovivel = null;
+      document.getElementById('lista-removivel').innerHTML =
+        '<div class="vazio">Dispositivo ejetado</div>';
+      atualizarBreadcrumb('removivel', '');
       await carregarDispositivos();
-      atualizarStatus('Dispositivo ejetado com segurança');
+      atualizarStatus('Ejetado com segurança');
     } else {
       atualizarStatus(`Erro: ${dados.erro || 'falha ao ejetar'}`);
     }
   } catch(e) {
-    atualizarStatus('Erro ao ejetar dispositivo');
+    atualizarStatus('Erro ao ejetar');
   }
 }
 
-// ── Conteúdo do dispositivo ───────────────────────────────────────────────────
-async function verConteudo(dispositivo, caminho) {
-  dispositivoAtivo = dispositivo;
-  document.getElementById('caminho-atual').textContent = caminho;
-  document.getElementById('lista-arquivos').innerHTML =
-    '<div style="color:#222;font-size:11px;padding:8px 0">Lendo...</div>';
-
-  // Nota: listagem de arquivos via fetch API local não é suportada diretamente.
-  // Mostra o caminho de montagem para o usuário acessar via terminal se necessário.
-  document.getElementById('lista-arquivos').innerHTML = `
-    <div class="item-arquivo">
-      <span class="arq-icone">📂</span>
-      <span class="arq-nome">${caminho}</span>
-    </div>
-    <div style="margin-top:12px;color:#1a1a1a;font-size:10px;letter-spacing:1px">
-      DISPOSITIVO MONTADO — ACESSE PELO TERMINAL OU PELO NAVEGADOR
-    </div>
-  `;
-  atualizarStatus(`Montado em: ${caminho}`);
+async function navRemovivel(caminho) {
+  estado.caminhoRemovivel = caminho;
+  atualizarBreadcrumb('removivel', caminho);
+  await listarPainel('removivel', caminho);
 }
 
-function limparConteudo() {
-  dispositivoAtivo = null;
-  document.getElementById('caminho-atual').textContent =
-    'Selecione um dispositivo para visualizar o conteúdo';
-  document.getElementById('lista-arquivos').innerHTML = '';
+// ── Drag and Drop ─────────────────────────────────────────────────────────────
+function dragStart(event, caminho, painel) {
+  estado.arrastando = { caminho, painel };
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', caminho);
+  event.currentTarget.classList.add('arrastando');
+}
+
+function dragEnd(event) {
+  event.currentTarget.classList.remove('arrastando');
+}
+
+function dragOver(event, painel) {
+  // Só aceita drop se vier do painel oposto
+  if (!estado.arrastando || estado.arrastando.painel === painel) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  document.getElementById(`lista-${painel}`).classList.add('drag-over');
+}
+
+function dragLeave(event, painel) {
+  // Verifica se saiu do contêiner (não apenas para um filho)
+  const el = document.getElementById(`lista-${painel}`);
+  if (!el.contains(event.relatedTarget)) {
+    el.classList.remove('drag-over');
+  }
+}
+
+async function drop(event, painelDestino) {
+  event.preventDefault();
+  const listaEl = document.getElementById(`lista-${painelDestino}`);
+  listaEl.classList.remove('drag-over');
+
+  if (!estado.arrastando || estado.arrastando.painel === painelDestino) return;
+
+  const src = estado.arrastando.caminho;
+  const dstDir = painelDestino === 'interno'
+    ? estado.caminhoInterno
+    : estado.caminhoRemovivel;
+
+  estado.arrastando = null;
+
+  if (!dstDir) {
+    atualizarStatus('Pasta de destino não selecionada');
+    return;
+  }
+
+  const nome = src.split('/').pop();
+  const dst  = dstDir.replace(/\/$/, '') + '/' + nome;
+
+  atualizarStatus(`Movendo ${nome}...`);
+  try {
+    const res = await fetch('/api/files/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ src, dst }),
+    });
+    const dados = await res.json();
+    if (dados.ok) {
+      atualizarStatus(`${nome} movido`);
+      // Recarrega ambos os painéis
+      await Promise.all([
+        listarPainel('interno', estado.caminhoInterno),
+        estado.caminhoRemovivel
+          ? listarPainel('removivel', estado.caminhoRemovivel)
+          : Promise.resolve(),
+      ]);
+    } else {
+      atualizarStatus(`Erro: ${dados.erro || 'falha ao mover'}`);
+    }
+  } catch(e) {
+    atualizarStatus('Erro ao mover arquivo');
+  }
+}
+
+// ── Breadcrumb ────────────────────────────────────────────────────────────────
+function atualizarBreadcrumb(painel, caminho) {
+  const el = document.getElementById(`breadcrumb-${painel}`);
+  if (!caminho) { el.innerHTML = ''; return; }
+
+  const partes = caminho.split('/').filter(Boolean);
+  let html = '';
+  partes.forEach((parte, i) => {
+    const ate = '/' + partes.slice(0, i + 1).join('/');
+    const ultimo = i === partes.length - 1;
+    if (i > 0) html += '<span class="breadcrumb-sep">/</span>';
+    if (ultimo) {
+      html += `<span class="breadcrumb-parte atual">${escaparHtml(parte)}</span>`;
+    } else {
+      const fn = painel === 'interno'
+        ? `navInterno('${escapar(ate)}')`
+        : `navRemovivel('${escapar(ate)}')`;
+      html += `<span class="breadcrumb-parte" onclick="${fn}">${escaparHtml(parte)}</span>`;
+    }
+  });
+  el.innerHTML = html;
 }
 
 // ── Utilitários ───────────────────────────────────────────────────────────────
+function iconeArquivo(nome) {
+  const ext = nome.split('.').pop().toLowerCase();
+  const mapa = {
+    pdf: '📄', txt: '📝', md: '📝',
+    jpg: '🖼', jpeg: '🖼', png: '🖼', gif: '🖼', webp: '🖼', svg: '🖼',
+    mp4: '🎬', mkv: '🎬', avi: '🎬', mov: '🎬', webm: '🎬',
+    mp3: '🎵', ogg: '🎵', flac: '🎵', wav: '🎵',
+    zip: '🗜', tar: '🗜', gz: '🗜', bz2: '🗜', xz: '🗜', rar: '🗜',
+    sh: '⚙', py: '⚙', js: '⚙', html: '⚙', css: '⚙',
+    deb: '📦', rpm: '📦', appimage: '📦',
+  };
+  return mapa[ext] || '📄';
+}
+
+function formatarTamanho(bytes) {
+  if (bytes === 0) return '0 B';
+  const unidades = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + unidades[i];
+}
+
+function escapar(str) {
+  // Escapa aspas simples para uso em onclick inline
+  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function escaparHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function atualizarStatus(msg) {
   document.getElementById('status-bar').textContent = msg;
 }
@@ -336,12 +632,31 @@ function fechar() {
   try { window.close(); } catch(e) {}
 }
 
+async function atualizar() {
+  atualizarStatus('Atualizando...');
+  await Promise.all([
+    carregarDispositivos(),
+    listarPainel('interno', estado.caminhoInterno),
+  ]);
+  if (estado.caminhoRemovivel) {
+    await listarPainel('removivel', estado.caminhoRemovivel);
+  }
+  atualizarStatus('Atualizado');
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') fechar();
 });
 
 // ── Inicialização ─────────────────────────────────────────────────────────────
-carregarDispositivos();
+(async () => {
+  atualizarBreadcrumb('interno', '/home/jett');
+  await Promise.all([
+    navInterno('/home/jett'),
+    carregarDispositivos(),
+  ]);
+  atualizarStatus('—');
+})();
 </script>
 </body>
 </html>
