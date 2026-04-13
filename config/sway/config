@@ -32,6 +32,7 @@ set $jett_conf          /etc/jett-os/navegador.conf
 set $jett_exit_confirm  /usr/local/bin/jett-exit-confirm
 set $jett_nav_toggle    /usr/local/bin/jett-nav-toggle
 set $jett_menu_toggle   /usr/local/bin/jett-menu-toggle
+set $jett_firstboot     /usr/local/bin/jett-firstboot
 
 # ─────────────────────────────────────────────────────────────────────────────
 # APARÊNCIA — ZERO DECORAÇÕES
@@ -162,6 +163,18 @@ for_window [title="^Jett OS — Menu"] {
     focus
 }
 
+# Wizard de primeiro boot — flutuante centralizado 700×520
+# Aberto pelo jett-firstboot na primeira inicialização do sistema.
+# O floating enable sobrescreve a regra fullscreen do browser (app_id).
+for_window [title="^Jett OS — Wizard"] {
+    floating   enable
+    fullscreen disable
+    border     none
+    resize     set 700 520
+    move       position center
+    focus
+}
+
 # Assistente de configuração — overlay centralizado 700×500
 for_window [title="^Jett OS — Config"] {
     floating   enable
@@ -279,40 +292,12 @@ exec pulseaudio --start --daemonize=no
 # ── XDG autostart (compatibilidade com apps que usam xdg-open) ───────────────
 exec /usr/lib/xdg-user-dirs-update 2>/dev/null || true
 
-# ── Inicia o navegador configurado ───────────────────────────────────────────
-# Lê o navegador de /etc/jett-os/navegador.conf e o inicia.
-# Aguarda o jett-ui-server estar disponível em 127.0.0.1:1312 antes de abrir
-# o navegador, garantindo que as interfaces HTML já respondem quando ele subir.
-#
-# Comportamento:
-#   1. Aguarda até 5s pelo jett-ui-server (10 tentativas × 0.5s)
-#   2. Lê JETT_NAVEGADOR_CMD de navegador.conf
-#   3. Se o arquivo não existir, usa firefox como fallback
-#   4. Se o binário não for encontrado, exibe mensagem no sway log
-exec bash -c '\
-    # Aguarda o jett-ui-server estar pronto na porta 1312 \
-    for i in $(seq 1 10); do \
-        curl -sf http://127.0.0.1:1312/api/status >/dev/null 2>&1 && break; \
-        sleep 0.5; \
-    done; \
-    \
-    # Carrega a configuração do navegador \
-    if [[ -f /etc/jett-os/navegador.conf ]]; then \
-        source /etc/jett-os/navegador.conf; \
-    fi; \
-    \
-    # Usa a variável de comando ou fallback para firefox \
-    CMD="${JETT_NAVEGADOR_CMD:-firefox --kiosk}"; \
-    \
-    # Verifica se o navegador está instalado antes de tentar iniciar \
-    BINARIO=$(echo "$CMD" | awk "{print \$1}"); \
-    if command -v "$BINARIO" >/dev/null 2>&1; then \
-        exec ${CMD}; \
-    else \
-        # Fallback final: firefox \
-        exec firefox --kiosk 2>/dev/null \
-            || echo "[jett-sway] ERRO: nenhum navegador encontrado" >&2; \
-    fi'
+# ── Inicia o sistema (firstboot ou kiosk direto) ─────────────────────────────
+# jett-firstboot verifica /etc/jett-os/firstboot.done:
+#   - Se não existe: abre o wizard de configuração inicial e aguarda
+#   - Se existe: inicia diretamente o navegador kiosk configurado
+# O script já inclui a espera pelo jett-ui-server (127.0.0.1:1312).
+exec $jett_firstboot
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SEAT — Permissões de dispositivo de entrada

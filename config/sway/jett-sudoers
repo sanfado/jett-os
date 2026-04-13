@@ -2,13 +2,14 @@
 # jett-sudoers — Configuração de privilégios para o Jett OS
 # =============================================================================
 # Localização no sistema: /etc/sudoers.d/jett-launcher
-# Instalado por: launcher/install-launcher.sh ou build-base.sh
+# Instalado por: build/base/04-user.sh
 #
-# Permite que o usuário 'jett' execute jett-switch.sh como root SEM senha.
-# Necessário porque jett-switch.sh precisa escrever em /etc/jett-os/ (root).
+# Regras concedidas ao usuário 'jett':
+#   1. jett-switch.sh   — troca de navegador padrão (escreve /etc/jett-os/)
+#   2. tee firstboot.done — wizard de primeiro boot cria o marcador em /etc/
+#   3. chpasswd         — wizard de primeiro boot define a senha do admin
 #
-# IMPORTANTE: o path deve corresponder EXATAMENTE ao instalado pelo
-# install-launcher.sh (/usr/local/bin/jett-switch.sh).
+# IMPORTANTE: os paths devem corresponder EXATAMENTE aos binários instalados.
 #
 # Instalação manual:
 #   sudo cp config/sway/jett-sudoers /etc/sudoers.d/jett-launcher
@@ -17,6 +18,13 @@
 # =============================================================================
 
 # Permite que jett execute jett-switch.sh como root, sem senha, sem TTY
-# O caminho deve ser absoluto e corresponder ao binário instalado
 Defaults!/usr/local/bin/jett-switch.sh !requiretty
 jett ALL=(root) NOPASSWD: /usr/local/bin/jett-switch.sh
+
+# Permite que o wizard de primeiro boot crie o marcador em /etc/jett-os/
+Defaults!/usr/bin/tee !requiretty
+jett ALL=(root) NOPASSWD: /usr/bin/tee /etc/jett-os/firstboot.done
+
+# Permite que o wizard de primeiro boot defina a senha do admin sem senha
+Defaults!/usr/sbin/chpasswd !requiretty
+jett ALL=(root) NOPASSWD: /usr/sbin/chpasswd

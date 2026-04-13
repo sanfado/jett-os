@@ -41,6 +41,10 @@
 #   GET  /api/pwas/list            → PWAs instalados
 #   GET  /api/devices/gamepads     → gamepads detectados
 #   POST /api/window/open          → abre janela browser --app=URL (body: {"url":"..."})
+#   GET  /api/wizard/install-browsers → progresso da instalação em andamento
+#   POST /api/wizard/install-browsers → inicia instalação de navegador (body: {"nav":"brave"})
+#   POST /api/wizard/complete      → salva escolhas e cria firstboot.done
+#   POST /api/wizard/set-admin-password → define senha admin (body: {"senha":"..."})
 #   POST /api/volume/up            → aumenta volume 5%
 #   POST /api/volume/down          → diminui volume 5%
 #   POST /api/volume/mute          → alterna mudo
@@ -300,6 +304,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(dados)
             return
 
+        if caminho == '/api/wizard/install-browsers':
+            self.responder_json(bridge('wizard', 'install_status'))
+            return
+
         if caminho == '/api/files/list':
             params = parse_qs(parsed.query)
             path = params.get('path', ['/home/jett'])[0]
@@ -452,6 +460,26 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(bridge('window', 'open', url))
             else:
                 self.responder_json({'erro': 'campo "url" ausente'}, 400)
+
+        # Wizard
+        elif caminho == '/api/wizard/install-browsers':
+            corpo = self.ler_corpo_json()
+            nav = corpo.get('nav', 'firefox')
+            self.responder_json(bridge('wizard', 'install_browsers', nav))
+
+        elif caminho == '/api/wizard/complete':
+            corpo = self.ler_corpo_json()
+            nav   = corpo.get('nav', '')
+            senha = corpo.get('senha', '')
+            self.responder_json(bridge('wizard', 'complete', nav, senha))
+
+        elif caminho == '/api/wizard/set-admin-password':
+            corpo = self.ler_corpo_json()
+            senha = corpo.get('senha', '')
+            if senha:
+                self.responder_json(bridge('wizard', 'set_admin_password', senha))
+            else:
+                self.responder_json({'erro': 'campo "senha" ausente'}, 400)
 
         # Nav — controle da barra de navegação via xdotool
         elif caminho == '/api/nav/navigate':

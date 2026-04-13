@@ -58,6 +58,7 @@ SWAYMIN
         ["launcher/scripts/jett-bridge.sh"]="jett-bridge"
         ["launcher/scripts/jett-nav-toggle.sh"]="jett-nav-toggle"
         ["launcher/scripts/jett-menu-toggle.sh"]="jett-menu-toggle"
+        ["launcher/scripts/jett-firstboot.sh"]="jett-firstboot"
         ["launcher/server/jett-ui-server.py"]="jett-ui-server"
     )
 

@@ -2,368 +2,601 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Jett OS — Config</title>
+<title>Jett OS — Wizard</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html, body {
-    width: 700px;
-    height: 500px;
-    overflow: hidden;
-    background: #000;
-    color: #fff;
-    font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
-    font-size: 13px;
-    user-select: none;
-    -webkit-user-select: none;
-  }
+html, body {
+  width: 700px; height: 520px;
+  overflow: hidden;
+  background: #000; color: #fff;
+  font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
+  font-size: 13px;
+  user-select: none; -webkit-user-select: none;
+}
 
-  #wizard {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 32px 40px 24px;
-  }
+#wizard {
+  display: flex; flex-direction: column;
+  height: 100%; padding: 28px 48px 22px;
+}
 
-  /* ── Indicador de etapas ── */
-  #etapas {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    margin-bottom: 32px;
-  }
-  .etapa-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #1a1a1a;
-    flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .etapa-dot.atual  { background: #fff; }
-  .etapa-dot.feita  { background: #555; }
-  .etapa-linha {
-    flex: 1;
-    height: 1px;
-    background: #111;
-  }
+/* ── Barra de progresso ─────────────────────────────────────────────────── */
+#barra-progresso {
+  display: flex; align-items: flex-start;
+  margin-bottom: 36px; flex-shrink: 0;
+}
+.passo-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+.passo-circulo {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: bold;
+  background: #0d0d0d; color: #282828; border: 1px solid #141414;
+  transition: all 0.25s;
+}
+.passo-circulo.ativo { background: #fff; color: #000; border-color: #fff; }
+.passo-circulo.feito { background: #1e1e1e; color: #555; border-color: #1e1e1e; }
+.passo-label { font-size: 9px; color: #1c1c1c; letter-spacing: 1px; text-transform: uppercase; transition: color 0.25s; }
+.passo-label.ativo { color: #555; }
+.passo-linha { flex: 1; height: 1px; background: #0f0f0f; margin-top: 12px; }
 
-  /* ── Conteúdo da etapa ── */
-  .etapa-conteudo { display: none; flex: 1; flex-direction: column; }
-  .etapa-conteudo.visivel { display: flex; }
+/* ── Conteúdo ───────────────────────────────────────────────────────────── */
+.etapa { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.etapa.visivel { display: flex; }
 
-  .etapa-titulo {
-    font-size: 22px;
-    font-weight: bold;
-    color: #fff;
-    margin-bottom: 8px;
-  }
-  .etapa-desc {
-    font-size: 12px;
-    color: #444;
-    margin-bottom: 28px;
-    line-height: 1.6;
-  }
+/* ── Etapa 0: Boas-vindas ────────────────────────────────────────────────── */
+#logo-j { font-size: 80px; font-weight: 900; line-height: 1; color: #fff; letter-spacing: -4px; margin-bottom: 8px; }
+.titulo-os { font-size: 10px; letter-spacing: 9px; color: #282828; text-transform: uppercase; margin-bottom: 28px; }
+.tagline { font-size: 16px; color: #444; margin-bottom: 36px; font-style: italic; }
+.lista-passos { display: flex; flex-direction: column; gap: 10px; }
+.lista-passos li {
+  color: #1e1e1e; font-size: 11px; list-style: none;
+  padding-left: 18px; position: relative;
+}
+.lista-passos li::before { content: '→'; position: absolute; left: 0; color: #1a1a1a; }
 
-  /* ── Formulário de rede ── */
-  .campo { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-  .campo label { font-size: 10px; letter-spacing: 2px; color: #333; text-transform: uppercase; }
-  .campo input, .campo select {
-    background: #0d0d0d;
-    border: 1px solid #1e1e1e;
-    border-radius: 2px;
-    color: #fff;
-    font-family: inherit;
-    font-size: 13px;
-    padding: 9px 12px;
-    outline: none;
-  }
-  .campo input:focus, .campo select:focus { border-color: #333; }
-  .campo select option { background: #0d0d0d; }
+/* ── Etapa 1: Rede ───────────────────────────────────────────────────────── */
+.etapa-titulo { font-size: 19px; font-weight: bold; margin-bottom: 5px; }
+.etapa-sub { font-size: 11px; color: #2a2a2a; margin-bottom: 18px; }
 
-  /* ── Seleção de navegador ── */
-  #grade-navs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 4px;
-  }
-  .card-nav {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 16px 10px;
-    background: #0d0d0d;
-    border: 1px solid #1a1a1a;
-    border-radius: 3px;
-    cursor: pointer;
-    color: #666;
-    font-size: 12px;
-    text-align: center;
-    transition: all 0.15s;
-  }
-  .card-nav:hover { background: #111; border-color: #2a2a2a; color: #aaa; }
-  .card-nav.selecionado {
-    background: #fff;
-    border-color: #fff;
-    color: #000;
-    font-weight: bold;
-  }
-  .card-nav.nao-instalado { opacity: 0.35; cursor: default; }
-  .card-nav .icone { font-size: 20px; }
-  .card-nav .versao { font-size: 10px; color: #aaa; font-weight: normal; }
-  .card-nav.selecionado .versao { color: #555; }
+.status-rede {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; margin-bottom: 18px;
+  background: #080808; border: 1px solid #111; border-radius: 3px; font-size: 12px;
+}
+.indicador { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #1a1a1a; }
+.indicador.ok    { background: #2a7a2a; box-shadow: 0 0 6px #2a7a2a88; }
+.indicador.erro  { background: #7a2a2a; }
+.indicador.esperando { background: #333; animation: pulsar 1.5s infinite; }
+@keyframes pulsar { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 
-  /* ── Rodapé com botões ── */
-  #rodape {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: auto;
-    padding-top: 16px;
-    border-top: 1px solid #0d0d0d;
-  }
+#wifi-lista-wrapper { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.wifi-sec-label { font-size: 10px; letter-spacing: 2px; color: #1e1e1e; text-transform: uppercase; margin-bottom: 6px; }
+#wifi-redes-wiz { flex: 1; overflow-y: auto; }
+.rede-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: #080808; border: 1px solid #0f0f0f;
+  border-radius: 2px; margin-bottom: 3px; cursor: pointer; transition: border-color 0.15s;
+}
+.rede-item:hover { border-color: #1e1e1e; }
+.rede-item.ativo { border-color: #2a7a2a; }
+.rede-nome { font-size: 12px; }
+.rede-info { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #282828; }
 
-  button {
-    padding: 9px 24px;
-    font-size: 12px;
-    font-family: inherit;
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
-  }
-  #btn-anterior {
-    background: #111;
-    color: #444;
-    border: 1px solid #1e1e1e;
-  }
-  #btn-anterior:hover { color: #777; }
-  #btn-proximo {
-    background: #fff;
-    color: #000;
-    font-weight: bold;
-  }
-  #btn-proximo:hover { background: #e0e0e0; }
-  #btn-proximo:disabled { background: #1a1a1a; color: #333; cursor: default; }
+#wifi-senha-form-wiz {
+  display: none; margin-top: 8px; padding: 11px 12px;
+  background: #080808; border: 1px solid #0f0f0f; border-radius: 2px;
+}
+#wifi-senha-form-wiz label { font-size: 10px; letter-spacing: 2px; color: #2a2a2a; text-transform: uppercase; display: block; margin-bottom: 5px; }
+#wifi-senha-wiz {
+  width: 100%; background: #000; border: 1px solid #1a1a1a; border-radius: 2px;
+  color: #fff; font-family: inherit; font-size: 13px; padding: 7px 10px; outline: none;
+}
+#wifi-senha-wiz:focus { border-color: #2e2e2e; }
+
+/* ── Etapa 2: Navegador ──────────────────────────────────────────────────── */
+#grade-navs-wiz {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 8px; margin-bottom: 18px;
+}
+.card-nav-wiz {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; padding: 14px 6px;
+  background: #080808; border: 1px solid #0f0f0f; border-radius: 3px;
+  cursor: pointer; text-align: center; transition: all 0.15s;
+}
+.card-nav-wiz:hover { border-color: #1e1e1e; background: #0d0d0d; }
+.card-nav-wiz.selecionado { background: #fff; border-color: #fff; color: #000; font-weight: bold; }
+.card-nav-wiz .icone { font-size: 22px; }
+.card-nav-wiz .cnome { font-size: 10px; color: #444; }
+.card-nav-wiz.selecionado .cnome { color: #555; }
+.card-nav-wiz .csite { font-size: 9px; color: #1e1e1e; }
+.card-nav-wiz.selecionado .csite { color: #888; }
+
+#instalar-area { flex-shrink: 0; }
+#barra-install-wrap { display: none; height: 2px; background: #0a0a0a; border-radius: 1px; margin-bottom: 7px; overflow: hidden; }
+#barra-install-fill { height: 100%; width: 0%; background: #fff; transition: width 0.5s ease; border-radius: 1px; }
+#instalar-msg { font-size: 10px; color: #2e2e2e; min-height: 14px; }
+
+/* ── Etapa 3: Pronto ─────────────────────────────────────────────────────── */
+#resumo-wiz {
+  padding: 12px 16px; background: #080808; border: 1px solid #0f0f0f;
+  border-radius: 3px; font-size: 11px; line-height: 2.2; color: #333; margin-bottom: 18px;
+}
+#resumo-wiz span { color: #666; }
+
+.campo-senha { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.campo-senha label { font-size: 10px; letter-spacing: 2px; color: #2a2a2a; text-transform: uppercase; }
+.campo-senha input {
+  background: #080808; border: 1px solid #1a1a1a; border-radius: 2px;
+  color: #fff; font-family: inherit; font-size: 13px; padding: 8px 12px; outline: none;
+}
+.campo-senha input:focus { border-color: #2e2e2e; }
+#senha-erro { font-size: 10px; color: #7a2a2a; min-height: 14px; }
+
+/* ── Rodapé ──────────────────────────────────────────────────────────────── */
+#rodape {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 14px; border-top: 1px solid #0a0a0a; margin-top: auto; flex-shrink: 0;
+}
+#btn-pular {
+  font-size: 11px; color: #1e1e1e; background: none; border: none;
+  cursor: pointer; padding: 4px 0; font-family: inherit;
+}
+#btn-pular:hover { color: #383838; }
+.btn-right { display: flex; gap: 8px; margin-left: auto; }
+.btn-sec {
+  padding: 8px 18px; font-size: 12px; font-family: inherit;
+  background: #0d0d0d; color: #383838; border: 1px solid #1a1a1a;
+  border-radius: 2px; cursor: pointer;
+}
+.btn-sec:hover { color: #666; }
+.btn-instalar {
+  padding: 8px 16px; font-size: 12px; font-family: inherit;
+  background: #0d0d0d; color: #444; border: 1px solid #1a1a1a;
+  border-radius: 2px; cursor: pointer; transition: all 0.15s;
+}
+.btn-instalar:hover { color: #777; border-color: #222; }
+.btn-instalar:disabled { opacity: 0.3; cursor: default; }
+.btn-pri {
+  padding: 8px 22px; font-size: 12px; font-family: inherit;
+  background: #fff; color: #000; font-weight: bold; border: none;
+  border-radius: 2px; cursor: pointer;
+}
+.btn-pri:hover { background: #e0e0e0; }
+.btn-pri:disabled { background: #111; color: #333; cursor: default; }
 </style>
 </head>
 <body>
-
 <div id="wizard">
 
-  <!-- Indicador de etapas (4 etapas) -->
-  <div id="etapas">
-    <div class="etapa-dot atual" id="dot-0"></div>
-    <div class="etapa-linha"></div>
-    <div class="etapa-dot" id="dot-1"></div>
-    <div class="etapa-linha"></div>
-    <div class="etapa-dot" id="dot-2"></div>
-    <div class="etapa-linha"></div>
-    <div class="etapa-dot" id="dot-3"></div>
-  </div>
-
-  <!-- Etapa 0: Boas-vindas -->
-  <div class="etapa-conteudo visivel" id="etapa-0">
-    <div class="etapa-titulo">Bem-vindo ao Jett OS</div>
-    <div class="etapa-desc">
-      Configure o sistema em três passos rápidos.<br>
-      Você pode alterar essas configurações a qualquer momento pelo menu de sistema.
+  <!-- Barra de progresso -->
+  <div id="barra-progresso">
+    <div class="passo-item">
+      <div class="passo-circulo ativo" id="pc-0">1</div>
+      <div class="passo-label ativo"  id="pl-0">Início</div>
     </div>
-    <div style="margin-top:12px;color:#222;font-size:11px;line-height:2">
-      <div>→ Rede e DNS</div>
-      <div>→ Navegador padrão</div>
-      <div>→ Pronto para usar</div>
+    <div class="passo-linha"></div>
+    <div class="passo-item">
+      <div class="passo-circulo" id="pc-1">2</div>
+      <div class="passo-label"   id="pl-1">Rede</div>
+    </div>
+    <div class="passo-linha"></div>
+    <div class="passo-item">
+      <div class="passo-circulo" id="pc-2">3</div>
+      <div class="passo-label"   id="pl-2">Navegador</div>
+    </div>
+    <div class="passo-linha"></div>
+    <div class="passo-item">
+      <div class="passo-circulo" id="pc-3">4</div>
+      <div class="passo-label"   id="pl-3">Pronto</div>
     </div>
   </div>
 
-  <!-- Etapa 1: Rede -->
-  <div class="etapa-conteudo" id="etapa-1">
-    <div class="etapa-titulo">Configuração de Rede</div>
-    <div class="etapa-desc">
-      A rede cabeada é configurada automaticamente via DHCP.<br>
-      Você pode definir DNS personalizado abaixo (opcional).
+  <!-- ── Etapa 0: Boas-vindas ─────────────────────────────────────────────── -->
+  <div class="etapa visivel" id="etapa-0">
+    <div id="logo-j">J</div>
+    <div class="titulo-os">Jett  OS</div>
+    <div class="tagline">O sistema é o navegador.</div>
+    <ul class="lista-passos">
+      <li>Configurar conexão de rede</li>
+      <li>Escolher e instalar o navegador padrão</li>
+      <li>Definir senha de administrador</li>
+    </ul>
+  </div>
+
+  <!-- ── Etapa 1: Rede ─────────────────────────────────────────────────────── -->
+  <div class="etapa" id="etapa-1">
+    <div class="etapa-titulo">Conexão de Rede</div>
+    <div class="etapa-sub" id="rede-sub">Verificando conectividade...</div>
+
+    <div class="status-rede">
+      <div class="indicador esperando" id="rede-indicador"></div>
+      <div id="rede-texto">Aguardando...</div>
     </div>
-    <div id="rede-atual" style="margin-bottom:16px;padding:10px;background:#0a0a0a;border:1px solid #111;border-radius:2px;font-size:11px;color:#444">
-      Verificando rede...
-    </div>
-    <div class="campo">
-      <label>DNS Primário (opcional)</label>
-      <input type="text" id="dns1" placeholder="Deixe vazio para usar o padrão (gateway)">
-    </div>
-    <div class="campo">
-      <label>DNS Secundário (opcional)</label>
-      <input type="text" id="dns2" placeholder="8.8.8.8">
+
+    <!-- Lista WiFi — exibida somente quando não há rede cabeada -->
+    <div id="wifi-lista-wrapper">
+      <div class="wifi-sec-label">Redes WiFi disponíveis</div>
+      <div id="wifi-redes-wiz"></div>
+      <div id="wifi-senha-form-wiz">
+        <label>Senha da rede</label>
+        <input type="password" id="wifi-senha-wiz" placeholder="Digite a senha da rede">
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+          <button class="btn-pri" style="padding:6px 14px;font-size:11px"
+                  onclick="wifiConectar()">Conectar</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Etapa 2: Navegador -->
-  <div class="etapa-conteudo" id="etapa-2">
-    <div class="etapa-titulo">Escolha o Navegador</div>
-    <div class="etapa-desc">
-      Selecione o navegador que o sistema usará no modo kiosk.
-    </div>
-    <div id="grade-navs">
-      <div style="color:#333;font-size:11px;grid-column:1/-1">Carregando navegadores...</div>
+  <!-- ── Etapa 2: Navegador ────────────────────────────────────────────────── -->
+  <div class="etapa" id="etapa-2">
+    <div class="etapa-titulo">Navegador Padrão</div>
+    <div class="etapa-sub">Selecione o navegador para o modo kiosk</div>
+
+    <div id="grade-navs-wiz"></div>
+
+    <div id="instalar-area">
+      <div id="barra-install-wrap">
+        <div id="barra-install-fill"></div>
+      </div>
+      <div id="instalar-msg"></div>
     </div>
   </div>
 
-  <!-- Etapa 3: Concluído -->
-  <div class="etapa-conteudo" id="etapa-3">
-    <div class="etapa-titulo">Tudo pronto</div>
-    <div class="etapa-desc">
-      O Jett OS está configurado e pronto para uso.
+  <!-- ── Etapa 3: Pronto ───────────────────────────────────────────────────── -->
+  <div class="etapa" id="etapa-3">
+    <div class="etapa-titulo">Tudo Pronto</div>
+    <div class="etapa-sub">Revise e defina a senha de administrador</div>
+
+    <div id="resumo-wiz"></div>
+
+    <div class="campo-senha">
+      <label>Senha de administrador</label>
+      <input type="password" id="adm-senha1"
+             placeholder="Mínimo 4 caracteres (pode deixar em branco)"
+             autocomplete="new-password">
     </div>
-    <div id="resumo-config"
-         style="padding:14px;background:#0a0a0a;border:1px solid #111;border-radius:2px;font-size:11px;line-height:2;color:#555">
+    <div class="campo-senha">
+      <label>Confirmar senha</label>
+      <input type="password" id="adm-senha2"
+             placeholder="Repita a senha"
+             autocomplete="new-password">
     </div>
-    <div style="margin-top:16px;color:#222;font-size:11px">
-      O navegador selecionado será iniciado ao fechar este assistente.
-    </div>
+    <div id="senha-erro"></div>
   </div>
 
   <!-- Rodapé -->
   <div id="rodape">
-    <button id="btn-anterior" onclick="navegar(-1)" style="display:none">Voltar</button>
-    <button id="btn-proximo" onclick="navegar(+1)">Continuar</button>
+    <button id="btn-pular" style="display:none" onclick="irEtapa(etapaAtual + 1)">Pular</button>
+    <div class="btn-right">
+      <button class="btn-sec"      id="btn-anterior"  style="display:none" onclick="irEtapa(etapaAtual - 1)">Voltar</button>
+      <button class="btn-instalar" id="btn-instalar"  style="display:none" onclick="instalarNavegador()">Instalar navegadores</button>
+      <button class="btn-pri"      id="btn-proximo"   onclick="avancar()">Começar</button>
+    </div>
   </div>
+
 </div>
 
 <script>
+// ─────────────────────────────────────────────────────────────────────────────
+// ESTADO
+// ─────────────────────────────────────────────────────────────────────────────
 let etapaAtual = 0;
-const totalEtapas = 4;
-let navSelecionado = null;
-let dadosNavegadores = [];
+const TOTAL_ETAPAS = 4;
 
-// ── Navegação ─────────────────────────────────────────────────────────────────
-function navegar(delta) {
-  const proxima = etapaAtual + delta;
-  if (proxima < 0 || proxima >= totalEtapas) return;
-
-  // Ações ao sair da etapa atual
-  if (etapaAtual === 1 && delta > 0) carregarNavegadores();
-  if (etapaAtual === 2 && delta > 0) mostrarResumo();
-
-  // Atualiza dots
-  for (let i = 0; i < totalEtapas; i++) {
-    const dot = document.getElementById(`dot-${i}`);
-    dot.className = 'etapa-dot' + (i < proxima ? ' feita' : i === proxima ? ' atual' : '');
-  }
-
-  // Troca conteúdo
-  document.getElementById(`etapa-${etapaAtual}`).classList.remove('visivel');
-  document.getElementById(`etapa-${proxima}`).classList.add('visivel');
-  etapaAtual = proxima;
-
-  // Ajusta botões
-  document.getElementById('btn-anterior').style.display = etapaAtual > 0 ? '' : 'none';
-  const btnProx = document.getElementById('btn-proximo');
-  if (etapaAtual === totalEtapas - 1) {
-    btnProx.textContent = 'Concluir';
-    btnProx.onclick = concluir;
-  } else {
-    btnProx.textContent = 'Continuar';
-    btnProx.onclick = () => navegar(+1);
-  }
-
-  // Ações ao entrar na etapa
-  if (etapaAtual === 1) carregarInfoRede();
-}
-
-// ── Rede ──────────────────────────────────────────────────────────────────────
-async function carregarInfoRede() {
-  try {
-    const res = await fetch('/api/network');
-    const dados = await res.json();
-    const el = document.getElementById('rede-atual');
-    if (dados.conectado) {
-      el.innerHTML = `Interface: ${dados.interface} &nbsp;|&nbsp; IP: ${dados.ip} &nbsp;|&nbsp; Status: ${dados.status}`;
-      el.style.color = '#555';
-    } else {
-      el.textContent = 'Sem conexão de rede detectada.';
-      el.style.color = '#733';
-    }
-  } catch(e) {
-    document.getElementById('rede-atual').textContent = 'Não foi possível verificar a rede.';
-  }
-}
-
-// ── Navegadores ───────────────────────────────────────────────────────────────
-async function carregarNavegadores() {
-  try {
-    const res = await fetch('/api/browser/list');
-    const dados = await res.json();
-    dadosNavegadores = dados.navegadores || [];
-    renderizarGrade();
-  } catch(e) {
-    document.getElementById('grade-navs').innerHTML =
-      '<div style="color:#333;font-size:11px;grid-column:1/-1">Erro ao carregar navegadores.</div>';
-  }
-}
-
-const ICONES_NAV = {
-  brave: '🦁', edge: '🌊', thorium: '⚡', 'opera-gx': '🎮', firefox: '🦊'
+const st = {
+  redeOk:        false,  // rede cabeada ou WiFi conectado
+  navSelecionado: null,  // id do navegador escolhido
+  navInstalado:  false,  // instalação concluída
+  wifiSsidAtual:  null,  // SSID sendo conectado
+  installPoller:  null,  // setInterval do polling
 };
 
-function renderizarGrade() {
-  const grade = document.getElementById('grade-navs');
-  if (!dadosNavegadores.length) {
-    grade.innerHTML = '<div style="color:#333;font-size:11px;grid-column:1/-1">Nenhum navegador instalado.</div>';
-    return;
-  }
-  grade.innerHTML = dadosNavegadores.map(nav => `
-    <div class="card-nav${nav.ativo ? ' selecionado' : ''}"
-         id="card-${nav.id}"
-         onclick="selecionarNav('${nav.id}')">
-      <div class="icone">${ICONES_NAV[nav.id] || '🌐'}</div>
-      <div>${nav.nome}</div>
-      ${nav.versao ? `<div class="versao">${nav.versao}</div>` : ''}
-    </div>
-  `).join('');
+const BROWSERS = [
+  { id: 'brave',    nome: 'Brave',    site: 'brave.com',   icone: '🦁' },
+  { id: 'edge',     nome: 'Edge',     site: 'msedge',      icone: '🌊' },
+  { id: 'thorium',  nome: 'Thorium',  site: 'thorium.rocks', icone: '⚡' },
+  { id: 'opera-gx', nome: 'Opera GX', site: 'opera.com',   icone: '🎮' },
+  { id: 'firefox',  nome: 'Firefox',  site: 'mozilla.org', icone: '🦊' },
+];
 
-  // Pré-seleciona o navegador ativo
-  const ativo = dadosNavegadores.find(n => n.ativo);
-  if (ativo) navSelecionado = ativo.id;
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITÁRIOS
+// ─────────────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function post(url, corpo) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(corpo),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVEGAÇÃO
+// ─────────────────────────────────────────────────────────────────────────────
+function irEtapa(n) {
+  if (n < 0 || n >= TOTAL_ETAPAS) return;
+  document.getElementById(`etapa-${etapaAtual}`).classList.remove('visivel');
+  etapaAtual = n;
+  document.getElementById(`etapa-${etapaAtual}`).classList.add('visivel');
+  atualizarProgresso();
+  atualizarBotoes();
+  aoEntrar();
+}
+
+function avancar() {
+  if (!podeProsseguir()) return;
+  if (etapaAtual === TOTAL_ETAPAS - 1) { concluir(); return; }
+  irEtapa(etapaAtual + 1);
+}
+
+function podeProsseguir() {
+  if (etapaAtual === 1) return st.redeOk;
+  if (etapaAtual === 2) return st.navSelecionado !== null;
+  return true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BARRA DE PROGRESSO
+// ─────────────────────────────────────────────────────────────────────────────
+function atualizarProgresso() {
+  for (let i = 0; i < TOTAL_ETAPAS; i++) {
+    const c = document.getElementById(`pc-${i}`);
+    const l = document.getElementById(`pl-${i}`);
+    if (i < etapaAtual) {
+      c.className = 'passo-circulo feito'; l.className = 'passo-label';
+    } else if (i === etapaAtual) {
+      c.className = 'passo-circulo ativo'; l.className = 'passo-label ativo';
+    } else {
+      c.className = 'passo-circulo'; l.className = 'passo-label';
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOTÕES
+// ─────────────────────────────────────────────────────────────────────────────
+function atualizarBotoes() {
+  const btnAnt      = document.getElementById('btn-anterior');
+  const btnPular    = document.getElementById('btn-pular');
+  const btnInstalar = document.getElementById('btn-instalar');
+  const btnProx     = document.getElementById('btn-proximo');
+
+  btnAnt.style.display     = etapaAtual > 0 && etapaAtual < TOTAL_ETAPAS - 1 ? '' : 'none';
+  btnPular.style.display   = etapaAtual === 1 ? '' : 'none';
+  btnInstalar.style.display= etapaAtual === 2 ? '' : 'none';
+
+  btnProx.textContent = etapaAtual === 0 ? 'Começar'
+                      : etapaAtual === TOTAL_ETAPAS - 1 ? 'Iniciar Jett OS'
+                      : 'Próximo';
+  btnProx.disabled = !podeProsseguir();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AO ENTRAR EM CADA ETAPA
+// ─────────────────────────────────────────────────────────────────────────────
+function aoEntrar() {
+  if (etapaAtual === 1) carregarRede();
+  if (etapaAtual === 2) renderizarNavegadores();
+  if (etapaAtual === 3) mostrarResumo();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ETAPA 1 — REDE
+// ─────────────────────────────────────────────────────────────────────────────
+async function carregarRede() {
+  setRedeUI('esperando', 'Verificando rede...');
+  document.getElementById('rede-sub').textContent = 'Verificando conectividade...';
+  try {
+    const res  = await fetch('/api/network');
+    const d    = await res.json();
+    if (d.conectado) {
+      const estado = d.status === 'online' ? 'Rede detectada ✓' : 'Conectado (sem internet)';
+      setRedeUI('ok', `${estado}  ·  ${d.interface}  ·  ${d.ip}`);
+      document.getElementById('rede-sub').textContent = 'Conexão cabeada detectada automaticamente.';
+      st.redeOk = true;
+      atualizarBotoes();
+      return;
+    }
+  } catch (_) {}
+
+  // Sem cabeada — mostra WiFi
+  setRedeUI('erro', 'Rede cabeada não detectada. Conecte via WiFi:');
+  document.getElementById('rede-sub').textContent = 'Nenhuma rede cabeada. Escolha uma rede WiFi:';
+  mostrarListaWifi();
+}
+
+function setRedeUI(tipo, texto) {
+  document.getElementById('rede-indicador').className = `indicador ${tipo}`;
+  document.getElementById('rede-texto').textContent = texto;
+}
+
+async function mostrarListaWifi() {
+  const wrapper = document.getElementById('wifi-lista-wrapper');
+  wrapper.style.display = 'flex';
+  const el = document.getElementById('wifi-redes-wiz');
+  el.innerHTML = '<div style="font-size:10px;color:#1e1e1e;padding:8px 0">Buscando redes...</div>';
+
+  try {
+    const res  = await fetch('/api/wifi/list');
+    const d    = await res.json();
+    const redes = d.redes || [];
+
+    if (!redes.length) {
+      el.innerHTML = '<div style="font-size:10px;color:#1e1e1e;padding:8px 0">Nenhuma rede encontrada.</div>';
+      return;
+    }
+
+    el.innerHTML = redes.map(r => `
+      <div class="rede-item${r.ativo ? ' ativo' : ''}"
+           data-ssid="${esc(r.ssid)}" data-seguro="${r.seguro}"
+           onclick="wifiSelecionarRede(this)">
+        <span class="rede-nome">${esc(r.ssid)}</span>
+        <span class="rede-info">
+          ${r.seguro ? '🔒' : '🔓'}
+          <span>${r.sinal}%</span>
+          ${r.ativo ? '<span style="color:#2a7a2a">●</span>' : ''}
+        </span>
+      </div>`).join('');
+
+    // Se já há uma rede WiFi ativa, considera conectado
+    if (redes.some(r => r.ativo)) {
+      const ws = await (await fetch('/api/wifi/status')).json();
+      if (ws.ligado && ws.ssid) {
+        setRedeUI('ok', `WiFi: ${esc(ws.ssid)} ✓`);
+        st.redeOk = true;
+        atualizarBotoes();
+      }
+    }
+  } catch (_) {
+    el.innerHTML = '<div style="font-size:10px;color:#1e1e1e;padding:8px 0">Erro ao listar redes.</div>';
+  }
+}
+
+function wifiSelecionarRede(el) {
+  document.querySelectorAll('.rede-item').forEach(i => i.classList.remove('ativo'));
+  el.classList.add('ativo');
+  st.wifiSsidAtual = el.dataset.ssid;
+  const form = document.getElementById('wifi-senha-form-wiz');
+  if (el.dataset.seguro === 'true') {
+    form.style.display = '';
+    document.getElementById('wifi-senha-wiz').focus();
+  } else {
+    form.style.display = 'none';
+    wifiConectar();
+  }
+}
+
+async function wifiConectar() {
+  const ssid = st.wifiSsidAtual;
+  if (!ssid) return;
+  const senha = document.getElementById('wifi-senha-wiz').value;
+  setRedeUI('esperando', `Conectando a "${esc(ssid)}"...`);
+  try {
+    const res = await post('/api/wifi/connect', { ssid, senha });
+    const d   = await res.json();
+    if (d.ok) {
+      setRedeUI('ok', `WiFi: ${esc(ssid)} ✓`);
+      document.getElementById('wifi-lista-wrapper').style.display = 'none';
+      st.redeOk = true;
+      atualizarBotoes();
+    } else {
+      setRedeUI('erro', `Falha ao conectar: ${esc(d.erro || 'verifique a senha')}`);
+    }
+  } catch (_) {
+    setRedeUI('erro', 'Erro de comunicação com o sistema.');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ETAPA 2 — NAVEGADOR
+// ─────────────────────────────────────────────────────────────────────────────
+function renderizarNavegadores() {
+  document.getElementById('grade-navs-wiz').innerHTML = BROWSERS.map(b => `
+    <div class="card-nav-wiz${st.navSelecionado === b.id ? ' selecionado' : ''}"
+         id="nav-${b.id}" onclick="selecionarNav('${b.id}')">
+      <div class="icone">${b.icone}</div>
+      <div class="cnome">${b.nome}</div>
+      <div class="csite">${b.site}</div>
+    </div>`).join('');
+  atualizarBotoes();
 }
 
 function selecionarNav(id) {
-  navSelecionado = id;
-  document.querySelectorAll('.card-nav').forEach(c => c.classList.remove('selecionado'));
-  document.getElementById(`card-${id}`)?.classList.add('selecionado');
+  if (st.navInstalado) return;
+  st.navSelecionado = id;
+  document.querySelectorAll('.card-nav-wiz').forEach(c => c.classList.remove('selecionado'));
+  document.getElementById(`nav-${id}`)?.classList.add('selecionado');
+  atualizarBotoes();
 }
 
-// ── Resumo ────────────────────────────────────────────────────────────────────
-function mostrarResumo() {
-  const navNome = dadosNavegadores.find(n => n.id === navSelecionado)?.nome || navSelecionado || '—';
-  const dns1 = document.getElementById('dns1').value.trim();
-  const dns2 = document.getElementById('dns2').value.trim();
-  document.getElementById('resumo-config').innerHTML = `
-    <div>Navegador selecionado: <span style="color:#888">${navNome}</span></div>
-    <div>DNS primário: <span style="color:#888">${dns1 || 'padrão (gateway)'}</span></div>
-    <div>DNS secundário: <span style="color:#888">${dns2 || '8.8.8.8'}</span></div>
-  `;
-}
-
-// ── Conclusão ─────────────────────────────────────────────────────────────────
-async function concluir() {
-  // Aplica navegador selecionado
-  if (navSelecionado) {
-    try {
-      await fetch('/api/browser/switch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ browser: navSelecionado }),
-      });
-    } catch(e) {}
+async function instalarNavegador() {
+  if (!st.navSelecionado) {
+    document.getElementById('instalar-msg').textContent = 'Selecione um navegador primeiro.';
+    return;
   }
-  try { window.close(); } catch(e) {}
+  const btnInst = document.getElementById('btn-instalar');
+  btnInst.disabled = true;
+  document.getElementById('barra-install-wrap').style.display = '';
+  document.getElementById('instalar-msg').textContent = 'Iniciando instalação...';
+
+  try { await post('/api/wizard/install-browsers', { nav: st.navSelecionado }); } catch (_) {}
+
+  if (st.installPoller) clearInterval(st.installPoller);
+  st.installPoller = setInterval(async () => {
+    try {
+      const d = await (await fetch('/api/wizard/install-browsers')).json();
+      document.getElementById('barra-install-fill').style.width = `${d.progresso || 0}%`;
+      document.getElementById('instalar-msg').textContent = d.mensagem || '';
+      if (d.status === 'concluido') {
+        clearInterval(st.installPoller);
+        st.navInstalado = true;
+        atualizarBotoes();
+      } else if (d.status === 'erro') {
+        clearInterval(st.installPoller);
+        btnInst.disabled = false;
+      }
+    } catch (_) {}
+  }, 1000);
 }
 
-// ── Inicialização ─────────────────────────────────────────────────────────────
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { try { window.close(); } catch(err) {} }
+// ─────────────────────────────────────────────────────────────────────────────
+// ETAPA 3 — PRONTO
+// ─────────────────────────────────────────────────────────────────────────────
+function mostrarResumo() {
+  const navNome = BROWSERS.find(b => b.id === st.navSelecionado)?.nome || '—';
+  document.getElementById('resumo-wiz').innerHTML = `
+    <div>Rede: <span>${st.redeOk ? 'Conectada ✓' : 'Sem conexão'}</span></div>
+    <div>Navegador: <span>${esc(navNome)}</span></div>
+    <div>Instalação: <span>${st.navInstalado ? 'Concluída ✓' : 'Não executada'}</span></div>
+  `;
+  atualizarBotoes();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONCLUSÃO
+// ─────────────────────────────────────────────────────────────────────────────
+async function concluir() {
+  const s1     = document.getElementById('adm-senha1').value;
+  const s2     = document.getElementById('adm-senha2').value;
+  const errEl  = document.getElementById('senha-erro');
+
+  if (s1 && s1 !== s2) { errEl.textContent = 'As senhas não coincidem.'; return; }
+  if (s1 && s1.length < 4) { errEl.textContent = 'A senha deve ter pelo menos 4 caracteres.'; return; }
+  errEl.textContent = '';
+
+  const btnProx = document.getElementById('btn-proximo');
+  btnProx.disabled = true;
+  btnProx.textContent = 'Salvando...';
+
+  try {
+    await post('/api/wizard/complete', {
+      nav:   st.navSelecionado || '',
+      senha: s1,
+    });
+  } catch (_) {}
+
+  try { window.close(); } catch (_) {}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INICIALIZAÇÃO
+// ─────────────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && etapaAtual !== 3) avancar();
 });
+
+document.getElementById('adm-senha1').addEventListener('input', atualizarBotoes);
+document.getElementById('adm-senha2').addEventListener('input', atualizarBotoes);
+
+atualizarBotoes();
 </script>
 </body>
 </html>

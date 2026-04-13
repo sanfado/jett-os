@@ -61,6 +61,10 @@
 #
 #   window open <url>             — abre janela browser --app=URL (detecta navegador ativo)
 #
+#   wizard install_browsers <nav> — instala/configura navegador em background (JSON imediato)
+#   wizard install_status         — progresso da instalação em andamento (JSON)
+#   wizard complete <nav> [senha] — cria firstboot.done, define nav padrão e senha admin
+#
 # Segurança de arquivos:
 #   Operações em files/* são restritas a /home/jett, /media, /mnt e /run/media.
 #   Tentativas de acessar outras áreas retornam erro JSON sem executar nada.
@@ -814,6 +818,102 @@ window_open() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# WIZARD — Assistente de primeiro boot
+# ─────────────────────────────────────────────────────────────────────────────
+
+_WIZARD_PROG_FILE="/tmp/jett-install-progress.json"
+_FIRSTBOOT_DONE_SYSTEM="/etc/jett-os/firstboot.done"
+_FIRSTBOOT_DONE_USER="${HOME}/.config/jett-os/firstboot.done"
+
+wizard_install_browsers() {
+    local nav_id="${1:-firefox}"
+    local prog="$_WIZARD_PROG_FILE"
+
+    # Lança instalação em background e acompanha com progresso simulado
+    (
+        printf '{"status":"em_andamento","progresso":5,"mensagem":"Preparando instalação..."}\n' > "$prog"
+
+        local ok=true
+        if cmd_disponivel jett-switch.sh; then
+            # jett-switch.sh configura e instala o navegador escolhido
+            jett-switch.sh "$nav_id" >> /tmp/jett-bridge.log 2>&1 &
+        else
+            # Fallback: tenta sudo apt-get diretamente
+            sudo -n apt-get install -y "$nav_id" >> /tmp/jett-bridge.log 2>&1 &
+        fi
+        local install_pid=$!
+
+        # Avança progresso enquanto o instalador roda
+        local p=10
+        while kill -0 "$install_pid" 2>/dev/null; do
+            sleep 2
+            p=$(( p < 88 ? p + 9 : p ))
+            printf '{"status":"em_andamento","progresso":%d,"mensagem":"Instalando %s..."}\n' \
+                "$p" "${nav_id}" > "$prog"
+        done
+
+        wait "$install_pid" && ok=true || ok=false
+        if [[ "$ok" == "true" ]]; then
+            printf '{"status":"concluido","progresso":100,"mensagem":"Instalação concluída!"}\n' > "$prog"
+        else
+            printf '{"status":"erro","progresso":0,"mensagem":"Falha na instalação. Verifique /tmp/jett-bridge.log."}\n' > "$prog"
+        fi
+    ) &
+    disown
+
+    printf '{"ok":true,"nav":"%s"}\n' "${nav_id//\"/\\\"}"
+}
+
+wizard_install_status() {
+    if [[ -f "$_WIZARD_PROG_FILE" ]]; then
+        cat "$_WIZARD_PROG_FILE"
+    else
+        printf '{"status":"aguardando","progresso":0,"mensagem":"Aguardando início..."}\n'
+    fi
+}
+
+wizard_complete() {
+    local nav_id="${1:-}" senha="${2:-}"
+
+    # 1. Define o navegador padrão
+    if [[ -n "$nav_id" ]] && cmd_disponivel jett-switch.sh; then
+        jett-switch.sh "$nav_id" >> /tmp/jett-bridge.log 2>&1 || true
+    fi
+
+    # 2. Define a senha de administrador (jett user)
+    if [[ -n "$senha" ]] && [[ ${#senha} -ge 4 ]]; then
+        printf 'jett:%s\n' "$senha" | sudo -n chpasswd >> /tmp/jett-bridge.log 2>&1 \
+            || printf 'aviso: senha nao configurada\n' >&2
+    fi
+
+    # 3. Cria o arquivo firstboot.done
+    #    Tenta via sudo primeiro; caso falhe, usa o path do usuário
+    local ok_done=false
+    if sudo -n tee "$_FIRSTBOOT_DONE_SYSTEM" >/dev/null 2>&1 <<< "$(date)"; then
+        ok_done=true
+    else
+        mkdir -p "$(dirname "$_FIRSTBOOT_DONE_USER")"
+        date > "$_FIRSTBOOT_DONE_USER" && ok_done=true || true
+    fi
+
+    if [[ "$ok_done" == "true" ]]; then
+        printf '{"ok":true,"nav":"%s"}\n' "${nav_id//\"/\\\"}"
+    else
+        erro_json "falha ao criar firstboot.done"
+    fi
+}
+
+# Apenas define a senha — não cria firstboot.done
+wizard_set_admin_password() {
+    local senha="${1:-}"
+    [[ -z "$senha" ]] && erro_json "senha não especificada"
+    [[ ${#senha} -lt 4 ]] && erro_json "senha deve ter pelo menos 4 caracteres"
+    printf 'jett:%s\n' "$senha" | sudo -n chpasswd >> /tmp/jett-bridge.log 2>&1 \
+        || erro_json "falha ao definir senha (verifique sudoers: jett ALL=(root) NOPASSWD: /usr/sbin/chpasswd)"
+    printf '{"ok":true}\n'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # DESPACHO
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -913,6 +1013,14 @@ case "$COMANDO" in
         case "$SUBCOMANDO" in
             open) window_open "$ARG1" ;;
             *)    erro_json "subcomando de window inválido: ${SUBCOMANDO}" ;;
+        esac ;;
+    wizard)
+        case "$SUBCOMANDO" in
+            install_browsers)    wizard_install_browsers "$ARG1" ;;
+            install_status)      wizard_install_status ;;
+            complete)            wizard_complete "$ARG1" "$ARG2" ;;
+            set_admin_password)  wizard_set_admin_password "$ARG1" ;;
+            *)                   erro_json "subcomando de wizard inválido: ${SUBCOMANDO}" ;;
         esac ;;
     *)
         erro_json "comando desconhecido: ${COMANDO:-vazio}" ;;

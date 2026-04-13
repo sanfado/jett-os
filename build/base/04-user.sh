@@ -45,6 +45,23 @@ configurar_usuario_jett() {
         fi
     done
 
+    # Instala regras sudoers para o kiosk
+    local sudoers_src="${PROJETO_DIR}/config/sway/jett-sudoers"
+    local sudoers_dest="/etc/sudoers.d/jett-launcher"
+    if [[ -f "$sudoers_src" ]]; then
+        cp "$sudoers_src" "$sudoers_dest"
+        chmod 440 "$sudoers_dest"
+        # Valida sintaxe — aborta se inválido para não travar o sudo
+        if visudo -c -f "$sudoers_dest" >> "$LOG_ARQUIVO" 2>&1; then
+            log_ok "Regras sudoers instaladas em ${sudoers_dest}."
+        else
+            log_erro "Sintaxe inválida em ${sudoers_src} — sudoers NÃO instalado."
+            rm -f "$sudoers_dest"
+        fi
+    else
+        log_aviso "config/sway/jett-sudoers não encontrado — regras sudo não instaladas."
+    fi
+
     # Configura login automático via getty no tty1
     local getty_override_dir="/etc/systemd/system/getty@tty1.service.d"
     local getty_override_file="${getty_override_dir}/autologin.conf"
