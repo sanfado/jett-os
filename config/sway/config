@@ -54,11 +54,9 @@ hide_edge_borders both
 # SAÍDA (OUTPUT) — FUNDO PRETO SÓLIDO
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Detecção automática de resolução e posição do monitor.
-# A flag --auto é intencional: o Sway consulta o EDID do monitor e seleciona
-# a melhor resolução suportada (720p, 1080p, 1440p, 4K, etc.) sem exigir
-# configuração manual. Isso garante compatibilidade com qualquer hardware.
-output * resolution --auto position 0 0
+# O Sway detecta e aplica automaticamente a melhor resolução suportada pelo
+# monitor via EDID — não é necessária nem suportada configuração explícita
+# de "output * resolution --auto" (causa erro "Invalid mode width" no Sway).
 
 # Fundo preto sólido para todas as saídas (monitores)
 # Evita flash de tela branca antes do navegador carregar

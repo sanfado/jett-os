@@ -235,9 +235,11 @@ EOF
 # .bash_profile — Jett OS Kiosk Auto-Start
 # =============================================================================
 # Fallback: inicia o Sway caso o systemd --user não tenha disparado o serviço.
-# Executa apenas no tty1.
+# Executa apenas no tty1 e somente se o Sway não estiver rodando — evita
+# iniciar uma segunda sessão gráfica ao logar nos tty2-6.
 
-if [[ -z "${WAYLAND_DISPLAY}" && -z "${DISPLAY}" && "$(tty)" == "/dev/tty1" ]]; then
+if [[ -z "${WAYLAND_DISPLAY}" && -z "${DISPLAY}" && "$(tty)" == "/dev/tty1" ]] \
+   && ! pgrep -x sway > /dev/null 2>&1; then
     echo "[$(date '+%H:%M:%S')] Iniciando sessão Jett OS via .bash_profile" >> /tmp/jett-session.log
 
     if systemctl --user is-enabled sway-kiosk.service &>/dev/null; then
