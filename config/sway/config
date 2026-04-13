@@ -54,13 +54,15 @@ hide_edge_borders both
 # SAÍDA (OUTPUT) — FUNDO PRETO SÓLIDO
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Detecção automática de resolução e posição do monitor.
+# A flag --auto é intencional: o Sway consulta o EDID do monitor e seleciona
+# a melhor resolução suportada (720p, 1080p, 1440p, 4K, etc.) sem exigir
+# configuração manual. Isso garante compatibilidade com qualquer hardware.
+output * resolution --auto position 0 0
+
 # Fundo preto sólido para todas as saídas (monitores)
 # Evita flash de tela branca antes do navegador carregar
 output * bg #000000 solid_color
-
-# Para configurar resolução específica, descomente e ajuste:
-# output eDP-1 resolution 1920x1080 position 0,0
-# output HDMI-A-1 resolution 1920x1080 position 0,0
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ENTRADA (INPUT) — TECLADO E MOUSE
