@@ -330,19 +330,60 @@ criar_wrapper_firefox() {
         log_erro "Perfil de flags não encontrado: ${PERFIL_CONF}."
     fi
 
-    # ── BUG B fix: cria o perfil kiosk e escreve user.js ──────────────────────
-    # O wrapper usa --profile para apontar para este diretório.
-    # O user.js aplica as prefs de WebRender e performance na inicialização do Firefox.
+    # ── Fix 1 + 2: estrutura completa de perfis do Firefox ───────────────────
+    # O Firefox precisa de profiles.ini para conhecer seus perfis antes do
+    # primeiro boot. Sem ele, cria um perfil aleatório e exibe o wizard
+    # de boas-vindas — comportamento inaceitável em kiosk.
+    #
+    # Estrutura criada:
+    #   /home/jett/.mozilla/firefox/
+    #   ├── profiles.ini          → registro dos perfis
+    #   ├── jett.default/         → perfil padrão (evita wizard de primeiro boot)
+    #   └── jett-kiosk/           → perfil kiosk (user.js, usado pelo wrapper)
+
+    local mozilla_firefox_dir="/home/${USUARIO_JETT}/.mozilla/firefox"
+
+    # Cria o perfil kiosk (usado pelo wrapper via --profile)
     log_info "Criando perfil kiosk do Firefox: ${FIREFOX_PERFIL_DIR}"
     mkdir -p "$FIREFOX_PERFIL_DIR"
 
     # Escreve user.js com as preferências técnicas de integração
     # JETT_FIREFOX_USERJS é definido em config/browsers/firefox.conf
     printf '%s\n' "${JETT_FIREFOX_USERJS}" > "${FIREFOX_PERFIL_DIR}/user.js"
-
-    # Ajusta propriedade para o usuário jett
-    chown -R "${USUARIO_JETT}:${USUARIO_JETT}" "${FIREFOX_PERFIL_DIR}"
     log_ok "user.js criado em ${FIREFOX_PERFIL_DIR}/user.js (WebRender + e10s + prefs kiosk)"
+
+    # Cria o perfil padrão (jett.default)
+    # Necessário para que o Firefox não crie um perfil com nome aleatório
+    # nem exiba o wizard de primeiro uso antes do primeiro boot
+    log_info "Criando perfil padrão: ${mozilla_firefox_dir}/jett.default"
+    mkdir -p "${mozilla_firefox_dir}/jett.default"
+
+    # Cria o profiles.ini registrando ambos os perfis
+    # Formato: https://support.mozilla.org/pt-BR/kb/perfis-onde-firefox-armazena
+    # Profile0 (jett.default) é o Default=1 — fallback sem --profile
+    # Profile1 (jett-kiosk) é o perfil usado pelo wrapper em modo kiosk
+    cat > "${mozilla_firefox_dir}/profiles.ini" << PROFILES_INI
+[Profile0]
+Name=jett.default
+IsRelative=1
+Path=jett.default
+Default=1
+
+[Profile1]
+Name=jett-kiosk
+IsRelative=1
+Path=jett-kiosk
+
+[General]
+StartWithLastProfile=1
+Version=2
+PROFILES_INI
+    log_ok "profiles.ini criado: ${mozilla_firefox_dir}/profiles.ini"
+
+    # Fix 1: chown -R em todo /home/jett/.mozilla (não só no perfil kiosk)
+    # Garante que jett.default/, jett-kiosk/ e profiles.ini pertencem ao usuário
+    chown -R "${USUARIO_JETT}:${USUARIO_JETT}" "/home/${USUARIO_JETT}/.mozilla"
+    log_ok "Propriedade definida: jett:jett → /home/${USUARIO_JETT}/.mozilla (recursivo)"
 
     # ── Cria o wrapper jett-firefox-kiosk ─────────────────────────────────────
     log_info "Criando ${FIREFOX_WRAPPER}..."

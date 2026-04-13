@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Jett OS — Config</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 700px;
+    height: 500px;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+    font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
+    font-size: 13px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #wizard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 32px 40px 24px;
+  }
+
+  /* ── Indicador de etapas ── */
+  #etapas {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .etapa-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .etapa-dot.atual  { background: #fff; }
+  .etapa-dot.feita  { background: #555; }
+  .etapa-linha {
+    flex: 1;
+    height: 1px;
+    background: #111;
+  }
+
+  /* ── Conteúdo da etapa ── */
+  .etapa-conteudo { display: none; flex: 1; flex-direction: column; }
+  .etapa-conteudo.visivel { display: flex; }
+
+  .etapa-titulo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .etapa-desc {
+    font-size: 12px;
+    color: #444;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* ── Formulário de rede ── */
+  .campo { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .campo label { font-size: 10px; letter-spacing: 2px; color: #333; text-transform: uppercase; }
+  .campo input, .campo select {
+    background: #0d0d0d;
+    border: 1px solid #1e1e1e;
+    border-radius: 2px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+  }
+  .campo input:focus, .campo select:focus { border-color: #333; }
+  .campo select option { background: #0d0d0d; }
+
+  /* ── Seleção de navegador ── */
+  #grade-navs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .card-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 10px;
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-radius: 3px;
+    cursor: pointer;
+    color: #666;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .card-nav:hover { background: #111; border-color: #2a2a2a; color: #aaa; }
+  .card-nav.selecionado {
+    background: #fff;
+    border-color: #fff;
+    color: #000;
+    font-weight: bold;
+  }
+  .card-nav.nao-instalado { opacity: 0.35; cursor: default; }
+  .card-nav .icone { font-size: 20px; }
+  .card-nav .versao { font-size: 10px; color: #aaa; font-weight: normal; }
+  .card-nav.selecionado .versao { color: #555; }
+
+  /* ── Rodapé com botões ── */
+  #rodape {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #0d0d0d;
+  }
+
+  button {
+    padding: 9px 24px;
+    font-size: 12px;
+    font-family: inherit;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  #btn-anterior {
+    background: #111;
+    color: #444;
+    border: 1px solid #1e1e1e;
+  }
+  #btn-anterior:hover { color: #777; }
+  #btn-proximo {
+    background: #fff;
+    color: #000;
+    font-weight: bold;
+  }
+  #btn-proximo:hover { background: #e0e0e0; }
+  #btn-proximo:disabled { background: #1a1a1a; color: #333; cursor: default; }
+</style>
+</head>
+<body>
+
+<div id="wizard">
+
+  <!-- Indicador de etapas (4 etapas) -->
+  <div id="etapas">
+    <div class="etapa-dot atual" id="dot-0"></div>
+    <div class="etapa-linha"></div>
+    <div class="etapa-dot" id="dot-1"></div>
+    <div class="etapa-linha"></div>
+    <div class="etapa-dot" id="dot-2"></div>
+    <div class="etapa-linha"></div>
+    <div class="etapa-dot" id="dot-3"></div>
+  </div>
+
+  <!-- Etapa 0: Boas-vindas -->
+  <div class="etapa-conteudo visivel" id="etapa-0">
+    <div class="etapa-titulo">Bem-vindo ao Jett OS</div>
+    <div class="etapa-desc">
+      Configure o sistema em três passos rápidos.<br>
+      Você pode alterar essas configurações a qualquer momento pelo menu de sistema.
+    </div>
+    <div style="margin-top:12px;color:#222;font-size:11px;line-height:2">
+      <div>→ Rede e DNS</div>
+      <div>→ Navegador padrão</div>
+      <div>→ Pronto para usar</div>
+    </div>
+  </div>
+
+  <!-- Etapa 1: Rede -->
+  <div class="etapa-conteudo" id="etapa-1">
+    <div class="etapa-titulo">Configuração de Rede</div>
+    <div class="etapa-desc">
+      A rede cabeada é configurada automaticamente via DHCP.<br>
+      Você pode definir DNS personalizado abaixo (opcional).
+    </div>
+    <div id="rede-atual" style="margin-bottom:16px;padding:10px;background:#0a0a0a;border:1px solid #111;border-radius:2px;font-size:11px;color:#444">
+      Verificando rede...
+    </div>
+    <div class="campo">
+      <label>DNS Primário (opcional)</label>
+      <input type="text" id="dns1" placeholder="Deixe vazio para usar o padrão (gateway)">
+    </div>
+    <div class="campo">
+      <label>DNS Secundário (opcional)</label>
+      <input type="text" id="dns2" placeholder="8.8.8.8">
+    </div>
+  </div>
+
+  <!-- Etapa 2: Navegador -->
+  <div class="etapa-conteudo" id="etapa-2">
+    <div class="etapa-titulo">Escolha o Navegador</div>
+    <div class="etapa-desc">
+      Selecione o navegador que o sistema usará no modo kiosk.
+    </div>
+    <div id="grade-navs">
+      <div style="color:#333;font-size:11px;grid-column:1/-1">Carregando navegadores...</div>
+    </div>
+  </div>
+
+  <!-- Etapa 3: Concluído -->
+  <div class="etapa-conteudo" id="etapa-3">
+    <div class="etapa-titulo">Tudo pronto</div>
+    <div class="etapa-desc">
+      O Jett OS está configurado e pronto para uso.
+    </div>
+    <div id="resumo-config"
+         style="padding:14px;background:#0a0a0a;border:1px solid #111;border-radius:2px;font-size:11px;line-height:2;color:#555">
+    </div>
+    <div style="margin-top:16px;color:#222;font-size:11px">
+      O navegador selecionado será iniciado ao fechar este assistente.
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <div id="rodape">
+    <button id="btn-anterior" onclick="navegar(-1)" style="display:none">Voltar</button>
+    <button id="btn-proximo" onclick="navegar(+1)">Continuar</button>
+  </div>
+</div>
+
+<script>
+let etapaAtual = 0;
+const totalEtapas = 4;
+let navSelecionado = null;
+let dadosNavegadores = [];
+
+// ── Navegação ─────────────────────────────────────────────────────────────────
+function navegar(delta) {
+  const proxima = etapaAtual + delta;
+  if (proxima < 0 || proxima >= totalEtapas) return;
+
+  // Ações ao sair da etapa atual
+  if (etapaAtual === 1 && delta > 0) carregarNavegadores();
+  if (etapaAtual === 2 && delta > 0) mostrarResumo();
+
+  // Atualiza dots
+  for (let i = 0; i < totalEtapas; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.className = 'etapa-dot' + (i < proxima ? ' feita' : i === proxima ? ' atual' : '');
+  }
+
+  // Troca conteúdo
+  document.getElementById(`etapa-${etapaAtual}`).classList.remove('visivel');
+  document.getElementById(`etapa-${proxima}`).classList.add('visivel');
+  etapaAtual = proxima;
+
+  // Ajusta botões
+  document.getElementById('btn-anterior').style.display = etapaAtual > 0 ? '' : 'none';
+  const btnProx = document.getElementById('btn-proximo');
+  if (etapaAtual === totalEtapas - 1) {
+    btnProx.textContent = 'Concluir';
+    btnProx.onclick = concluir;
+  } else {
+    btnProx.textContent = 'Continuar';
+    btnProx.onclick = () => navegar(+1);
+  }
+
+  // Ações ao entrar na etapa
+  if (etapaAtual === 1) carregarInfoRede();
+}
+
+// ── Rede ──────────────────────────────────────────────────────────────────────
+async function carregarInfoRede() {
+  try {
+    const res = await fetch('/api/network');
+    const dados = await res.json();
+    const el = document.getElementById('rede-atual');
+    if (dados.conectado) {
+      el.innerHTML = `Interface: ${dados.interface} &nbsp;|&nbsp; IP: ${dados.ip} &nbsp;|&nbsp; Status: ${dados.status}`;
+      el.style.color = '#555';
+    } else {
+      el.textContent = 'Sem conexão de rede detectada.';
+      el.style.color = '#733';
+    }
+  } catch(e) {
+    document.getElementById('rede-atual').textContent = 'Não foi possível verificar a rede.';
+  }
+}
+
+// ── Navegadores ───────────────────────────────────────────────────────────────
+async function carregarNavegadores() {
+  try {
+    const res = await fetch('/api/browser/list');
+    const dados = await res.json();
+    dadosNavegadores = dados.navegadores || [];
+    renderizarGrade();
+  } catch(e) {
+    document.getElementById('grade-navs').innerHTML =
+      '<div style="color:#333;font-size:11px;grid-column:1/-1">Erro ao carregar navegadores.</div>';
+  }
+}
+
+const ICONES_NAV = {
+  brave: '🦁', edge: '🌊', thorium: '⚡', 'opera-gx': '🎮', firefox: '🦊'
+};
+
+function renderizarGrade() {
+  const grade = document.getElementById('grade-navs');
+  if (!dadosNavegadores.length) {
+    grade.innerHTML = '<div style="color:#333;font-size:11px;grid-column:1/-1">Nenhum navegador instalado.</div>';
+    return;
+  }
+  grade.innerHTML = dadosNavegadores.map(nav => `
+    <div class="card-nav${nav.ativo ? ' selecionado' : ''}"
+         id="card-${nav.id}"
+         onclick="selecionarNav('${nav.id}')">
+      <div class="icone">${ICONES_NAV[nav.id] || '🌐'}</div>
+      <div>${nav.nome}</div>
+      ${nav.versao ? `<div class="versao">${nav.versao}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Pré-seleciona o navegador ativo
+  const ativo = dadosNavegadores.find(n => n.ativo);
+  if (ativo) navSelecionado = ativo.id;
+}
+
+function selecionarNav(id) {
+  navSelecionado = id;
+  document.querySelectorAll('.card-nav').forEach(c => c.classList.remove('selecionado'));
+  document.getElementById(`card-${id}`)?.classList.add('selecionado');
+}
+
+// ── Resumo ────────────────────────────────────────────────────────────────────
+function mostrarResumo() {
+  const navNome = dadosNavegadores.find(n => n.id === navSelecionado)?.nome || navSelecionado || '—';
+  const dns1 = document.getElementById('dns1').value.trim();
+  const dns2 = document.getElementById('dns2').value.trim();
+  document.getElementById('resumo-config').innerHTML = `
+    <div>Navegador selecionado: <span style="color:#888">${navNome}</span></div>
+    <div>DNS primário: <span style="color:#888">${dns1 || 'padrão (gateway)'}</span></div>
+    <div>DNS secundário: <span style="color:#888">${dns2 || '8.8.8.8'}</span></div>
+  `;
+}
+
+// ── Conclusão ─────────────────────────────────────────────────────────────────
+async function concluir() {
+  // Aplica navegador selecionado
+  if (navSelecionado) {
+    try {
+      await fetch('/api/browser/switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ browser: navSelecionado }),
+      });
+    } catch(e) {}
+  }
+  try { window.close(); } catch(e) {}
+}
+
+// ── Inicialização ─────────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { try { window.close(); } catch(err) {} }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+#!/usr/bin/env python3
+# =============================================================================
+# jett-exit-confirm — Diálogo HTML de confirmação de saída do Jett OS
+# =============================================================================
+# Uso:
+#   jett-exit-confirm           (chamado pelo atalho Super+Shift+E do Sway)
+#
+# Retorno:
+#   0  — administrador confirmou o encerramento
+#   1  — cancelado, timeout (30s) ou nenhum navegador disponível
+#
+# Funcionamento:
+#   1. Inicia um servidor HTTP mínimo em 127.0.0.1:9099 (loopback apenas)
+#   2. Abre a página HTML de confirmação no navegador disponível, sem --kiosk
+#      (tenta Firefox, Brave, Edge, Thorium, Opera, xdg-open nessa ordem)
+#   3. O Sway aplica a regra 'for_window [title="^Jett OS — Encerrar"]'
+#      que posiciona a janela como floating, centralizada, 420×220 px
+#   4. Usuário clica "Encerrar" → browser faz POST em /confirm → exit(0)
+#      Usuário clica "Cancelar" ou fecha a janela → POST em /cancel → exit(1)
+#   5. Timeout de 30s se o usuário não interagir (segurança: sem saída acidental)
+#
+# O servidor é encerrado logo após receber a primeira resposta.
+# A porta 9099 é liberada automaticamente ao fim do processo.
+#
+# Instalação:
+#   sudo cp launcher/jett-exit-confirm /usr/local/bin/jett-exit-confirm
+#   sudo chmod +x /usr/local/bin/jett-exit-confirm
+# =============================================================================
+
+import http.server
+import subprocess
+import sys
+import os
+import threading
+import socket
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONFIGURAÇÃO
+# ─────────────────────────────────────────────────────────────────────────────
+
+PORTA   = 9099   # porta loopback do servidor HTTP temporário
+TIMEOUT = 30     # segundos até expirar sem resposta (previne travar o sistema)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PÁGINA HTML — Dialog de confirmação
+# Estilo consistente com o tema do Jett OS: fundo preto, texto branco,
+# botão de confirmação branco (inversão de contraste), botão cancelar escuro.
+# ─────────────────────────────────────────────────────────────────────────────
+
+HTML = b"""<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jett OS \xe2\x80\x94 Encerrar</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .logo {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #333;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .titulo {
+    font-size: 17px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .subtitulo {
+    font-size: 11px;
+    color: #444;
+    margin-bottom: 30px;
+  }
+
+  .botoes {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    padding: 9px 26px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 2px;
+    transition: background 0.1s;
+  }
+
+  /* Botão principal: fundo branco, texto preto — padrão de seleção do Jett OS */
+  #btn-confirmar {
+    background: #fff;
+    color: #000;
+    font-weight: bold;
+  }
+  #btn-confirmar:hover  { background: #e0e0e0; }
+  #btn-confirmar:active { background: #c0c0c0; }
+
+  /* Botão secundário: fundo escuro, texto discreto */
+  #btn-cancelar {
+    background: #111;
+    color: #555;
+    border: 1px solid #2a2a2a;
+  }
+  #btn-cancelar:hover  { background: #1c1c1c; color: #777; }
+  #btn-cancelar:active { background: #000; }
+</style>
+</head>
+<body>
+
+<div class="logo">JETT OS</div>
+<div class="titulo">Encerrar sess\xc3\xa3o?</div>
+<div class="subtitulo">O sistema retornar\xc3\xa1 ao terminal (TTY).</div>
+
+<div class="botoes">
+  <button id="btn-confirmar" autofocus onclick="confirmar()">Encerrar</button>
+  <button id="btn-cancelar" onclick="cancelar()">Cancelar</button>
+</div>
+
+<script>
+// POST para o servidor Python sinaliza a decisão.
+// window.close() fecha a janela após o servidor confirmar o recebimento.
+function confirmar() {
+  document.getElementById('btn-confirmar').disabled = true;
+  fetch('/confirm', { method: 'POST' })
+    .finally(() => { try { window.close(); } catch(e) {} });
+}
+
+function cancelar() {
+  document.getElementById('btn-cancelar').disabled = true;
+  fetch('/cancel', { method: 'POST' })
+    .finally(() => { try { window.close(); } catch(e) {} });
+}
+
+// Atalhos de teclado: Enter = confirmar, Esc = cancelar
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter')  confirmar();
+  if (e.key === 'Escape') cancelar();
+});
+</script>
+</body>
+</html>
+"""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SERVIDOR HTTP
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Guarda o resultado (True = confirmado, False = cancelado/timeout)
+_resultado   = None
+_servidor    = None
+
+
+class _Handler(http.server.BaseHTTPRequestHandler):
+    """Handler mínimo: serve a página HTML no GET, recebe decisão no POST."""
+
+    def log_message(self, fmt, *args):
+        # Silencia o log padrão do http.server (stdout poluiria o sway log)
+        pass
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(HTML)))
+        self.end_headers()
+        self.wfile.write(HTML)
+
+    def do_POST(self):
+        global _resultado
+        _resultado = (self.path == '/confirm')
+        # Responde 204 No Content — o browser não precisa de corpo
+        self.send_response(204)
+        self.end_headers()
+        # Encerra o servidor em thread separada (não bloqueia o handler)
+        threading.Thread(target=_servidor.shutdown, daemon=True).start()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UTILITÁRIOS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _porta_disponivel(porta: int) -> bool:
+    """Verifica se a porta está livre antes de tentar vincular."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('127.0.0.1', porta)) != 0
+
+
+def _abrir_browser(url: str) -> bool:
+    """
+    Abre a URL em uma nova janela do navegador disponível, sem --kiosk.
+    Tenta navegadores na ordem de disponibilidade no sistema.
+    Firefox com --new-instance cria uma instância independente da que está
+    em kiosk, evitando conflito com o processo principal.
+    """
+    candidatos = [
+        # Firefox: --new-instance isola do processo kiosk existente
+        ['firefox', '--new-instance', '--new-window', url],
+        # Chromium-based: --new-window abre sem kiosk
+        ['brave-browser',        '--new-window', '--no-first-run', url],
+        ['microsoft-edge-stable','--new-window', '--no-first-run', url],
+        ['thorium-browser',      '--new-window', '--no-first-run', url],
+        ['opera',                '--new-window', url],
+        # Último recurso: xdg-open delega ao handler padrão do sistema
+        ['xdg-open', url],
+    ]
+    for cmd in candidatos:
+        try:
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+            return True
+        except (FileNotFoundError, PermissionError, OSError):
+            continue
+    return False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PONTO DE ENTRADA
+# ─────────────────────────────────────────────────────────────────────────────
+
+def main():
+    global _servidor
+
+    # Evita dois dialogs abertos simultaneamente (ex: duplo pressionamento)
+    if not _porta_disponivel(PORTA):
+        sys.stderr.write(
+            f'[jett-exit-confirm] Porta {PORTA} já em uso — dialog já aberto?\n'
+        )
+        sys.exit(1)
+
+    # Vincula apenas à interface de loopback por segurança
+    _servidor = http.server.HTTPServer(('127.0.0.1', PORTA), _Handler)
+
+    url = f'http://127.0.0.1:{PORTA}/'
+    if not _abrir_browser(url):
+        sys.stderr.write(
+            '[jett-exit-confirm] ERRO: nenhum navegador encontrado no sistema.\n'
+        )
+        _servidor.server_close()
+        sys.exit(1)
+
+    # Timer de segurança: encerra o servidor se o usuário não interagir
+    # Previne que o processo fique preso indefinidamente caso a janela seja
+    # fechada sem clicar nos botões (ex: fechada pelo gerenciador de janelas)
+    timer = threading.Timer(TIMEOUT, _servidor.shutdown)
+    timer.start()
+
+    # Bloqueia até receber POST ou o timer expirar
+    _servidor.serve_forever()
+    timer.cancel()
+
+    # Exit 0 = confirmado → swaymsg exit será chamado pelo Sway
+    # Exit 1 = cancelado ou timeout → Sway não chama swaymsg exit
+    sys.exit(0 if _resultado else 1)
+
+
+if __name__ == '__main__':
+    main()

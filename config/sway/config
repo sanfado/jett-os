@@ -26,9 +26,12 @@ set $mod Mod4
 
 # Caminhos dos scripts do Jett OS
 # Ajuste se o projeto foi instalado em local diferente
-set $jett_launcher  /usr/local/bin/jett-launcher
-set $jett_switch    /usr/local/bin/jett-switch.sh
-set $jett_conf      /etc/jett-os/navegador.conf
+set $jett_launcher      /usr/local/bin/jett-launcher
+set $jett_switch        /usr/local/bin/jett-switch.sh
+set $jett_conf          /etc/jett-os/navegador.conf
+set $jett_exit_confirm  /usr/local/bin/jett-exit-confirm
+set $jett_nav_toggle    /usr/local/bin/jett-nav-toggle
+set $jett_menu_toggle   /usr/local/bin/jett-menu-toggle
 
 # ─────────────────────────────────────────────────────────────────────────────
 # APARÊNCIA — ZERO DECORAÇÕES
@@ -138,6 +141,58 @@ for_window [title="Jett OS — Launcher"] {
     focus
 }
 
+# ── Interfaces do sistema (jett-ui-server em 127.0.0.1:1312) ─────────────────
+
+# Barra de navegação — faixa horizontal na parte superior, sem borda
+# Largura: 100% da tela (100ppt). Altura: 56 px.
+for_window [title="^Jett OS — Nav"] {
+    floating   enable
+    border     none
+    resize     set 100ppt 56
+    move       position 0 0
+    focus
+}
+
+# Menu de sistema — overlay centralizado 380×480
+for_window [title="^Jett OS — Menu"] {
+    floating   enable
+    border     none
+    resize     set 380 480
+    move       position center
+    focus
+}
+
+# Assistente de configuração — overlay centralizado 700×500
+for_window [title="^Jett OS — Config"] {
+    floating   enable
+    border     none
+    resize     set 700 500
+    move       position center
+    focus
+}
+
+# Gerenciador de arquivos — overlay centralizado 800×500
+for_window [title="^Jett OS — Arquivos"] {
+    floating   enable
+    border     none
+    resize     set 800 500
+    move       position center
+    focus
+}
+
+# ── Dialog de saída de emergência (jett-exit-confirm) ────────────────────────
+# O jett-exit-confirm serve uma página HTML em 127.0.0.1:9099 e a abre
+# no navegador. O título da página é "Jett OS — Encerrar", que pode aparecer
+# como "Jett OS — Encerrar — Mozilla Firefox" ou similar dependendo do browser.
+# A regra usa regex de prefixo para cobrir todas as variações.
+for_window [title="^Jett OS — Encerrar"] {
+    floating   enable
+    border     pixel 1
+    resize     set 420 220
+    move       position center
+    focus
+}
+
 # ── Diálogos e pop-ups: flutuantes por padrão ────────────────────────────────
 
 # Janelas de diálogo são flutuantes para não interferir com o kiosk
@@ -150,24 +205,46 @@ for_window [window_type="utility"]  floating enable
 # ATALHOS DE TECLADO
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── Super (soltar) — Alterna a barra de navegação ────────────────────────────
+# Disparado ao soltar a tecla Super sozinha (sem combinação).
+# O jett-nav-toggle verifica /tmp/.jett-super-used: se outro atalho
+# Super+<tecla> foi acionado antes, o flag é consumido e a barra NÃO abre.
+# Isso evita que a barra apareça ao usar Super+B, Super+X, Super+F5, etc.
+bindsym --release Super_L exec $jett_nav_toggle
+
+# ── Super+X — Abre/fecha o menu de sistema ───────────────────────────────────
+# Seta o flag /tmp/.jett-super-used antes de abrir o menu para que o
+# Super release não dispare o jett-nav-toggle simultaneamente.
+bindsym $mod+x exec bash -c 'touch /tmp/.jett-super-used; exec $jett_menu_toggle'
+
 # ── Super+B — Abre o mini-launcher de navegadores ────────────────────────────
 # Atalho principal do Jett OS.
-# Abre o jett-launcher.py que permite trocar o navegador em uso.
-bindsym $mod+b exec $jett_launcher
+# Seta o flag para não disparar a barra de navegação ao soltar o Super.
+bindsym $mod+b exec bash -c 'touch /tmp/.jett-super-used; exec $jett_launcher'
+
+# ── Super+Shift+E — Saída de emergência do administrador ─────────────────────
+# Exibe um diálogo de confirmação HTML antes de encerrar o Sway graciosamente.
+# Fluxo: jett-exit-confirm inicia servidor HTTP em 127.0.0.1:9099 → abre a
+# página no navegador disponível → aguarda POST em /confirm ou /cancel →
+# retorna código 0 (confirmado) ou 1 (cancelado/timeout) → swaymsg exit.
+# A janela do dialog é posicionada como floating e centralizada pelas regras
+# definidas acima (for_window [title="^Jett OS — Encerrar"]).
+bindsym $mod+Shift+e exec bash -c 'touch /tmp/.jett-super-used; $jett_exit_confirm && swaymsg exit'
 
 # ── Super+Shift+R — Recarrega a configuração do Sway ─────────────────────────
 # Útil durante desenvolvimento. Aplica mudanças no config sem reiniciar.
-bindsym $mod+Shift+r reload
+bindsym $mod+Shift+r exec bash -c 'touch /tmp/.jett-super-used; swaymsg reload'
 
 # ── Super+Shift+Q — Encerra a sessão Sway ────────────────────────────────────
-# Encerra o Sway completamente (e o sistema volta ao TTY).
-# Descomente para habilitar saída via teclado:
-# bindsym $mod+Shift+q exit
+# Encerra o Sway completamente sem confirmação (para uso em scripts/emergência).
+# Descomente para habilitar saída direta via teclado:
+# bindsym $mod+Shift+q exec bash -c 'touch /tmp/.jett-super-used; swaymsg exit'
 
 # ── Super+F5 — Reinicia o navegador atual ────────────────────────────────────
 # Lê o navegador configurado em navegador.conf e o reinicia.
 # Útil para recuperar de travamentos sem reiniciar o sistema.
 bindsym $mod+F5 exec bash -c '\
+    touch /tmp/.jett-super-used; \
     source /etc/jett-os/navegador.conf 2>/dev/null; \
     pkill -f "${JETT_NAVEGADOR:-firefox}" 2>/dev/null || true; \
     sleep 0.5; \
@@ -175,7 +252,7 @@ bindsym $mod+F5 exec bash -c '\
 
 # ── Super+F11 — Alterna fullscreen da janela focada ──────────────────────────
 # Permite temporariamente sair do fullscreen (para diagnóstico).
-bindsym $mod+F11 fullscreen toggle
+bindsym $mod+F11 exec bash -c 'touch /tmp/.jett-super-used; swaymsg fullscreen toggle'
 
 # ── Teclas de volume (para kiosks com áudio) ─────────────────────────────────
 bindsym XF86AudioRaiseVolume  exec pactl set-sink-volume @DEFAULT_SINK@ +5%
@@ -204,31 +281,35 @@ exec /usr/lib/xdg-user-dirs-update 2>/dev/null || true
 
 # ── Inicia o navegador configurado ───────────────────────────────────────────
 # Lê o navegador de /etc/jett-os/navegador.conf e o inicia.
-# 'exec_always' garante que o navegador reinicia ao recarregar o Sway (sway reload),
-# o que é útil para testar mudanças de configuração.
+# Aguarda o jett-ui-server estar disponível em 127.0.0.1:1312 antes de abrir
+# o navegador, garantindo que as interfaces HTML já respondem quando ele subir.
 #
 # Comportamento:
-#   1. Lê JETT_NAVEGADOR_CMD de navegador.conf
-#   2. Se o arquivo não existir, usa firefox como fallback
-#   3. Se o binário não for encontrado, exibe mensagem no sway log
+#   1. Aguarda até 5s pelo jett-ui-server (10 tentativas × 0.5s)
+#   2. Lê JETT_NAVEGADOR_CMD de navegador.conf
+#   3. Se o arquivo não existir, usa firefox como fallback
+#   4. Se o binário não for encontrado, exibe mensagem no sway log
 exec bash -c '\
-    # Aguarda o Sway estar pronto (pequeno delay de segurança)
-    sleep 0.3; \
+    # Aguarda o jett-ui-server estar pronto na porta 1312 \
+    for i in $(seq 1 10); do \
+        curl -sf http://127.0.0.1:1312/api/status >/dev/null 2>&1 && break; \
+        sleep 0.5; \
+    done; \
     \
-    # Carrega a configuração do navegador
+    # Carrega a configuração do navegador \
     if [[ -f /etc/jett-os/navegador.conf ]]; then \
         source /etc/jett-os/navegador.conf; \
     fi; \
     \
-    # Usa a variável de comando ou fallback para firefox
+    # Usa a variável de comando ou fallback para firefox \
     CMD="${JETT_NAVEGADOR_CMD:-firefox --kiosk}"; \
     \
-    # Verifica se o navegador está instalado antes de tentar iniciar
+    # Verifica se o navegador está instalado antes de tentar iniciar \
     BINARIO=$(echo "$CMD" | awk "{print \$1}"); \
     if command -v "$BINARIO" >/dev/null 2>&1; then \
         exec ${CMD}; \
     else \
-        # Fallback final: firefox
+        # Fallback final: firefox \
         exec firefox --kiosk 2>/dev/null \
             || echo "[jett-sway] ERRO: nenhum navegador encontrado" >&2; \
     fi'

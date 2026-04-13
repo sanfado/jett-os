@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Jett OS — Menu</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 380px;
+    height: 480px;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
+    font-size: 13px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #menu {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    gap: 18px;
+  }
+
+  /* ── Cabeçalho ── */
+  .cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .titulo-menu {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #333;
+    text-transform: uppercase;
+  }
+  #btn-fechar {
+    background: none;
+    border: none;
+    color: #444;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  #btn-fechar:hover { color: #888; }
+
+  /* ── Seção ── */
+  .secao {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .secao-titulo {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #333;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #111;
+  }
+
+  /* ── Linha de item ── */
+  .linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ── Volume ── */
+  #vol-label {
+    min-width: 28px;
+    text-align: right;
+    color: #888;
+    font-size: 12px;
+  }
+  #vol-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: #222;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  #vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+  }
+  #vol-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  #btn-mudo {
+    min-width: 36px;
+    padding: 4px 8px;
+    background: #111;
+    color: #555;
+    border: 1px solid #1e1e1e;
+    border-radius: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #btn-mudo:hover { background: #1a1a1a; color: #888; }
+
+  /* ── Rede ── */
+  #rede-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .rede-linha {
+    display: flex;
+    justify-content: space-between;
+    color: #555;
+    font-size: 11px;
+  }
+  .rede-linha .chave { color: #333; }
+
+  /* ── Navegadores ── */
+  #lista-navegadores {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .btn-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #111;
+    border: 1px solid #1a1a1a;
+    border-radius: 2px;
+    color: #666;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+  .btn-nav:hover { background: #161616; color: #aaa; border-color: #2a2a2a; }
+  .btn-nav.ativo  {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    font-weight: bold;
+  }
+  .btn-nav .badge-ativo {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: #000;
+    text-transform: uppercase;
+  }
+
+  /* ── Energia ── */
+  .botoes-energia {
+    display: flex;
+    gap: 8px;
+  }
+  .btn-energia {
+    flex: 1;
+    padding: 9px 0;
+    background: #111;
+    border: 1px solid #1e1e1e;
+    border-radius: 2px;
+    color: #555;
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-energia:hover { background: #1a1a1a; color: #888; }
+  .btn-energia.desligar:hover { background: #1a0000; color: #a33; border-color: #2a0000; }
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <!-- Cabeçalho -->
+  <div class="cabecalho">
+    <div class="titulo-menu">Sistema</div>
+    <button id="btn-fechar" onclick="fechar()">✕</button>
+  </div>
+
+  <!-- Volume -->
+  <div class="secao">
+    <div class="secao-titulo">Volume</div>
+    <div class="linha">
+      <span id="vol-icone">🔈</span>
+      <input type="range" id="vol-slider" min="0" max="100" value="50"
+             oninput="ajustarVolume(this.value)"
+             onchange="confirmarVolume(this.value)">
+      <span id="vol-label">50%</span>
+      <button id="btn-mudo" onclick="toggleMudo()">mudo</button>
+    </div>
+  </div>
+
+  <!-- Rede -->
+  <div class="secao">
+    <div class="secao-titulo">Rede</div>
+    <div id="rede-info">
+      <div class="rede-linha">
+        <span class="chave">Interface</span>
+        <span id="rede-iface">—</span>
+      </div>
+      <div class="rede-linha">
+        <span class="chave">IP</span>
+        <span id="rede-ip">—</span>
+      </div>
+      <div class="rede-linha">
+        <span class="chave">Status</span>
+        <span id="rede-status">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegadores -->
+  <div class="secao" id="secao-navs">
+    <div class="secao-titulo">Navegador</div>
+    <div id="lista-navegadores">
+      <div style="color:#333;font-size:11px">Carregando...</div>
+    </div>
+  </div>
+
+  <!-- Energia -->
+  <div class="secao" style="margin-top:auto">
+    <div class="secao-titulo">Energia</div>
+    <div class="botoes-energia">
+      <button class="btn-energia" onclick="poder('suspend')">Suspender</button>
+      <button class="btn-energia" onclick="poder('reboot')">Reiniciar</button>
+      <button class="btn-energia desligar" onclick="poder('shutdown')">Desligar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Estado local ──────────────────────────────────────────────────────────────
+let _volAtual = 50;
+let _volTimeout = null;
+
+// ── Inicialização ─────────────────────────────────────────────────────────────
+async function inicializar() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return;
+    const dados = await res.json();
+
+    // Volume
+    if (dados.volume && !dados.volume.erro) {
+      _volAtual = dados.volume.volume ?? 50;
+      const mudo = dados.volume.mudo;
+      document.getElementById('vol-slider').value = _volAtual;
+      atualizarUIVolume(_volAtual, mudo);
+    }
+
+    // Rede
+    if (dados.rede) {
+      const r = dados.rede;
+      document.getElementById('rede-iface').textContent = r.interface || '—';
+      document.getElementById('rede-ip').textContent = r.ip || '—';
+      document.getElementById('rede-status').textContent =
+        !r.conectado ? 'desconectado' :
+        r.status === 'online' ? 'online' : 'sem internet';
+    }
+
+    // Navegadores
+    if (Array.isArray(dados.navegadores)) {
+      renderizarNavegadores(dados.navegadores);
+    }
+  } catch (e) {}
+}
+
+// ── Volume ────────────────────────────────────────────────────────────────────
+function atualizarUIVolume(vol, mudo) {
+  document.getElementById('vol-icone').textContent =
+    mudo ? '🔇' : (vol < 30 ? '🔈' : '🔊');
+  document.getElementById('vol-label').textContent = mudo ? 'mudo' : `${vol}%`;
+  document.getElementById('btn-mudo').textContent = mudo ? 'unmute' : 'mudo';
+}
+
+function ajustarVolume(val) {
+  _volAtual = parseInt(val);
+  atualizarUIVolume(_volAtual, false);
+  // Debounce: só envia após 200ms de pausa
+  clearTimeout(_volTimeout);
+  _volTimeout = setTimeout(() => confirmarVolume(val), 200);
+}
+
+async function confirmarVolume(val) {
+  try {
+    await fetch('/api/volume/set', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: parseInt(val) }),
+    });
+  } catch (e) {}
+}
+
+async function toggleMudo() {
+  try {
+    const res = await fetch('/api/volume/mute', { method: 'POST' });
+    const dados = await res.json();
+    if (dados.volume !== undefined) {
+      document.getElementById('vol-slider').value = dados.volume;
+      atualizarUIVolume(dados.volume, dados.mudo);
+    }
+  } catch (e) {}
+}
+
+// ── Navegadores ───────────────────────────────────────────────────────────────
+function renderizarNavegadores(lista) {
+  const container = document.getElementById('lista-navegadores');
+  if (!lista.length) {
+    container.innerHTML = '<div style="color:#333;font-size:11px">Nenhum navegador instalado</div>';
+    return;
+  }
+  container.innerHTML = lista.map(nav => `
+    <button class="btn-nav${nav.ativo ? ' ativo' : ''}"
+            onclick="trocarNavegador('${nav.id}')">
+      <span>${nav.nome}${nav.versao ? ` <small style="color:${nav.ativo?'#555':'#333'}">${nav.versao}</small>` : ''}</span>
+      ${nav.ativo ? '<span class="badge-ativo">● em uso</span>' : ''}
+    </button>
+  `).join('');
+}
+
+async function trocarNavegador(id) {
+  try {
+    await fetch('/api/browser/switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ browser: id }),
+    });
+    fechar();
+  } catch (e) {}
+}
+
+// ── Energia ───────────────────────────────────────────────────────────────────
+async function poder(acao) {
+  const msgs = { shutdown: 'Desligar?', reboot: 'Reiniciar?', suspend: 'Suspender?' };
+  if (!confirm(msgs[acao] || acao)) return;
+  try {
+    await fetch(`/api/power/${acao}`, { method: 'POST' });
+  } catch (e) {}
+  fechar();
+}
+
+// ── Fechar ────────────────────────────────────────────────────────────────────
+function fechar() {
+  try { window.close(); } catch(e) {}
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fechar();
+});
+
+// ── Iniciar ───────────────────────────────────────────────────────────────────
+inicializar();
+</script>
+</body>
+</html>

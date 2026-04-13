@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Jett OS — Nav</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 56px;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
+    font-size: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 18px;
+    gap: 12px;
+  }
+
+  /* ── Lado esquerdo: logo ── */
+  #logo {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #444;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Centro: relógio ── */
+  #relogio {
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 2px;
+    text-align: center;
+    flex: 1;
+  }
+
+  /* ── Lado direito: status ── */
+  #status {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+
+  .item-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #888;
+    font-size: 11px;
+  }
+
+  .item-status .icone {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .item-status .valor {
+    min-width: 28px;
+    text-align: right;
+  }
+
+  /* Volume: barra visual */
+  #vol-barra {
+    width: 48px;
+    height: 3px;
+    background: #222;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #vol-fill {
+    height: 100%;
+    background: #555;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* Indicador de rede */
+  #rede-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #333;
+    flex-shrink: 0;
+    transition: background 0.5s;
+  }
+  #rede-dot.online   { background: #3a3; }
+  #rede-dot.offline  { background: #733; }
+</style>
+</head>
+<body>
+
+<div id="barra">
+  <div id="logo">JETT OS</div>
+
+  <div id="relogio">--:--:--</div>
+
+  <div id="status">
+    <!-- Rede -->
+    <div class="item-status" title="Rede">
+      <div id="rede-dot"></div>
+      <span id="rede-iface" class="valor">---</span>
+    </div>
+
+    <!-- Volume -->
+    <div class="item-status" title="Volume">
+      <span id="vol-icone" class="icone">🔈</span>
+      <div id="vol-barra"><div id="vol-fill"></div></div>
+      <span id="vol-valor" class="valor">--%</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Relógio ──────────────────────────────────────────────────────────────────
+function atualizarRelogio() {
+  const agora = new Date();
+  const h = String(agora.getHours()).padStart(2, '0');
+  const m = String(agora.getMinutes()).padStart(2, '0');
+  const s = String(agora.getSeconds()).padStart(2, '0');
+  document.getElementById('relogio').textContent = `${h}:${m}:${s}`;
+}
+
+// ── Status do sistema ─────────────────────────────────────────────────────────
+async function atualizarStatus() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return;
+    const dados = await res.json();
+
+    // Volume
+    if (dados.volume && !dados.volume.erro) {
+      const vol = dados.volume.volume ?? 0;
+      const mudo = dados.volume.mudo;
+      document.getElementById('vol-icone').textContent = mudo ? '🔇' : (vol < 30 ? '🔈' : '🔊');
+      document.getElementById('vol-valor').textContent = mudo ? 'mudo' : `${vol}%`;
+      document.getElementById('vol-fill').style.width = `${vol}%`;
+    }
+
+    // Rede
+    if (dados.rede) {
+      const dot = document.getElementById('rede-dot');
+      const iface = document.getElementById('rede-iface');
+      if (dados.rede.conectado) {
+        dot.className = dados.rede.status === 'online' ? 'online' : 'offline';
+        iface.textContent = dados.rede.interface || 'lan';
+      } else {
+        dot.className = 'offline';
+        iface.textContent = 'off';
+      }
+    }
+  } catch (e) {
+    // Servidor temporariamente indisponível — ignora silenciosamente
+  }
+}
+
+// ── Inicialização ─────────────────────────────────────────────────────────────
+atualizarRelogio();
+atualizarStatus();
+
+setInterval(atualizarRelogio, 1000);
+setInterval(atualizarStatus, 5000);
+
+// Esc fecha a barra
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { try { window.close(); } catch(err) {} }
+});
+</script>
+</body>
+</html>

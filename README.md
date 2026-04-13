@@ -43,11 +43,54 @@ Jett OS é uma distribuição Linux minimalista construída com um único propó
 
 ```
 jett-os/
-├── build/        # Scripts de construção da ISO
-├── config/       # Configurações do sistema e dos navegadores
-├── launcher/     # Mini-launcher de seleção de navegador (Super+B)
-├── docs/         # Documentação do projeto
-├── tests/        # Scripts de teste de latência e validação
+├── build/
+│   ├── build-base.sh          # Orquestrador — chama os módulos em sequência
+│   ├── base/                  # Módulos do build da base do sistema
+│   │   ├── lib.sh             # Variáveis, cores e funções de log compartilhadas
+│   │   ├── 01-update.sh       # Atualiza repositórios e sistema base
+│   │   ├── 02-remove-bloat.sh # Remove pacotes desnecessários
+│   │   ├── 03-install-packages.sh # Instala Sway, fontes, áudio, utilitários
+│   │   ├── 04-user.sh         # Cria e configura o usuário kiosk 'jett'
+│   │   ├── 05-sway.sh         # Configura Sway, serviços systemd e scripts
+│   │   ├── 06-network.sh      # DHCP via systemd-networkd e hook de DNS
+│   │   └── 07-bbr.sh          # TCP BBR e configuração do navegador padrão
+│   └── browsers/              # Scripts de instalação de cada navegador
+│       ├── install-brave.sh
+│       ├── install-edge.sh
+│       ├── install-thorium.sh
+│       ├── install-opera-gx.sh
+│       └── install-firefox.sh
+│
+├── config/
+│   ├── sway/
+│   │   └── config             # Configuração do Sway (atalhos, for_window, exec)
+│   └── browsers/              # Perfis de flags de cada navegador
+│       ├── brave.conf
+│       ├── edge.conf
+│       ├── thorium.conf
+│       ├── opera-gx.conf
+│       └── firefox.conf
+│
+├── launcher/
+│   ├── scripts/               # Executáveis do launcher (instalados em /usr/local/bin/)
+│   │   ├── jett-launcher.py   # UI tkinter de seleção de navegador (Super+B)
+│   │   ├── jett-switch.sh     # Troca o navegador ativo em runtime
+│   │   ├── jett-exit-confirm  # Dialog HTML de confirmação de saída (Super+Shift+E)
+│   │   ├── jett-bridge.sh     # Ponte HTML → OS (volume, rede, USB, energia)
+│   │   ├── jett-nav-toggle.sh # Alterna a barra de navegação (Super sozinho)
+│   │   └── jett-menu-toggle.sh # Alterna o menu de sistema (Super+X)
+│   ├── server/
+│   │   └── jett-ui-server.py  # Servidor HTTP 127.0.0.1:1312 (API + HTML)
+│   └── ui/                    # Interfaces HTML servidas pelo jett-ui-server
+│       ├── nav.html           # Barra de navegação (relógio, rede, volume)
+│       ├── menu.html          # Menu de sistema (volume, rede, navegadores, energia)
+│       ├── wizard.html        # Assistente de primeiro boot
+│       └── files.html         # Gerenciador de dispositivos USB
+│
+├── docs/
+│   └── LICENSE                # Licença MIT
+│
+├── tests/                     # Scripts de teste de latência e validação
 └── README.md
 ```
 
@@ -110,7 +153,7 @@ Reporte bugs e sugestões via [Issues](../../issues).
 
 **O sistema é o navegador.**
 
-Cada milissegundo entre o POST da BIOS e o primeiro pixel do navegador é desperdício. Jett OS elimina esse desperdício. Sem gerenciador de janelas, sem barra de tarefas, sem processos em segundo plano competindo por recursos. Apenas hardware, kernel, Wayland, Cage, e o navegador da sua escolha.
+Cada milissegundo entre o POST da BIOS e o primeiro pixel do navegador é desperdício. Jett OS elimina esse desperdício. Sem gerenciador de janelas, sem barra de tarefas, sem processos em segundo plano competindo por recursos. Apenas hardware, kernel, Wayland, Sway, e o navegador da sua escolha.
 
 ---
 
