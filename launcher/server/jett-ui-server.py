@@ -22,12 +22,25 @@
 #   POST /api/bluetooth/scan       → busca novos dispositivos (5 s)
 #   POST /api/bluetooth/pair       → pareia dispositivo (body: {"address":"AA:BB:..."})
 #   POST /api/bluetooth/remove     → remove pareamento (body: {"address":"..."})
+#   GET  /api/bluetooth/power      → estado de energia bluetooth
+#   POST /api/bluetooth/power_toggle → liga/desliga bluetooth
+#   GET  /api/wifi/status          → estado WiFi e SSID atual
+#   GET  /api/wifi/list            → redes disponíveis
+#   POST /api/wifi/toggle          → liga/desliga WiFi
+#   POST /api/wifi/connect         → conecta rede (body: {"ssid":"...","senha":"..."})
+#   POST /api/wifi/disconnect      → desconecta WiFi atual
 #   GET  /api/files/list?path=     → lista diretório (padrão: /home/jett)
 #   POST /api/files/move           → move arquivo (body: {"src":"...","dst":"..."})
 #   POST /api/files/copy           → copia arquivo (body: {"src":"...","dst":"..."})
 #   POST /api/files/rename         → renomeia (body: {"src":"...","name":"..."})
 #   POST /api/files/delete         → remove (body: {"path":"..."})
 #   POST /api/files/mkdir          → cria dir (body: {"path":"..."})
+#   GET  /api/system/version       → versão Jett OS, base, kernel
+#   GET  /api/system/updates/check → contagem de atualizações disponíveis
+#   POST /api/system/updates/install → instala atualizações disponíveis
+#   GET  /api/pwas/list            → PWAs instalados
+#   GET  /api/devices/gamepads     → gamepads detectados
+#   POST /api/window/open          → abre janela browser --app=URL (body: {"url":"..."})
 #   POST /api/volume/up            → aumenta volume 5%
 #   POST /api/volume/down          → diminui volume 5%
 #   POST /api/volume/mute          → alterna mudo
@@ -243,8 +256,48 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(dados)
             return
 
+        if caminho == '/api/bluetooth/power':
+            self.responder_json(bridge('bluetooth', 'power_status'))
+            return
+
+        if caminho == '/api/wifi/status':
+            self.responder_json(bridge('wifi', 'status'))
+            return
+
+        if caminho == '/api/wifi/list':
+            dados = bridge('wifi', 'list')
+            if isinstance(dados, list):
+                self.responder_json({'redes': dados})
+            else:
+                self.responder_json(dados)
+            return
+
         if caminho == '/api/nav/status':
             self.responder_json(bridge('nav', 'status'))
+            return
+
+        if caminho == '/api/system/version':
+            self.responder_json(bridge('system', 'version'))
+            return
+
+        if caminho == '/api/system/updates/check':
+            self.responder_json(bridge('system', 'updates_check'))
+            return
+
+        if caminho == '/api/pwas/list':
+            dados = bridge('pwas', 'list')
+            if isinstance(dados, list):
+                self.responder_json({'pwas': dados})
+            else:
+                self.responder_json(dados)
+            return
+
+        if caminho == '/api/devices/gamepads':
+            dados = bridge('devices', 'gamepads')
+            if isinstance(dados, list):
+                self.responder_json({'gamepads': dados})
+            else:
+                self.responder_json(dados)
             return
 
         if caminho == '/api/files/list':
@@ -327,6 +380,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
             else:
                 self.responder_json({'erro': 'campo "address" ausente'}, 400)
 
+        elif caminho == '/api/bluetooth/power_toggle':
+            self.responder_json(bridge('bluetooth', 'power_toggle'))
+
+        # WiFi
+        elif caminho == '/api/wifi/toggle':
+            self.responder_json(bridge('wifi', 'toggle'))
+
+        elif caminho == '/api/wifi/connect':
+            corpo = self.ler_corpo_json()
+            ssid = corpo.get('ssid', '')
+            senha = corpo.get('senha', '')
+            if ssid:
+                self.responder_json(bridge('wifi', 'connect', ssid, senha))
+            else:
+                self.responder_json({'erro': 'campo "ssid" ausente'}, 400)
+
+        elif caminho == '/api/wifi/disconnect':
+            self.responder_json(bridge('wifi', 'disconnect'))
+
         # Arquivos
         elif caminho == '/api/files/move':
             corpo = self.ler_corpo_json()
@@ -367,6 +439,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(bridge('files', 'mkdir', path))
             else:
                 self.responder_json({'erro': 'campo "path" ausente'}, 400)
+
+        # Sistema
+        elif caminho == '/api/system/updates/install':
+            self.responder_json(bridge('system', 'updates_install'))
+
+        # Window
+        elif caminho == '/api/window/open':
+            corpo = self.ler_corpo_json()
+            url = corpo.get('url', '')
+            if url:
+                self.responder_json(bridge('window', 'open', url))
+            else:
+                self.responder_json({'erro': 'campo "url" ausente'}, 400)
 
         # Nav — controle da barra de navegação via xdotool
         elif caminho == '/api/nav/navigate':

@@ -40,7 +40,26 @@
 #   nav nexttab                   — próxima aba (Ctrl+Tab via xdotool)
 #   nav prevtab                   — aba anterior (Ctrl+Shift+Tab via xdotool)
 #
+#   wifi status                   — estado WiFi e SSID atual (JSON)
+#   wifi toggle                   — liga/desliga WiFi
+#   wifi list                     — redes disponíveis (JSON)
+#   wifi connect <ssid> [senha]   — conecta a rede WiFi
+#   wifi disconnect               — desconecta WiFi atual
+#
+#   bluetooth power_status        — estado de energia Bluetooth (JSON)
+#   bluetooth power_toggle        — liga/desliga Bluetooth
+#   (demais subcomandos já existentes: list, scan, pair, remove)
+#
 #   system info                   — hostname, uptime, OS, arch (JSON)
+#   system version                — versão Jett OS, base Debian, kernel (JSON)
+#   system updates_check          — contagem de atualizações disponíveis (JSON)
+#   system updates_install        — instala atualizações via sudo -n apt-get upgrade
+#
+#   pwas list                     — PWAs instalados (~/.local/share/applications, JSON)
+#
+#   devices gamepads              — gamepads detectados (/dev/input/js*, JSON)
+#
+#   window open <url>             — abre janela browser --app=URL (detecta navegador ativo)
 #
 # Segurança de arquivos:
 #   Operações em files/* são restritas a /home/jett, /media, /mnt e /run/media.
@@ -335,6 +354,30 @@ bluetooth_remove() {
     printf '{"ok":true,"endereco":"%s"}\n' "$addr"
 }
 
+bluetooth_power_status() {
+    cmd_disponivel bluetoothctl || erro_json "bluetoothctl não encontrado"
+    local estado
+    estado=$(bluetoothctl show 2>/dev/null | grep 'Powered:' | awk '{print $2}')
+    if [[ "$estado" == "yes" ]]; then
+        printf '{"ligado":true}\n'
+    else
+        printf '{"ligado":false}\n'
+    fi
+}
+
+bluetooth_power_toggle() {
+    cmd_disponivel bluetoothctl || erro_json "bluetoothctl não encontrado"
+    local estado
+    estado=$(bluetoothctl show 2>/dev/null | grep 'Powered:' | awk '{print $2}')
+    if [[ "$estado" == "yes" ]]; then
+        bluetoothctl power off >> /tmp/jett-bridge.log 2>&1 || true
+        printf '{"ok":true,"ligado":false}\n'
+    else
+        bluetoothctl power on  >> /tmp/jett-bridge.log 2>&1 || true
+        printf '{"ok":true,"ligado":true}\n'
+    fi
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # ARQUIVOS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -543,6 +586,96 @@ nav_prevtab() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# WIFI
+# ─────────────────────────────────────────────────────────────────────────────
+
+wifi_status() {
+    cmd_disponivel nmcli || erro_json "nmcli não encontrado"
+    local ligado
+    ligado=$(nmcli radio wifi 2>/dev/null | tr -d '\n')
+    if [[ "$ligado" == "enabled" ]]; then
+        local ssid
+        ssid=$(nmcli -t -e no -f ACTIVE,SSID dev wifi list 2>/dev/null \
+            | awk -F: '/^yes/{for(i=2;i<=NF;i++) printf "%s%s",(i>2?":":""),$i; exit}')
+        printf '{"ligado":true,"ssid":"%s"}\n' "${ssid//\"/\\\"}"
+    else
+        printf '{"ligado":false,"ssid":""}\n'
+    fi
+}
+
+wifi_toggle() {
+    cmd_disponivel nmcli || erro_json "nmcli não encontrado"
+    local estado
+    estado=$(nmcli radio wifi 2>/dev/null | tr -d '\n')
+    if [[ "$estado" == "enabled" ]]; then
+        nmcli radio wifi off 2>/dev/null || true
+        printf '{"ok":true,"ligado":false}\n'
+    else
+        nmcli radio wifi on 2>/dev/null || true
+        printf '{"ok":true,"ligado":true}\n'
+    fi
+}
+
+wifi_list() {
+    cmd_disponivel nmcli || erro_json "nmcli não encontrado"
+    nmcli dev wifi rescan 2>/dev/null || true
+    local primeira=true
+    printf '['
+    while IFS= read -r linha; do
+        [[ -z "$linha" ]] && continue
+        # Formato -t -e no: IN-USE:SSID:SIGNAL:SECURITY
+        # SSID pode conter ':', então pegamos com awk pelo número de campos
+        local em_uso ssid sinal seguranca n_campos
+        em_uso=$(echo "$linha" | awk -F: '{print $1}')
+        seguranca=$(echo "$linha" | awk -F: '{print $NF}')
+        sinal=$(echo "$linha" | awk -F: '{print $(NF-1)}')
+        n_campos=$(echo "$linha" | awk -F: '{print NF}')
+        if [[ "$n_campos" -ge 4 ]]; then
+            ssid=$(echo "$linha" | awk -F: -v n="$n_campos" \
+                '{for(i=2;i<=n-2;i++) printf "%s%s",(i>2?":":""),$i}')
+        else
+            ssid=$(echo "$linha" | awk -F: '{print $2}')
+        fi
+        [[ -z "$ssid" ]] && continue
+        local ativo=false seguro=false
+        [[ "$em_uso" == "*" ]] && ativo=true
+        [[ "$seguranca" != "--" && -n "$seguranca" ]] && seguro=true
+        "$primeira" || printf ','
+        printf '{"ssid":"%s","sinal":%s,"seguro":%s,"ativo":%s}' \
+            "${ssid//\"/\\\"}" "${sinal:-0}" "$seguro" "$ativo"
+        primeira=false
+    done < <(nmcli -t -e no -f IN-USE,SSID,SIGNAL,SECURITY dev wifi list 2>/dev/null)
+    printf ']\n'
+}
+
+wifi_connect() {
+    local ssid="${1:-}" senha="${2:-}"
+    [[ -z "$ssid" ]] && erro_json "SSID não especificado"
+    cmd_disponivel nmcli || erro_json "nmcli não encontrado"
+    if [[ -n "$senha" ]]; then
+        nmcli dev wifi connect "$ssid" password "$senha" \
+            >> /tmp/jett-bridge.log 2>&1 \
+            || erro_json "falha ao conectar em ${ssid}"
+    else
+        nmcli dev wifi connect "$ssid" \
+            >> /tmp/jett-bridge.log 2>&1 \
+            || erro_json "falha ao conectar em ${ssid}"
+    fi
+    printf '{"ok":true,"ssid":"%s"}\n' "${ssid//\"/\\\"}"
+}
+
+wifi_disconnect() {
+    cmd_disponivel nmcli || erro_json "nmcli não encontrado"
+    local dev_wifi
+    dev_wifi=$(nmcli -t -f DEVICE,TYPE dev 2>/dev/null \
+        | awk -F: '$2=="wifi"{print $1; exit}')
+    [[ -z "$dev_wifi" ]] && erro_json "interface WiFi não encontrada"
+    nmcli dev disconnect "$dev_wifi" >> /tmp/jett-bridge.log 2>&1 \
+        || erro_json "falha ao desconectar WiFi"
+    printf '{"ok":true}\n'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # SISTEMA
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -554,6 +687,130 @@ system_info() {
     local h=$(( uptime_seg / 3600 )) m=$(( (uptime_seg % 3600) / 60 ))
     printf '{"hostname":"%s","uptime":"%dh%dm","os":"Debian %s","arch":"%s"}\n' \
         "$hostname" "$h" "$m" "$versao_os" "$(uname -m)"
+}
+
+system_version() {
+    local versao_debian build_id kernel
+    versao_debian=$(cat /etc/debian_version 2>/dev/null | tr -d '\n' || echo "desconhecido")
+    build_id=$(grep 'JETT_VERSAO' "${CONF_JETT}/versao.conf" 2>/dev/null \
+        | cut -d= -f2 | tr -d '"' | tr -d '\n' || echo "dev")
+    kernel=$(uname -r 2>/dev/null || echo "desconhecido")
+    printf '{"versao_jett":"%s","base":"Debian %s","kernel":"%s"}\n' \
+        "${build_id}" "${versao_debian}" "${kernel}"
+}
+
+system_updates_check() {
+    # Usa cache do apt — não requer root nem executa apt-get update
+    local contagem
+    contagem=$(apt list --upgradable 2>/dev/null | grep -c '/' || true)
+    printf '{"atualizacoes":%s}\n' "${contagem:-0}"
+}
+
+system_updates_install() {
+    # Requer: jett ALL=(root) NOPASSWD: /usr/bin/apt-get upgrade -y
+    sudo -n apt-get upgrade -y >> /tmp/jett-bridge.log 2>&1 \
+        || erro_json "falha ao instalar atualizações (verifique sudoers)"
+    printf '{"ok":true}\n'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PWAS
+# ─────────────────────────────────────────────────────────────────────────────
+
+pwas_list() {
+    local dir_apps="${HOME}/.local/share/applications"
+    [[ -d "$dir_apps" ]] || { printf '[]\n'; return; }
+    local primeira=true
+    printf '['
+    # .desktop de PWAs criados pelos navegadores Chromium/Edge/Brave
+    while IFS= read -r desktop; do
+        local nome url
+        nome=$(grep -m1 '^Name=' "$desktop" 2>/dev/null | cut -d= -f2-)
+        # X-WebApp-Url (padrão Edge/Chrome PWA)
+        url=$(grep -m1 '^X-WebApp-Url=' "$desktop" 2>/dev/null | cut -d= -f2-)
+        # Fallback: extrai --app=URL da linha Exec=
+        if [[ -z "$url" ]]; then
+            url=$(grep -m1 '^Exec=' "$desktop" 2>/dev/null \
+                | grep -oP '(?<=--app=)\S+' | head -1)
+        fi
+        [[ -z "$nome" || -z "$url" ]] && continue
+        "$primeira" || printf ','
+        printf '{"nome":"%s","url":"%s"}' \
+            "${nome//\"/\\\"}" "${url//\"/\\\"}"
+        primeira=false
+    done < <(find "$dir_apps" -maxdepth 1 \
+        \( -name 'chrome-*.desktop' -o -name 'msedge-*.desktop' \
+           -o -name 'brave-*.desktop' \) 2>/dev/null | sort)
+    printf ']\n'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEVICES
+# ─────────────────────────────────────────────────────────────────────────────
+
+devices_gamepads() {
+    local primeira=true
+    printf '['
+    for js in /dev/input/js*; do
+        [[ -e "$js" ]] || continue
+        local num nome
+        num=${js##*/js}
+        nome=""
+        local name_file="/sys/class/input/js${num}/device/name"
+        [[ -f "$name_file" ]] && nome=$(cat "$name_file" 2>/dev/null | tr -d '\n')
+        "$primeira" || printf ','
+        printf '{"dispositivo":"%s","nome":"%s"}' \
+            "${js//\"/\\\"}" "${nome//\"/\\\"}"
+        primeira=false
+    done
+    printf ']\n'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WINDOW
+# ─────────────────────────────────────────────────────────────────────────────
+
+window_open() {
+    local url="${1:-}"
+    [[ -z "$url" ]] && erro_json "URL não especificada"
+
+    local conf_instalados="${CONF_JETT}/navegadores-instalados.conf"
+    local conf_ativo="${CONF_JETT}/navegador.conf"
+    local binario=""
+
+    # Tenta usar o navegador ativo configurado
+    if [[ -f "$conf_ativo" && -f "$conf_instalados" ]]; then
+        local nav_ativo
+        nav_ativo=$(bash -c "source '${conf_ativo}' 2>/dev/null; echo \"\${JETT_NAVEGADOR:-}\"" 2>/dev/null || true)
+        if [[ -n "$nav_ativo" ]]; then
+            declare -A _id2chave=([brave]="BRAVE" [edge]="EDGE" [thorium]="THORIUM" [opera-gx]="OPERA" [firefox]="FIREFOX")
+            local chave="${_id2chave[$nav_ativo]:-}"
+            if [[ -n "$chave" ]]; then
+                binario=$(bash -c "source '${conf_instalados}' 2>/dev/null; echo \"\${JETT_${chave}_BINARIO:-}\"" 2>/dev/null || true)
+            fi
+        fi
+    fi
+
+    # Fallback: candidatos em ordem de preferência
+    if [[ -z "$binario" ]] || ! command -v "$binario" &>/dev/null; then
+        local candidatos=(brave-browser microsoft-edge-stable thorium-browser opera firefox)
+        for c in "${candidatos[@]}"; do
+            if command -v "$c" &>/dev/null; then
+                binario="$c"
+                break
+            fi
+        done
+    fi
+
+    [[ -z "$binario" ]] && erro_json "nenhum navegador disponível"
+
+    if [[ "$binario" == "firefox" ]]; then
+        "$binario" --new-instance --new-window "$url" &
+    else
+        "$binario" --new-window "--app=${url}" --no-first-run &
+    fi
+    disown
+    printf '{"ok":true,"url":"%s"}\n' "${url//\"/\\\"}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -597,11 +854,13 @@ case "$COMANDO" in
         esac ;;
     bluetooth)
         case "$SUBCOMANDO" in
-            list)   bluetooth_list ;;
-            scan)   bluetooth_scan ;;
-            pair)   bluetooth_pair "$ARG1" ;;
-            remove) bluetooth_remove "$ARG1" ;;
-            *)      erro_json "subcomando de bluetooth inválido: ${SUBCOMANDO}" ;;
+            list)          bluetooth_list ;;
+            scan)          bluetooth_scan ;;
+            pair)          bluetooth_pair "$ARG1" ;;
+            remove)        bluetooth_remove "$ARG1" ;;
+            power_status)  bluetooth_power_status ;;
+            power_toggle)  bluetooth_power_toggle ;;
+            *)             erro_json "subcomando de bluetooth inválido: ${SUBCOMANDO}" ;;
         esac ;;
     files)
         case "$SUBCOMANDO" in
@@ -623,10 +882,37 @@ case "$COMANDO" in
             prevtab)  nav_prevtab ;;
             *)        erro_json "subcomando de nav inválido: ${SUBCOMANDO}" ;;
         esac ;;
+    wifi)
+        case "$SUBCOMANDO" in
+            status)     wifi_status ;;
+            toggle)     wifi_toggle ;;
+            list)       wifi_list ;;
+            connect)    wifi_connect "$ARG1" "$ARG2" ;;
+            disconnect) wifi_disconnect ;;
+            *)          erro_json "subcomando de wifi inválido: ${SUBCOMANDO}" ;;
+        esac ;;
     system)
         case "$SUBCOMANDO" in
-            info)   system_info ;;
-            *)      erro_json "subcomando de system inválido: ${SUBCOMANDO}" ;;
+            info)             system_info ;;
+            version)          system_version ;;
+            updates_check)    system_updates_check ;;
+            updates_install)  system_updates_install ;;
+            *)                erro_json "subcomando de system inválido: ${SUBCOMANDO}" ;;
+        esac ;;
+    pwas)
+        case "$SUBCOMANDO" in
+            list) pwas_list ;;
+            *)    erro_json "subcomando de pwas inválido: ${SUBCOMANDO}" ;;
+        esac ;;
+    devices)
+        case "$SUBCOMANDO" in
+            gamepads) devices_gamepads ;;
+            *)        erro_json "subcomando de devices inválido: ${SUBCOMANDO}" ;;
+        esac ;;
+    window)
+        case "$SUBCOMANDO" in
+            open) window_open "$ARG1" ;;
+            *)    erro_json "subcomando de window inválido: ${SUBCOMANDO}" ;;
         esac ;;
     *)
         erro_json "comando desconhecido: ${COMANDO:-vazio}" ;;

@@ -12,7 +12,9 @@
 #   3. Caso contrário: abre o menu em http://127.0.0.1:1312/menu
 #
 # A janela é posicionada pelo Sway via:
-#   for_window [title="^Jett OS — Menu"] { floating enable; resize set 380 480; move position center; }
+#   for_window [title="^Jett OS — Menu"] { floating enable; resize set 380 580; move position center; }
+#
+# O auto-hide de 30 s é gerenciado pelo JS do menu.html (resetarAutoHide).
 #
 # Instalação:
 #   sudo cp launcher/jett-menu-toggle.sh /usr/local/bin/jett-menu-toggle

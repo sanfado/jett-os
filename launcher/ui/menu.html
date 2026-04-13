@@ -8,9 +8,9 @@
 
   html, body {
     width: 380px;
-    height: 480px;
+    height: 580px;
     overflow: hidden;
-    background: #0a0a0a;
+    background: rgba(0,0,0,0.92);
     color: #fff;
     font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
     font-size: 13px;
@@ -18,461 +18,891 @@
     -webkit-user-select: none;
   }
 
-  #menu {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
+  #menu { display: flex; flex-direction: column; height: 100%; }
 
   /* ── Cabeçalho ── */
   #cabecalho {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px 10px;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px 10px; flex-shrink: 0;
+    border-bottom: 1px solid #0d0d0d;
   }
-  .titulo-menu {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #333;
-    text-transform: uppercase;
-  }
+  .titulo-menu { font-size: 11px; letter-spacing: 3px; color: #2a2a2a; text-transform: uppercase; }
   #btn-fechar {
-    background: none;
-    border: none;
-    color: #444;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
+    background: none; border: none; color: #333; font-size: 18px;
+    cursor: pointer; padding: 0 4px; line-height: 1;
   }
   #btn-fechar:hover { color: #888; }
 
-  /* ── Área de conteúdo scrollável ── */
+  /* ── Conteúdo scrollável ── */
   #conteudo {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    /* barra de scroll discreta */
-    scrollbar-width: thin;
-    scrollbar-color: #1a1a1a transparent;
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 8px 18px 12px;
+    display: flex; flex-direction: column; gap: 14px;
+    scrollbar-width: thin; scrollbar-color: #1a1a1a transparent;
   }
   #conteudo::-webkit-scrollbar { width: 3px; }
   #conteudo::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
 
-  /* ── Rodapé — energia (fixo) ── */
-  #secao-energia {
-    padding: 10px 20px 16px;
-    flex-shrink: 0;
-    border-top: 1px solid #0d0d0d;
-  }
+  /* ── Seção ── */
+  .secao { display: flex; flex-direction: column; gap: 7px; }
 
-  /* ── Seção genérica ── */
-  .secao { display: flex; flex-direction: column; gap: 8px; }
-  .secao-titulo {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: #2a2a2a;
-    text-transform: uppercase;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #111;
+  .secao-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 5px; border-bottom: 1px solid #0d0d0d;
   }
+  .secao-titulo {
+    font-size: 10px; letter-spacing: 2px; color: #2a2a2a;
+    text-transform: uppercase;
+  }
+  .secao-acoes { display: flex; gap: 5px; align-items: center; }
+
+  /* ── Botão genérico pequeno ── */
+  .btn-acao {
+    padding: 3px 10px; font-size: 10px; font-family: inherit;
+    background: #111; border: 1px solid #1a1a1a; border-radius: 2px;
+    color: #444; cursor: pointer; white-space: nowrap;
+  }
+  .btn-acao:hover { background: #161616; color: #777; }
+  .btn-acao:disabled { opacity: 0.35; cursor: default; }
+
+  /* ── Toggle pill (liga/desliga) ── */
+  .toggle-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px 3px 7px; font-size: 10px; font-family: inherit;
+    background: #111; border: 1px solid #1a1a1a; border-radius: 10px;
+    color: #333; cursor: pointer; transition: color .15s, border-color .15s;
+  }
+  .toggle-pill .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #1e1e1e; transition: background .15s;
+  }
+  .toggle-pill.on { color: #3a3; border-color: #1a2a1a; }
+  .toggle-pill.on .dot { background: #3a3; }
 
   /* ── Volume ── */
-  .linha { display: flex; align-items: center; gap: 10px; }
-  #vol-label { min-width: 28px; text-align: right; color: #888; font-size: 12px; }
+  .linha { display: flex; align-items: center; gap: 8px; }
+  #vol-btn-mudo {
+    background: none; border: none; cursor: pointer; font-size: 18px;
+    padding: 0 2px; line-height: 1; flex-shrink: 0;
+  }
   #vol-slider {
-    flex: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 3px;
-    background: #222;
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 3px; background: #1e1e1e; border-radius: 2px; outline: none; cursor: pointer;
   }
   #vol-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
+    -webkit-appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: #fff; cursor: pointer;
   }
   #vol-slider::-moz-range-thumb {
-    width: 14px; height: 14px;
-    border-radius: 50%; background: #fff; border: none; cursor: pointer;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: #fff; border: none; cursor: pointer;
   }
-  #btn-mudo {
-    min-width: 40px;
-    padding: 4px 8px;
-    background: #111;
-    color: #555;
-    border: 1px solid #1e1e1e;
-    border-radius: 2px;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  #btn-mudo:hover { background: #1a1a1a; color: #888; }
+  #vol-label { min-width: 30px; text-align: right; font-size: 11px; color: #666; }
 
-  /* ── Rede ── */
-  .info-grid { display: flex; flex-direction: column; gap: 3px; }
-  .info-linha {
-    display: flex;
-    justify-content: space-between;
-    color: #555;
-    font-size: 11px;
+  /* ── WiFi ── */
+  #wifi-status-row {
+    font-size: 11px; color: #444;
+    display: flex; align-items: center; gap: 6px;
   }
-  .info-linha .chave { color: #2a2a2a; }
+  #wifi-ssid-atual { color: #3a3; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* ── Navegadores ── */
-  #lista-navegadores { display: flex; flex-direction: column; gap: 5px; }
-  .btn-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 12px;
-    background: #111;
-    border: 1px solid #1a1a1a;
-    border-radius: 2px;
-    color: #666;
-    font-size: 12px;
-    font-family: inherit;
-    cursor: pointer;
-    text-align: left;
+  #wifi-redes { display: flex; flex-direction: column; gap: 4px; }
+  .item-rede {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 8px; background: #0a0a0a; border: 1px solid transparent;
+    border-radius: 2px; cursor: pointer;
   }
-  .btn-nav:hover { background: #161616; color: #aaa; border-color: #2a2a2a; }
-  .btn-nav.ativo { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
-  .btn-nav .badge-ativo { font-size: 9px; letter-spacing: 1px; color: #000; text-transform: uppercase; }
+  .item-rede:hover { border-color: #1a1a1a; background: #101010; }
+  .item-rede.ativa .rede-ssid { color: #3a3; }
+  .item-rede.selecionada { border-color: #1a2a1a; background: #060f06; }
+  .rede-sinal { font-size: 9px; color: #444; flex-shrink: 0; letter-spacing: -1px; min-width: 28px; }
+  .rede-lock { font-size: 10px; color: #2a2a2a; flex-shrink: 0; }
+  .rede-ssid {
+    flex: 1; font-size: 11px; color: #555; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .btn-conectar {
+    padding: 2px 8px; font-size: 10px; font-family: inherit;
+    background: #111; border: 1px solid #1a1a1a; border-radius: 2px;
+    color: #444; cursor: pointer; flex-shrink: 0;
+  }
+  .btn-conectar:hover { color: #777; }
+
+  #wifi-senha-form {
+    display: flex; gap: 5px; align-items: center; margin-top: 2px;
+  }
+  #wifi-senha {
+    flex: 1; height: 26px; background: #0d0d0d; border: 1px solid #1a1a1a;
+    border-radius: 2px; padding: 0 10px; color: #888; font-size: 11px;
+    font-family: inherit; outline: none; user-select: text; -webkit-user-select: text;
+  }
+  #wifi-senha:focus { border-color: #2a2a2a; }
+  #wifi-senha-label { font-size: 10px; color: #333; white-space: nowrap; }
+  .wifi-vazio { font-size: 11px; color: #1e1e1e; padding: 4px 0; }
 
   /* ── Bluetooth ── */
-  #bt-controles { display: flex; align-items: center; gap: 8px; }
-  #bt-status { flex: 1; font-size: 11px; color: #333; }
-  .btn-bt-acao {
-    padding: 5px 12px;
-    font-size: 11px;
-    font-family: inherit;
-    background: #111;
-    border: 1px solid #1e1e1e;
-    border-radius: 2px;
-    color: #555;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .btn-bt-acao:hover { background: #1a1a1a; color: #888; }
-  .btn-bt-acao:disabled { opacity: 0.4; cursor: default; }
-
-  #lista-bt { display: flex; flex-direction: column; gap: 5px; }
+  #lista-bt { display: flex; flex-direction: column; gap: 4px; }
   .item-bt {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 10px;
-    background: #0d0d0d;
-    border: 1px solid #111;
-    border-radius: 2px;
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; background: #0a0a0a; border: 1px solid #111; border-radius: 2px;
   }
-  .bt-icone { font-size: 14px; flex-shrink: 0; }
-  .bt-info  { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
-  .bt-nome  { font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bt-addr  { font-size: 9px;  color: #2a2a2a; letter-spacing: 1px; }
-  .bt-acoes { display: flex; gap: 5px; flex-shrink: 0; }
-  .btn-bt-item {
-    padding: 3px 8px;
-    font-size: 10px;
-    font-family: inherit;
-    background: #111;
-    border: 1px solid #1a1a1a;
-    border-radius: 2px;
-    color: #555;
-    cursor: pointer;
-  }
-  .btn-bt-item:hover { background: #161616; color: #888; }
-  .bt-conectado .bt-nome { color: #5a5; }
-  .bt-vazio { color: #222; font-size: 11px; padding: 6px 0; }
+  .bt-icone { font-size: 13px; flex-shrink: 0; }
+  .bt-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+  .bt-nome { font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bt-addr { font-size: 9px; color: #222; letter-spacing: 1px; }
+  .bt-acoes { display: flex; gap: 4px; flex-shrink: 0; }
+  .item-bt.bt-on .bt-nome { color: #5a5; }
+  .bt-vazio { font-size: 11px; color: #1e1e1e; padding: 4px 0; }
 
-  /* ── Energia ── */
-  .botoes-energia { display: flex; gap: 8px; }
-  .btn-energia {
-    flex: 1;
-    padding: 8px 0;
-    background: #111;
-    border: 1px solid #1e1e1e;
-    border-radius: 2px;
-    color: #555;
-    font-size: 11px;
-    font-family: inherit;
-    cursor: pointer;
-    text-align: center;
+  /* ── Dispositivos USB ── */
+  #lista-usb { display: flex; flex-direction: column; gap: 4px; }
+  .item-usb {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; background: #0a0a0a; border: 1px solid #111; border-radius: 2px;
   }
-  .btn-energia:hover { background: #1a1a1a; color: #888; }
-  .btn-energia.desligar:hover { background: #1a0000; color: #a33; border-color: #2a0000; }
+  .usb-icone { font-size: 14px; flex-shrink: 0; }
+  .usb-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+  .usb-nome { font-size: 11px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .usb-detalhe { font-size: 9px; color: #2a2a2a; }
+  .usb-acoes { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* ── Gamepads ── */
+  #lista-gamepads { display: flex; flex-direction: column; gap: 4px; }
+  .item-gamepad {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 8px; background: #0a0a0a; border: 1px solid #111; border-radius: 2px;
+  }
+  .gamepad-icone { font-size: 14px; flex-shrink: 0; }
+  .gamepad-nome { flex: 1; font-size: 11px; color: #444;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  #btn-abrir-arquivos {
+    margin-top: 2px; width: 100%;
+    padding: 6px 0; font-size: 11px; font-family: inherit;
+    background: #0d0d0d; border: 1px solid #141414; border-radius: 2px;
+    color: #2a2a2a; cursor: pointer; text-align: center;
+  }
+  #btn-abrir-arquivos:hover { background: #111; color: #666; border-color: #1e1e1e; }
+
+  /* ── Navegadores ── */
+  #lista-navegadores { display: flex; flex-direction: column; gap: 4px; }
+  .btn-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px; background: #0d0d0d; border: 1px solid #141414;
+    border-radius: 2px; color: #555; font-size: 11px; font-family: inherit;
+    cursor: pointer; text-align: left;
+  }
+  .btn-nav:hover { background: #111; color: #999; border-color: #1e1e1e; }
+  .btn-nav.ativo { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
+  .btn-nav .badge-ativo { font-size: 9px; letter-spacing: 1px; color: #555; text-transform: uppercase; }
+
+  /* ── PWAs ── */
+  #lista-pwas { display: flex; flex-direction: column; gap: 4px; }
+  .item-pwa {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; background: #0a0a0a; border: 1px solid #111;
+    border-radius: 2px; cursor: pointer;
+  }
+  .item-pwa:hover { background: #0f0f0f; border-color: #1a1a1a; }
+  .pwa-icone { font-size: 15px; flex-shrink: 0; }
+  .pwa-nome { flex: 1; font-size: 11px; color: #555;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Sistema ── */
+  .sys-info-grid { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+  .sys-linha { display: flex; justify-content: space-between; font-size: 11px; }
+  .sys-chave { color: #1e1e1e; }
+  .sys-valor { color: #444; }
+  #sys-updates-msg { font-size: 11px; color: #444; padding: 3px 0; min-height: 18px; }
+
+  /* ── Botões de energia ── */
+  .botoes-energia { display: flex; gap: 6px; }
+  .btn-energia {
+    flex: 1; padding: 7px 0; background: #0d0d0d;
+    border: 1px solid #141414; border-radius: 2px;
+    color: #444; font-size: 11px; font-family: inherit;
+    cursor: pointer; text-align: center;
+  }
+  .btn-energia:hover { background: #111; color: #888; }
+  .btn-energia.reboot:hover  { background: #141200; color: #aa3; border-color: #1e1c00; }
+  .btn-energia.shutdown:hover { background: #160000; color: #a33; border-color: #220000; }
+
+  /* ── Vazio genérico ── */
+  .vazio { font-size: 11px; color: #1e1e1e; padding: 4px 0; }
 </style>
 </head>
 <body>
 
 <div id="menu">
 
-  <!-- Cabeçalho fixo -->
   <div id="cabecalho">
     <div class="titulo-menu">Sistema</div>
     <button id="btn-fechar" onclick="fechar()">✕</button>
   </div>
 
-  <!-- Conteúdo scrollável -->
   <div id="conteudo">
 
-    <!-- Volume -->
+    <!-- ── 1. Volume ── -->
     <div class="secao">
-      <div class="secao-titulo">Volume</div>
+      <div class="secao-header">
+        <div class="secao-titulo">Volume</div>
+      </div>
       <div class="linha">
-        <span id="vol-icone">🔈</span>
+        <button id="vol-btn-mudo" onclick="toggleMudo()" title="Mutar/Desmutar">🔊</button>
         <input type="range" id="vol-slider" min="0" max="100" value="50"
-               oninput="ajustarVolume(this.value)"
-               onchange="confirmarVolume(this.value)">
+               oninput="ajustarVolume(this.value)" onchange="confirmarVolume(this.value)">
         <span id="vol-label">50%</span>
-        <button id="btn-mudo" onclick="toggleMudo()">mudo</button>
       </div>
     </div>
 
-    <!-- Rede -->
-    <div class="secao">
-      <div class="secao-titulo">Rede</div>
-      <div class="info-grid">
-        <div class="info-linha"><span class="chave">Interface</span><span id="rede-iface">—</span></div>
-        <div class="info-linha"><span class="chave">IP</span><span id="rede-ip">—</span></div>
-        <div class="info-linha"><span class="chave">Status</span><span id="rede-status">—</span></div>
+    <!-- ── 2. WiFi ── -->
+    <div class="secao" id="secao-wifi">
+      <div class="secao-header">
+        <div class="secao-titulo">WiFi</div>
+        <div class="secao-acoes">
+          <button class="btn-acao" id="btn-wifi-atualizar" onclick="wifiAtualizar()">Atualizar</button>
+          <button class="toggle-pill" id="btn-wifi-toggle" onclick="wifiToggle()">
+            <span class="dot"></span><span id="wifi-toggle-label">—</span>
+          </button>
+        </div>
+      </div>
+      <div id="wifi-status-row">
+        <span id="wifi-ssid-atual"></span>
+      </div>
+      <div id="wifi-redes"><div class="wifi-vazio">Carregando...</div></div>
+      <div id="wifi-senha-form" style="display:none">
+        <span id="wifi-senha-label">Senha:</span>
+        <input id="wifi-senha" type="password" placeholder="Senha da rede..."
+               onkeydown="if(event.key==='Enter')wifiConectar();if(event.key==='Escape')wifiCancelarSenha()">
+        <button class="btn-acao" onclick="wifiConectar()">OK</button>
+        <button class="btn-acao" onclick="wifiCancelarSenha()">✕</button>
       </div>
     </div>
 
-    <!-- Dispositivos — Bluetooth -->
-    <div class="secao">
-      <div class="secao-titulo">Dispositivos</div>
-      <div id="bt-controles">
-        <span id="bt-status">—</span>
-        <button class="btn-bt-acao" id="btn-bt-buscar" onclick="btBuscar()">Buscar</button>
+    <!-- ── 3. Bluetooth ── -->
+    <div class="secao" id="secao-bt">
+      <div class="secao-header">
+        <div class="secao-titulo">Bluetooth</div>
+        <div class="secao-acoes">
+          <button class="btn-acao" id="btn-bt-buscar" onclick="btBuscar()">Buscar</button>
+          <button class="toggle-pill" id="btn-bt-toggle" onclick="btPowerToggle()">
+            <span class="dot"></span><span id="bt-toggle-label">—</span>
+          </button>
+        </div>
       </div>
-      <div id="lista-bt">
-        <div class="bt-vazio">Carregando...</div>
+      <div id="lista-bt"><div class="bt-vazio">Carregando...</div></div>
+    </div>
+
+    <!-- ── 4. Dispositivos ── -->
+    <div class="secao" id="secao-dispositivos">
+      <div class="secao-header">
+        <div class="secao-titulo">Dispositivos</div>
+        <button class="btn-acao" onclick="usbAtualizar()">Atualizar</button>
+      </div>
+      <div id="lista-usb"><div class="vazio">Verificando...</div></div>
+      <div id="lista-gamepads"></div>
+      <button id="btn-abrir-arquivos" onclick="abrirArquivos()">
+        Abrir gerenciador de arquivos
+      </button>
+    </div>
+
+    <!-- ── 5. Aplicativos ── -->
+    <div class="secao" id="secao-apps">
+      <div class="secao-header">
+        <div class="secao-titulo">Aplicativos</div>
+      </div>
+      <div id="lista-navegadores"><div class="vazio">Carregando...</div></div>
+      <div id="lista-pwas"></div>
+    </div>
+
+    <!-- ── 6. Sistema ── -->
+    <div class="secao" id="secao-sistema">
+      <div class="secao-header">
+        <div class="secao-titulo">Sistema</div>
+      </div>
+      <div class="sys-info-grid">
+        <div class="sys-linha">
+          <span class="sys-chave">Versão</span>
+          <span class="sys-valor" id="sys-versao">—</span>
+        </div>
+        <div class="sys-linha">
+          <span class="sys-chave">Base</span>
+          <span class="sys-valor" id="sys-base">—</span>
+        </div>
+      </div>
+      <div class="linha" style="gap:8px">
+        <button class="btn-acao" id="btn-updates" onclick="verificarAtualizacoes()" style="flex:1">
+          Verificar atualizações
+        </button>
+        <button class="btn-acao" id="btn-instalar" onclick="instalarAtualizacoes()"
+                style="display:none">Instalar</button>
+      </div>
+      <div id="sys-updates-msg"></div>
+      <div class="botoes-energia" style="margin-top:6px">
+        <button class="btn-energia" onclick="poder('suspend')">Suspender</button>
+        <button class="btn-energia reboot" onclick="poder('reboot')">Reiniciar</button>
+        <button class="btn-energia shutdown" onclick="poder('shutdown')">Desligar</button>
       </div>
     </div>
 
-    <!-- Navegadores -->
-    <div class="secao">
-      <div class="secao-titulo">Navegador</div>
-      <div id="lista-navegadores">
-        <div style="color:#333;font-size:11px">Carregando...</div>
-      </div>
-    </div>
+  </div><!-- #conteudo -->
 
-  </div><!-- fim #conteudo -->
-
-  <!-- Energia — fixo no rodapé -->
-  <div id="secao-energia">
-    <div class="botoes-energia">
-      <button class="btn-energia" onclick="poder('suspend')">Suspender</button>
-      <button class="btn-energia" onclick="poder('reboot')">Reiniciar</button>
-      <button class="btn-energia desligar" onclick="poder('shutdown')">Desligar</button>
-    </div>
-  </div>
-
-</div>
+</div><!-- #menu -->
 
 <script>
-// ── Estado local ──────────────────────────────────────────────────────────────
-let _volTimeout = null;
+// ── Estado ────────────────────────────────────────────────────────────────────
+const estado = {
+  wifiAtivo:          null,
+  wifiSsid:           '',
+  wifiSsidSelecionado: null,
+  wifiSsidSeguro:     false,
+  btLigado:           null,
+  _volTimer:          null,
+  _autoHide:          null,
+};
+const AUTO_HIDE_MS = 30000;
 
-// ── Inicialização ─────────────────────────────────────────────────────────────
+// ── Auto-hide ─────────────────────────────────────────────────────────────────
+function resetarAutoHide() {
+  clearTimeout(estado._autoHide);
+  estado._autoHide = setTimeout(fechar, AUTO_HIDE_MS);
+}
+document.addEventListener('mousedown', resetarAutoHide);
+document.addEventListener('keydown',   (e) => { resetarAutoHide(); if (e.key === 'Escape') fechar(); });
+document.addEventListener('input',     resetarAutoHide);
+
+// ── Fechar ────────────────────────────────────────────────────────────────────
+function fechar() { try { window.close(); } catch(_) {} }
+
+// ── Inicialização paralela ────────────────────────────────────────────────────
 async function inicializar() {
+  resetarAutoHide();
+  await Promise.allSettled([
+    carregarStatus(),
+    wifiCarregar(),
+    btCarregar(),
+    usbCarregar(),
+    gamepadsCarregar(),
+    pwasCarregar(),
+    sistemaCarregar(),
+  ]);
+}
+
+// ── Status base (volume + navegadores) ───────────────────────────────────────
+async function carregarStatus() {
   try {
     const res = await fetch('/api/status');
     if (!res.ok) return;
     const d = await res.json();
-
-    // Volume
     if (d.volume && !d.volume.erro) {
       document.getElementById('vol-slider').value = d.volume.volume ?? 50;
       atualizarUIVolume(d.volume.volume ?? 50, d.volume.mudo);
     }
-
-    // Rede
-    if (d.rede) {
-      const r = d.rede;
-      document.getElementById('rede-iface').textContent  = r.interface || '—';
-      document.getElementById('rede-ip').textContent     = r.ip        || '—';
-      document.getElementById('rede-status').textContent =
-        !r.conectado ? 'desconectado' :
-        r.status === 'online' ? 'online' : 'sem internet';
-    }
-
-    // Navegadores
     if (Array.isArray(d.navegadores)) renderizarNavegadores(d.navegadores);
-  } catch (e) {}
-
-  // Bluetooth
-  await btCarregar();
+  } catch(_) {}
 }
 
 // ── Volume ────────────────────────────────────────────────────────────────────
 function atualizarUIVolume(vol, mudo) {
-  document.getElementById('vol-icone').textContent =
+  document.getElementById('vol-btn-mudo').textContent =
     mudo ? '🔇' : (vol < 30 ? '🔈' : '🔊');
   document.getElementById('vol-label').textContent = mudo ? 'mudo' : `${vol}%`;
-  document.getElementById('btn-mudo').textContent  = mudo ? 'unmute' : 'mudo';
 }
 
 function ajustarVolume(val) {
   atualizarUIVolume(parseInt(val), false);
-  clearTimeout(_volTimeout);
-  _volTimeout = setTimeout(() => confirmarVolume(val), 200);
+  clearTimeout(estado._volTimer);
+  estado._volTimer = setTimeout(() => confirmarVolume(val), 200);
 }
 
 async function confirmarVolume(val) {
   try {
     await fetch('/api/volume/set', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({level: parseInt(val)}),
     });
-  } catch (e) {}
+  } catch(_) {}
 }
 
 async function toggleMudo() {
   try {
-    const res = await fetch('/api/volume/mute', {method:'POST'});
+    const res = await fetch('/api/volume/mute', {method: 'POST'});
     const d = await res.json();
     if (d.volume !== undefined) {
       document.getElementById('vol-slider').value = d.volume;
       atualizarUIVolume(d.volume, d.mudo);
     }
-  } catch (e) {}
+  } catch(_) {}
 }
 
-// ── Navegadores ───────────────────────────────────────────────────────────────
-function renderizarNavegadores(lista) {
-  const c = document.getElementById('lista-navegadores');
-  if (!lista.length) {
-    c.innerHTML = '<div style="color:#333;font-size:11px">Nenhum instalado</div>'; return;
-  }
-  c.innerHTML = lista.map(n => `
-    <button class="btn-nav${n.ativo?' ativo':''}" onclick="trocarNavegador('${n.id}')">
-      <span>${n.nome}${n.versao?` <small style="color:${n.ativo?'#555':'#333'}">${n.versao}</small>`:''}</span>
-      ${n.ativo?'<span class="badge-ativo">● em uso</span>':''}
-    </button>`).join('');
-}
-
-async function trocarNavegador(id) {
+// ── WiFi ──────────────────────────────────────────────────────────────────────
+async function wifiCarregar() {
   try {
-    await fetch('/api/browser/switch', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({browser:id}),
+    const [sRes, lRes] = await Promise.all([
+      fetch('/api/wifi/status'),
+      fetch('/api/wifi/list'),
+    ]);
+    const status = await sRes.json();
+    const lista  = await lRes.json();
+    renderizarWifiStatus(status);
+    renderizarWifiRedes(Array.isArray(lista) ? lista : []);
+  } catch(_) {
+    document.getElementById('wifi-redes').innerHTML =
+      '<div class="wifi-vazio">nmcli não disponível</div>';
+  }
+}
+
+async function wifiAtualizar() {
+  const btn = document.getElementById('btn-wifi-atualizar');
+  btn.disabled = true; btn.textContent = '...';
+  try { await wifiCarregar(); } finally {
+    btn.disabled = false; btn.textContent = 'Atualizar';
+  }
+}
+
+function renderizarWifiStatus(d) {
+  const pill  = document.getElementById('btn-wifi-toggle');
+  const label = document.getElementById('wifi-toggle-label');
+  const info  = document.getElementById('wifi-ssid-atual');
+
+  estado.wifiAtivo = d.ativo;
+  if (d.ativo) {
+    pill.className = 'toggle-pill on'; label.textContent = 'Ligado';
+    info.textContent = d.conectado ? d.ssid : '';
+    estado.wifiSsid = d.ssid || '';
+  } else {
+    pill.className = 'toggle-pill'; label.textContent = 'Desligado';
+    info.textContent = '';
+    estado.wifiSsid = '';
+  }
+}
+
+function sinalBars(s) {
+  if (s >= 75) return '▂▄▆█';
+  if (s >= 50) return '▂▄▆·';
+  if (s >= 25) return '▂▄··';
+  return '▂···';
+}
+
+function renderizarWifiRedes(lista) {
+  const c = document.getElementById('wifi-redes');
+  if (!lista.length) {
+    c.innerHTML = '<div class="wifi-vazio">Nenhuma rede encontrada</div>'; return;
+  }
+  c.innerHTML = lista.map(r => `
+    <div class="item-rede${r.ativo ? ' ativa' : ''}"
+         data-ssid="${escaparAttr(r.ssid)}"
+         data-seguro="${r.seguro}">
+      <span class="rede-sinal">${sinalBars(r.sinal)}</span>
+      <span class="rede-lock">${r.seguro ? '🔒' : '  '}</span>
+      <span class="rede-ssid">${escaparHtml(r.ssid)}</span>
+      ${r.ativo
+        ? '<span style="font-size:9px;color:#3a3;flex-shrink:0">● conectada</span>'
+        : `<button class="btn-conectar" data-ssid="${escaparAttr(r.ssid)}" data-seguro="${r.seguro}">Conectar</button>`
+      }
+    </div>`).join('');
+}
+
+// Event delegation para os botões de rede
+document.getElementById('wifi-redes').addEventListener('click', (e) => {
+  resetarAutoHide();
+  const btn  = e.target.closest('.btn-conectar');
+  const item = e.target.closest('.item-rede');
+  if (!item) return;
+  const ssid   = item.dataset.ssid;
+  const seguro = item.dataset.seguro === 'true';
+
+  // Remove seleção anterior
+  document.querySelectorAll('.item-rede.selecionada').forEach(el => el.classList.remove('selecionada'));
+
+  if (btn) {
+    if (seguro) {
+      item.classList.add('selecionada');
+      estado.wifiSsidSelecionado = ssid;
+      estado.wifiSsidSeguro = true;
+      const form = document.getElementById('wifi-senha-form');
+      form.style.display = 'flex';
+      document.getElementById('wifi-senha').value = '';
+      document.getElementById('wifi-senha').focus();
+    } else {
+      wifiConectarDireto(ssid, '');
+    }
+  }
+});
+
+async function wifiConectarDireto(ssid, senha) {
+  document.getElementById('wifi-redes').innerHTML =
+    `<div class="wifi-vazio">Conectando a ${escaparHtml(ssid)}...</div>`;
+  try {
+    const res = await fetch('/api/wifi/connect', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ssid, password: senha}),
     });
-    fechar();
-  } catch (e) {}
+    const d = await res.json();
+    if (d.ok) {
+      await wifiCarregar();
+    } else {
+      document.getElementById('wifi-redes').innerHTML =
+        `<div class="wifi-vazio" style="color:#733">Erro: ${escaparHtml(d.erro || 'falha ao conectar')}</div>`;
+    }
+  } catch(_) {
+    document.getElementById('wifi-redes').innerHTML =
+      '<div class="wifi-vazio" style="color:#733">Erro de comunicação</div>';
+  }
+  wifiCancelarSenha();
+}
+
+async function wifiConectar() {
+  const ssid = estado.wifiSsidSelecionado;
+  if (!ssid) return;
+  const senha = document.getElementById('wifi-senha').value;
+  wifiCancelarSenha();
+  await wifiConectarDireto(ssid, senha);
+}
+
+function wifiCancelarSenha() {
+  document.getElementById('wifi-senha-form').style.display = 'none';
+  document.getElementById('wifi-senha').value = '';
+  estado.wifiSsidSelecionado = null;
+  document.querySelectorAll('.item-rede.selecionada').forEach(el => el.classList.remove('selecionada'));
+}
+
+async function wifiToggle() {
+  const pill = document.getElementById('btn-wifi-toggle');
+  pill.disabled = true;
+  try {
+    const res = await fetch('/api/wifi/toggle', {method: 'POST'});
+    const d   = await res.json();
+    estado.wifiAtivo = d.ativo;
+    await wifiCarregar();
+  } catch(_) {} finally {
+    pill.disabled = false;
+  }
 }
 
 // ── Bluetooth ─────────────────────────────────────────────────────────────────
 async function btCarregar() {
-  document.getElementById('bt-status').textContent = '—';
-  document.getElementById('lista-bt').innerHTML = '<div class="bt-vazio">Carregando...</div>';
+  // Verifica estado do power primeiro
   try {
-    const res = await fetch('/api/bluetooth/list');
+    const res = await fetch('/api/bluetooth/power');
     const d   = await res.json();
-    const devs = d.dispositivos || [];
-    document.getElementById('bt-status').textContent =
-      devs.length ? `${devs.length} pareado(s)` : 'nenhum pareado';
-    renderizarBT(devs);
-  } catch (e) {
-    document.getElementById('bt-status').textContent = 'indisponível';
+    estado.btLigado = d.ligado;
+    atualizarUIBtPower(d.ligado);
+    if (d.ligado) await btCarregarLista();
+    else document.getElementById('lista-bt').innerHTML =
+      '<div class="bt-vazio">Bluetooth desligado</div>';
+  } catch(_) {
     document.getElementById('lista-bt').innerHTML =
-      '<div class="bt-vazio">bluetoothctl não encontrado</div>';
+      '<div class="bt-vazio">bluetoothctl não disponível</div>';
+    atualizarUIBtPower(false);
   }
+}
+
+function atualizarUIBtPower(ligado) {
+  const pill  = document.getElementById('btn-bt-toggle');
+  const label = document.getElementById('bt-toggle-label');
+  const btn   = document.getElementById('btn-bt-buscar');
+  estado.btLigado = ligado;
+  if (ligado) {
+    pill.className = 'toggle-pill on'; label.textContent = 'Ligado';
+    btn.disabled = false;
+  } else {
+    pill.className = 'toggle-pill'; label.textContent = 'Desligado';
+    btn.disabled = true;
+  }
+}
+
+async function btCarregarLista() {
+  try {
+    const res  = await fetch('/api/bluetooth/list');
+    const d    = await res.json();
+    const devs = d.dispositivos || [];
+    renderizarBT(devs);
+  } catch(_) {
+    document.getElementById('lista-bt').innerHTML =
+      '<div class="bt-vazio">Erro ao carregar dispositivos</div>';
+  }
+}
+
+async function btPowerToggle() {
+  const pill = document.getElementById('btn-bt-toggle');
+  pill.disabled = true;
+  try {
+    const res = await fetch('/api/bluetooth/power_toggle', {method: 'POST'});
+    const d   = await res.json();
+    atualizarUIBtPower(d.ligado);
+    if (d.ligado) await btCarregarLista();
+    else document.getElementById('lista-bt').innerHTML =
+      '<div class="bt-vazio">Bluetooth desligado</div>';
+  } catch(_) {} finally { pill.disabled = false; }
 }
 
 async function btBuscar() {
   const btn = document.getElementById('btn-bt-buscar');
-  btn.disabled = true;
-  btn.textContent = 'Buscando...';
-  document.getElementById('bt-status').textContent = 'buscando (5 s)...';
+  btn.disabled = true; btn.textContent = 'Buscando...';
   try {
-    const res = await fetch('/api/bluetooth/scan', {method:'POST'});
-    const d   = await res.json();
+    const res  = await fetch('/api/bluetooth/scan', {method: 'POST'});
+    const d    = await res.json();
     const devs = d.dispositivos || (Array.isArray(d) ? d : []);
-    document.getElementById('bt-status').textContent =
-      `${devs.length} dispositivo(s) encontrado(s)`;
     renderizarBT(devs);
-  } catch (e) {
-    document.getElementById('bt-status').textContent = 'erro na busca';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Buscar';
+  } catch(_) {} finally {
+    btn.disabled = false; btn.textContent = 'Buscar';
   }
 }
 
 function renderizarBT(lista) {
   const c = document.getElementById('lista-bt');
   if (!lista.length) {
-    c.innerHTML = '<div class="bt-vazio">Nenhum dispositivo encontrado</div>'; return;
+    c.innerHTML = '<div class="bt-vazio">Nenhum dispositivo</div>'; return;
   }
   c.innerHTML = lista.map(d => `
-    <div class="item-bt${d.conectado?' bt-conectado':''}">
+    <div class="item-bt${d.conectado ? ' bt-on' : ''}">
       <div class="bt-icone">${d.conectado ? '🔵' : '⚫'}</div>
       <div class="bt-info">
-        <div class="bt-nome">${d.nome || 'Desconhecido'}</div>
-        <div class="bt-addr">${d.endereco}</div>
+        <div class="bt-nome">${escaparHtml(d.nome || 'Desconhecido')}</div>
+        <div class="bt-addr">${escaparHtml(d.endereco)}</div>
       </div>
       <div class="bt-acoes">
         ${d.pareado
-          ? `<button class="btn-bt-item" onclick="btRemover('${d.endereco}')">Remover</button>`
-          : `<button class="btn-bt-item" onclick="btParear('${d.endereco}')">Parear</button>`
+          ? `<button class="btn-acao" onclick="btRemover('${escaparAttr(d.endereco)}')">Remover</button>`
+          : `<button class="btn-acao" onclick="btParear('${escaparAttr(d.endereco)}',this)">Parear</button>`
         }
       </div>
     </div>`).join('');
 }
 
-async function btParear(addr) {
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '...';
+async function btParear(addr, btn) {
+  btn.disabled = true; btn.textContent = '...';
   try {
     const res = await fetch('/api/bluetooth/pair', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({address: addr}),
     });
     const d = await res.json();
-    if (d.ok) await btCarregar();
+    if (d.ok) await btCarregarLista();
     else { btn.disabled = false; btn.textContent = 'Parear'; }
-  } catch (e) { btn.disabled = false; btn.textContent = 'Parear'; }
+  } catch(_) { btn.disabled = false; btn.textContent = 'Parear'; }
 }
 
 async function btRemover(addr) {
   if (!confirm('Remover dispositivo pareado?')) return;
   try {
     await fetch('/api/bluetooth/remove', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({address: addr}),
     });
-    await btCarregar();
-  } catch (e) {}
+    await btCarregarLista();
+  } catch(_) {}
+}
+
+// ── USB ───────────────────────────────────────────────────────────────────────
+async function usbCarregar() {
+  try {
+    const res  = await fetch('/api/usb/list');
+    const d    = await res.json();
+    renderizarUSB(d.dispositivos || []);
+  } catch(_) {
+    document.getElementById('lista-usb').innerHTML =
+      '<div class="vazio">Erro ao listar dispositivos</div>';
+  }
+}
+
+async function usbAtualizar() { await usbCarregar(); }
+
+function renderizarUSB(lista) {
+  const c = document.getElementById('lista-usb');
+  if (!lista.length) {
+    c.innerHTML = '<div class="vazio">Nenhuma mídia removível</div>'; return;
+  }
+  c.innerHTML = lista.map(dev => {
+    const montado = !!dev.montagem;
+    return `
+      <div class="item-usb">
+        <div class="usb-icone">💾</div>
+        <div class="usb-info">
+          <div class="usb-nome">${escaparHtml(dev.dispositivo)}</div>
+          <div class="usb-detalhe">${escaparHtml(dev.tamanho || '')}${montado ? ` — ${escaparHtml(dev.montagem)}` : ''}</div>
+        </div>
+        <div class="usb-acoes">
+          ${montado
+            ? `<button class="btn-acao" onclick="usbEjetar('${escaparAttr(dev.dispositivo)}')">Ejetar</button>`
+            : `<button class="btn-acao" onclick="usbMontar('${escaparAttr(dev.dispositivo)}',this)">Montar</button>`
+          }
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function usbMontar(dispositivo, btn) {
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const res = await fetch('/api/usb/mount', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({device: dispositivo}),
+    });
+    const d = await res.json();
+    if (d.ok) await usbCarregar();
+    else { btn.disabled = false; btn.textContent = 'Montar'; }
+  } catch(_) { btn.disabled = false; btn.textContent = 'Montar'; }
+}
+
+async function usbEjetar(dispositivo) {
+  try {
+    await fetch('/api/usb/unmount', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({point: dispositivo}),
+    });
+    await usbCarregar();
+  } catch(_) {}
+}
+
+async function abrirArquivos() {
+  fechar();
+  try {
+    await fetch('/api/window/open', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url: 'http://127.0.0.1:1312/files'}),
+    });
+  } catch(_) {}
+}
+
+// ── Gamepads ──────────────────────────────────────────────────────────────────
+async function gamepadsCarregar() {
+  try {
+    const res  = await fetch('/api/devices/gamepads');
+    const lista = await res.json();
+    renderizarGamepads(Array.isArray(lista) ? lista : []);
+  } catch(_) {}
+}
+
+function renderizarGamepads(lista) {
+  const c = document.getElementById('lista-gamepads');
+  if (!lista.length) { c.innerHTML = ''; return; }
+  c.innerHTML = lista.map(g => `
+    <div class="item-gamepad">
+      <div class="gamepad-icone">🎮</div>
+      <div class="gamepad-nome">${escaparHtml(g.nome || g.id)}</div>
+    </div>`).join('');
+}
+
+// ── Navegadores ───────────────────────────────────────────────────────────────
+function renderizarNavegadores(lista) {
+  const c = document.getElementById('lista-navegadores');
+  if (!lista.length) { c.innerHTML = '<div class="vazio">Nenhum instalado</div>'; return; }
+  c.innerHTML = lista.map(n => `
+    <button class="btn-nav${n.ativo ? ' ativo' : ''}" onclick="trocarNavegador('${escaparAttr(n.id)}')">
+      <span>${escaparHtml(n.nome)}${n.versao
+        ? `<small style="margin-left:6px;color:${n.ativo?'#555':'#2a2a2a'}">${escaparHtml(n.versao)}</small>` : ''}</span>
+      ${n.ativo ? '<span class="badge-ativo">● em uso</span>' : ''}
+    </button>`).join('');
+}
+
+async function trocarNavegador(id) {
+  try {
+    await fetch('/api/browser/switch', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({browser: id}),
+    });
+    fechar();
+  } catch(_) {}
+}
+
+// ── PWAs ──────────────────────────────────────────────────────────────────────
+async function pwasCarregar() {
+  try {
+    const res  = await fetch('/api/pwas/list');
+    const lista = await res.json();
+    renderizarPwas(Array.isArray(lista) ? lista : []);
+  } catch(_) {}
+}
+
+function renderizarPwas(lista) {
+  const c = document.getElementById('lista-pwas');
+  if (!lista.length) { c.innerHTML = ''; return; }
+  c.innerHTML = lista.map(p => `
+    <div class="item-pwa" data-url="${escaparAttr(p.url)}" onclick="abrirPwa(this)">
+      <div class="pwa-icone">📱</div>
+      <div class="pwa-nome">${escaparHtml(p.nome)}</div>
+    </div>`).join('');
+}
+
+async function abrirPwa(el) {
+  const url = el.dataset.url;
+  if (!url) return;
+  try {
+    await fetch('/api/nav/navigate', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url}),
+    });
+    fechar();
+  } catch(_) {}
+}
+
+// ── Sistema ───────────────────────────────────────────────────────────────────
+async function sistemaCarregar() {
+  try {
+    const res = await fetch('/api/system/version');
+    const d   = await res.json();
+    document.getElementById('sys-versao').textContent = d.versao || '—';
+    document.getElementById('sys-base').textContent   = d.base   || '—';
+  } catch(_) {}
+}
+
+async function verificarAtualizacoes() {
+  const btn = document.getElementById('btn-updates');
+  const msg = document.getElementById('sys-updates-msg');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  msg.textContent = '';
+  try {
+    const res = await fetch('/api/system/updates/check');
+    const d   = await res.json();
+    const n   = d.disponivel ?? 0;
+    msg.textContent = n > 0 ? `${n} atualização(ões) disponível(is)` : 'Sistema atualizado';
+    msg.style.color = n > 0 ? '#a93' : '#3a3';
+    const btnInstalar = document.getElementById('btn-instalar');
+    btnInstalar.style.display = n > 0 ? 'block' : 'none';
+  } catch(_) {
+    msg.textContent = 'Erro ao verificar'; msg.style.color = '#733';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Verificar atualizações';
+  }
+}
+
+async function instalarAtualizacoes() {
+  const btn = document.getElementById('btn-instalar');
+  const msg = document.getElementById('sys-updates-msg');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const res = await fetch('/api/system/updates/install', {method: 'POST'});
+    const d   = await res.json();
+    msg.textContent = d.mensagem || 'Iniciado em segundo plano';
+    msg.style.color = '#3a3';
+    btn.style.display = 'none';
+  } catch(_) {
+    msg.textContent = 'Erro ao instalar'; msg.style.color = '#733';
+    btn.disabled = false; btn.textContent = 'Instalar';
+  }
 }
 
 // ── Energia ───────────────────────────────────────────────────────────────────
 async function poder(acao) {
-  const msgs = {shutdown:'Desligar?', reboot:'Reiniciar?', suspend:'Suspender?'};
+  const msgs = {shutdown: 'Desligar?', reboot: 'Reiniciar?', suspend: 'Suspender?'};
   if (!confirm(msgs[acao] || acao)) return;
-  try { await fetch(`/api/power/${acao}`, {method:'POST'}); } catch (e) {}
+  try { await fetch(`/api/power/${acao}`, {method: 'POST'}); } catch(_) {}
   fechar();
 }
 
-// ── Fechar ────────────────────────────────────────────────────────────────────
-function fechar() { try { window.close(); } catch(e) {} }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') fechar(); });
+// ── Utilitários ───────────────────────────────────────────────────────────────
+function escaparHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escaparAttr(str) {
+  return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
+// ── Start ─────────────────────────────────────────────────────────────────────
 inicializar();
 </script>
 </body>

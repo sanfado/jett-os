@@ -153,11 +153,11 @@ for_window [title="^Jett OS — Nav"] {
     focus
 }
 
-# Menu de sistema — overlay centralizado 380×480
+# Menu de sistema — overlay centralizado 380×580
 for_window [title="^Jett OS — Menu"] {
     floating   enable
     border     none
-    resize     set 380 480
+    resize     set 380 580
     move       position center
     focus
 }
