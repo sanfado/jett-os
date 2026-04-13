@@ -129,7 +129,8 @@ log_separador() {
 
 verificar_root() {
     if [[ "$EUID" -ne 0 ]]; then
-        log_erro "Este script precisa ser executado como root. Use: sudo ./install-edge.sh"
+        echo -e "\033[1;31m[ERRO] Execute como root: sudo ./install-edge.sh\033[0m" >&2
+        exit 1
     fi
 }
 
@@ -583,9 +584,8 @@ main() {
     echo ""
 
     processar_argumentos "$@"
-    inicializar_log
-
     verificar_root
+    inicializar_log
     verificar_base_instalada
     verificar_conexao
 
