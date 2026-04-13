@@ -32,6 +32,7 @@ set $jett_conf          /etc/jett-os/navegador.conf
 set $jett_exit_confirm  /usr/local/bin/jett-exit-confirm
 set $jett_nav_toggle    /usr/local/bin/jett-nav-toggle
 set $jett_menu_toggle   /usr/local/bin/jett-menu-toggle
+set $jett_files_toggle  /usr/local/bin/jett-files-toggle
 set $jett_firstboot     /usr/local/bin/jett-firstboot
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -184,11 +185,12 @@ for_window [title="^Jett OS — Config"] {
     focus
 }
 
-# Gerenciador de arquivos — overlay centralizado 800×500
+# Gerenciador de arquivos — overlay centralizado 900×580
 for_window [title="^Jett OS — Arquivos"] {
     floating   enable
+    fullscreen disable
     border     none
-    resize     set 800 500
+    resize     set 900 580
     move       position center
     focus
 }
@@ -229,6 +231,9 @@ bindsym --release Super_L exec $jett_nav_toggle
 # Seta o flag /tmp/.jett-super-used antes de abrir o menu para que o
 # Super release não dispare o jett-nav-toggle simultaneamente.
 bindsym $mod+x exec bash -c 'touch /tmp/.jett-super-used; exec $jett_menu_toggle'
+
+# ── Super+F — Abre/fecha o gerenciador de arquivos ───────────────────────────
+bindsym $mod+f exec bash -c 'touch /tmp/.jett-super-used; exec $jett_files_toggle'
 
 # ── Super+B — Abre o mini-launcher de navegadores ────────────────────────────
 # Atalho principal do Jett OS.

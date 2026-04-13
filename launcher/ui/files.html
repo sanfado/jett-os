@@ -7,8 +7,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
-    width: 800px;
-    height: 500px;
+    width: 900px;
+    height: 580px;
     overflow: hidden;
     background: #000;
     color: #fff;
@@ -26,29 +26,61 @@
 
   /* ── Cabeçalho ── */
   #cabecalho {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px 12px;
     flex-shrink: 0;
     border-bottom: 1px solid #0d0d0d;
   }
-  .titulo {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #333;
-    text-transform: uppercase;
+
+  #barra-topo {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px 6px;
+    gap: 6px;
   }
+
+  .titulo {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #2a2a2a;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+
+  #barra-acoes {
+    display: flex;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .btn-acao {
+    padding: 4px 10px;
+    font-size: 10px;
+    font-family: inherit;
+    background: #080808;
+    border: 1px solid #141414;
+    border-radius: 2px;
+    color: #2e2e2e;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    transition: color 0.1s, border-color 0.1s;
+  }
+  .btn-acao:hover:not(:disabled) { color: #555; border-color: #222; background: #0e0e0e; }
+  .btn-acao:disabled { opacity: 0.25; cursor: default; }
+  .btn-acao.ativo { color: #3a3; border-color: #1a2a1a; }
+
   #btn-fechar {
     background: none;
     border: none;
-    color: #333;
-    font-size: 18px;
+    color: #222;
+    font-size: 16px;
     cursor: pointer;
-    padding: 0 4px;
+    padding: 0 2px;
     line-height: 1;
+    margin-left: 4px;
+    flex-shrink: 0;
   }
-  #btn-fechar:hover { color: #888; }
+  #btn-fechar:hover { color: #666; }
 
   /* ── Painéis ── */
   #paineis {
@@ -62,79 +94,171 @@
     flex-direction: column;
     flex: 1;
     overflow: hidden;
-    border-right: 1px solid #0d0d0d;
+    border-right: 1px solid #0a0a0a;
   }
   .painel:last-child { border-right: none; }
+  .painel.ativo > .painel-header { border-left: 2px solid #1a2a1a; }
 
   .painel-header {
-    padding: 10px 14px 8px;
+    padding: 8px 12px 6px;
     flex-shrink: 0;
-    border-bottom: 1px solid #0d0d0d;
+    border-bottom: 1px solid #0a0a0a;
+    border-left: 2px solid transparent;
   }
 
   .painel-titulo {
-    font-size: 10px;
+    font-size: 9px;
     letter-spacing: 2px;
-    color: #2a2a2a;
+    color: #202020;
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 
   /* ── Breadcrumb ── */
   .breadcrumb {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     font-size: 10px;
     color: #333;
     flex-wrap: nowrap;
     overflow: hidden;
     white-space: nowrap;
+    min-height: 14px;
   }
   .breadcrumb-parte {
     cursor: pointer;
-    color: #444;
-    max-width: 100px;
+    color: #383838;
+    max-width: 110px;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-shrink: 1;
   }
-  .breadcrumb-parte:hover { color: #777; }
-  .breadcrumb-parte.atual { color: #555; cursor: default; flex-shrink: 0; }
-  .breadcrumb-sep { color: #1a1a1a; flex-shrink: 0; }
+  .breadcrumb-parte:hover { color: #666; }
+  .breadcrumb-parte.atual { color: #484848; cursor: default; flex-shrink: 0; }
+  .breadcrumb-sep { color: #161616; flex-shrink: 0; }
 
   /* ── Atalhos internos ── */
   .atalhos {
     display: flex;
-    gap: 6px;
-    padding: 6px 14px;
+    gap: 5px;
+    padding: 5px 12px;
     flex-shrink: 0;
-    border-bottom: 1px solid #0a0a0a;
+    border-bottom: 1px solid #080808;
   }
   .btn-atalho {
+    padding: 2px 9px;
+    font-size: 10px;
+    font-family: inherit;
+    background: #080808;
+    border: 1px solid #0e0e0e;
+    border-radius: 2px;
+    color: #2a2a2a;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .btn-atalho:hover { color: #555; background: #0d0d0d; }
+
+  /* ── Selector USB ── */
+  .selector-dispositivo {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  #select-usb {
+    flex: 1;
+    background: #080808;
+    border: 1px solid #111;
+    border-radius: 2px;
+    color: #383838;
+    font-size: 10px;
+    font-family: inherit;
+    padding: 3px 7px;
+  }
+  #select-usb option { background: #080808; }
+  .btn-acao-usb {
+    padding: 3px 9px;
+    font-size: 10px;
+    font-family: inherit;
+    background: #080808;
+    border: 1px solid #141414;
+    border-radius: 2px;
+    color: #2a2a2a;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-acao-usb:hover { color: #555; background: #0e0e0e; }
+  .btn-acao-usb.ejetar { color: #222; }
+  .btn-acao-usb.ejetar:hover { color: #733; }
+
+  /* ── Modal input inline ── */
+  .modal-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: #060606;
+    border-bottom: 1px solid #111;
+    flex-shrink: 0;
+  }
+  .modal-input label {
+    font-size: 10px;
+    color: #2a2a2a;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+  .modal-input input {
+    flex: 1;
+    background: #0a0a0a;
+    border: 1px solid #1a2a1a;
+    border-radius: 2px;
+    color: #3a3;
+    font-size: 11px;
+    font-family: inherit;
+    padding: 3px 7px;
+    outline: none;
+  }
+  .modal-input input:focus { border-color: #2a4a2a; }
+  .modal-btn {
     padding: 3px 10px;
     font-size: 10px;
     font-family: inherit;
     background: #0a0a0a;
-    border: 1px solid #111;
+    border: 1px solid #141414;
     border-radius: 2px;
-    color: #333;
+    color: #2a2a2a;
     cursor: pointer;
-    letter-spacing: 1px;
   }
-  .btn-atalho:hover { color: #666; background: #111; }
+  .modal-btn.ok { color: #2a3a2a; border-color: #1a2a1a; }
+  .modal-btn.ok:hover { color: #3a3; }
+  .modal-btn:hover { color: #555; }
+
+  /* ── Cabeçalho de colunas ── */
+  .col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 8px 3px 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #080808;
+  }
+  .col-h-icon { width: 18px; flex-shrink: 0; }
+  .col-h-nome { flex: 1; font-size: 9px; color: #1a1a1a; letter-spacing: 1px; text-transform: uppercase; }
+  .col-h-tam  { width: 62px; font-size: 9px; color: #1a1a1a; letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; text-align: right; }
+  .col-h-data { width: 88px; font-size: 9px; color: #1a1a1a; letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; text-align: right; }
 
   /* ── Lista de arquivos ── */
   .lista-arquivos {
     flex: 1;
     overflow-y: auto;
-    padding: 6px 8px;
+    padding: 4px 4px;
     scrollbar-width: thin;
-    scrollbar-color: #111 transparent;
+    scrollbar-color: #0e0e0e transparent;
   }
   .lista-arquivos.drag-over {
-    background: #050f05;
-    outline: 1px solid #1a2a1a;
+    background: #030a03;
+    outline: 1px solid #152015;
     outline-offset: -2px;
   }
 
@@ -142,106 +266,119 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 8px;
+    padding: 4px 8px;
     border-radius: 2px;
     cursor: default;
-    color: #555;
+    color: #444;
     font-size: 12px;
   }
-  .item-arquivo:hover { background: #0d0d0d; color: #999; }
-  .item-arquivo.selecionado { background: #0d1a0d; color: #3a3; }
+  .item-arquivo:hover { background: #0a0a0a; color: #777; }
+  .item-arquivo.selecionado { background: #0a180a; color: #3a3 !important; }
+  .item-arquivo.selecionado .arq-tam,
+  .item-arquivo.selecionado .arq-data { color: #1a3a1a; }
   .item-arquivo[draggable="true"] { cursor: grab; }
   .item-arquivo[draggable="true"]:active { cursor: grabbing; }
-  .item-arquivo.arrastando { opacity: 0.4; }
+  .item-arquivo.arrastando { opacity: 0.35; }
+  .item-arquivo.drag-over-folder { background: #0a1a0a; outline: 1px solid #1a3a1a; outline-offset: -1px; }
 
-  .arq-icone { font-size: 14px; flex-shrink: 0; }
-  .arq-nome  { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .arq-tam   { font-size: 10px; color: #2a2a2a; flex-shrink: 0; }
-
-  /* ── Painel direito: dispositivos ── */
-  .selector-dispositivo {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  #select-usb {
-    flex: 1;
-    background: #0a0a0a;
-    border: 1px solid #141414;
-    border-radius: 2px;
-    color: #444;
-    font-size: 11px;
-    font-family: inherit;
-    padding: 4px 8px;
-  }
-  #select-usb option { background: #0a0a0a; }
-  .btn-acao-usb {
-    padding: 4px 10px;
-    font-size: 10px;
-    font-family: inherit;
-    background: #0a0a0a;
-    border: 1px solid #1a1a1a;
-    border-radius: 2px;
-    color: #333;
-    cursor: pointer;
-  }
-  .btn-acao-usb:hover { color: #666; background: #0f0f0f; }
-  .btn-acao-usb.ejetar { color: #2a2a2a; }
-  .btn-acao-usb.ejetar:hover { color: #844; }
+  .arq-icone { font-size: 13px; flex-shrink: 0; width: 18px; text-align: center; }
+  .arq-nome  { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .arq-tam   { font-size: 10px; color: #222; flex-shrink: 0; width: 62px; text-align: right; }
+  .arq-data  { font-size: 10px; color: #1e1e1e; flex-shrink: 0; width: 88px; text-align: right; }
 
   /* ── Vazio / carregando ── */
   .vazio {
-    color: #1a1a1a;
+    color: #161616;
     font-size: 11px;
     padding: 20px 0;
     text-align: center;
     letter-spacing: 1px;
   }
 
+  /* ── Caixa de confirmação ── */
+  #confirm-box {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #080808;
+    border: 1px solid #1a2a1a;
+    border-radius: 3px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: #444;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .confirm-btn {
+    padding: 3px 12px;
+    font-size: 10px;
+    font-family: inherit;
+    background: #0a0a0a;
+    border: 1px solid #141414;
+    border-radius: 2px;
+    color: #2a2a2a;
+    cursor: pointer;
+  }
+  .confirm-btn.sim { color: #2a3a2a; border-color: #1a2a1a; }
+  .confirm-btn.sim:hover { color: #3a3; }
+  .confirm-btn:hover { color: #555; }
+
   /* ── Rodapé ── */
   #rodape {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 14px;
+    padding: 7px 14px;
     flex-shrink: 0;
-    border-top: 1px solid #0a0a0a;
+    border-top: 1px solid #080808;
   }
   #status-bar {
     font-size: 10px;
-    color: #1e1e1e;
-    letter-spacing: 1px;
+    color: #1a1a1a;
+    letter-spacing: 0.5px;
   }
   #btn-atualizar {
-    padding: 5px 14px;
-    background: #0a0a0a;
-    border: 1px solid #161616;
+    padding: 4px 12px;
+    background: #080808;
+    border: 1px solid #111;
     border-radius: 2px;
-    color: #333;
+    color: #2a2a2a;
     font-size: 10px;
     font-family: inherit;
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
   }
-  #btn-atualizar:hover { background: #111; color: #666; }
+  #btn-atualizar:hover { background: #0e0e0e; color: #555; }
 </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app" style="position:relative">
 
   <!-- Cabeçalho -->
   <div id="cabecalho">
-    <div class="titulo">Arquivos</div>
-    <button id="btn-fechar" onclick="fechar()">✕</button>
+    <div id="barra-topo">
+      <span class="titulo">Arquivos</span>
+      <div id="barra-acoes">
+        <button id="btn-nova-pasta" class="btn-acao" onclick="novaPasta()">+ Nova pasta</button>
+        <button id="btn-renomear"   class="btn-acao" onclick="renomear()" disabled>Renomear</button>
+        <button id="btn-deletar"    class="btn-acao" onclick="deletar()"  disabled>Deletar</button>
+        <button id="btn-copiar"     class="btn-acao" onclick="copiar()"   disabled>→ Copiar</button>
+        <button id="btn-mover"      class="btn-acao" onclick="moverOutroPainel()" disabled>↔ Mover</button>
+      </div>
+      <button id="btn-fechar" onclick="fechar()">✕</button>
+    </div>
   </div>
 
   <!-- Painéis -->
   <div id="paineis">
 
     <!-- Painel esquerdo: armazenamento interno -->
-    <div class="painel" id="painel-esquerdo">
+    <div class="painel ativo" id="painel-esquerdo">
       <div class="painel-header">
         <div class="painel-titulo">Armazenamento</div>
         <div class="breadcrumb" id="breadcrumb-interno"></div>
@@ -252,10 +389,23 @@
         <button class="btn-atalho" onclick="navInterno('/home/jett/Documentos')">Documentos</button>
         <button class="btn-atalho" onclick="navInterno('/home/jett/Imagens')">Imagens</button>
       </div>
+      <div id="modal-interno" class="modal-input" style="display:none">
+        <label id="modal-interno-label">Nome:</label>
+        <input id="modal-interno-campo" type="text" spellcheck="false"
+               onkeydown="modalTecla(event,'interno')">
+        <button class="modal-btn ok"  onclick="modalConfirmar('interno')">OK</button>
+        <button class="modal-btn"     onclick="modalCancelar('interno')">✕</button>
+      </div>
+      <div class="col-header">
+        <span class="col-h-icon"></span>
+        <span class="col-h-nome">Nome</span>
+        <span class="col-h-tam">Tamanho</span>
+        <span class="col-h-data">Modificado</span>
+      </div>
       <div class="lista-arquivos" id="lista-interno"
            ondragover="dragOver(event,'interno')"
            ondragleave="dragLeave(event,'interno')"
-           ondrop="drop(event,'interno')">
+           ondrop="dropLista(event,'interno')">
         <div class="vazio">Carregando...</div>
       </div>
     </div>
@@ -273,14 +423,34 @@
         </div>
         <div class="breadcrumb" id="breadcrumb-removivel"></div>
       </div>
+      <div id="modal-removivel" class="modal-input" style="display:none">
+        <label id="modal-removivel-label">Nome:</label>
+        <input id="modal-removivel-campo" type="text" spellcheck="false"
+               onkeydown="modalTecla(event,'removivel')">
+        <button class="modal-btn ok"  onclick="modalConfirmar('removivel')">OK</button>
+        <button class="modal-btn"     onclick="modalCancelar('removivel')">✕</button>
+      </div>
+      <div class="col-header">
+        <span class="col-h-icon"></span>
+        <span class="col-h-nome">Nome</span>
+        <span class="col-h-tam">Tamanho</span>
+        <span class="col-h-data">Modificado</span>
+      </div>
       <div class="lista-arquivos" id="lista-removivel"
            ondragover="dragOver(event,'removivel')"
            ondragleave="dragLeave(event,'removivel')"
-           ondrop="drop(event,'removivel')">
-        <div class="vazio">Nenhum dispositivo selecionado</div>
+           ondrop="dropLista(event,'removivel')">
+        <div class="vazio">Nenhum dispositivo conectado</div>
       </div>
     </div>
 
+  </div>
+
+  <!-- Caixa de confirmação (overlay) -->
+  <div id="confirm-box" style="display:none">
+    <span id="confirm-texto"></span>
+    <button class="confirm-btn sim" onclick="confirmOk()">Sim</button>
+    <button class="confirm-btn"     onclick="confirmCancelar()">Não</button>
   </div>
 
   <!-- Rodapé -->
@@ -293,21 +463,44 @@
 
 <script>
 // ── Estado ────────────────────────────────────────────────────────────────────
-const estado = {
-  caminhoInterno:    '/home/jett',
-  caminhoRemovivel:  null,
-  dispositivos:      [],   // { dispositivo, tamanho, montagem|null }
-  dispositivoAtivo:  null, // objeto do dispositivo selecionado
-  arrastando:        null, // { caminho, painel }
+const st = {
+  caminhoInterno:   '/home/jett',
+  caminhoRemovivel: null,
+  dispositivos:     [],
+  dispositivoAtivo: null,
+  selecionados:     new Set(),   // caminhos selecionados
+  painelAtivo:      'interno',   // panel que possui a seleção atual
+  arrastando:       null,        // {caminho, painel, tipo}
+  diskCache:        { interno: '', removivel: '' },
+  modalCallback:    null,        // fn(nome) chamada ao confirmar modal
+  confirmCallback:  null,        // fn() chamada ao clicar Sim
 };
 
-// ── Painel interno ────────────────────────────────────────────────────────────
+// ── Navegação interna ─────────────────────────────────────────────────────────
 async function navInterno(caminho) {
-  estado.caminhoInterno = caminho;
+  st.caminhoInterno = caminho;
+  limparSelecao('interno');
   atualizarBreadcrumb('interno', caminho);
-  await listarPainel('interno', caminho);
+  await Promise.all([
+    listarPainel('interno', caminho),
+    buscarDiskSpace('interno', caminho),
+  ]);
+  definirPainelAtivo('interno');
 }
 
+// ── Navegação removível ───────────────────────────────────────────────────────
+async function navRemovivel(caminho) {
+  st.caminhoRemovivel = caminho;
+  limparSelecao('removivel');
+  atualizarBreadcrumb('removivel', caminho);
+  await Promise.all([
+    listarPainel('removivel', caminho),
+    buscarDiskSpace('removivel', caminho),
+  ]);
+  definirPainelAtivo('removivel');
+}
+
+// ── Listar painel ─────────────────────────────────────────────────────────────
 async function listarPainel(painel, caminho) {
   const listaEl = document.getElementById(`lista-${painel}`);
   listaEl.innerHTML = '<div class="vazio">Lendo...</div>';
@@ -315,112 +508,439 @@ async function listarPainel(painel, caminho) {
     const res = await fetch('/api/files/list?path=' + encodeURIComponent(caminho));
     const dados = await res.json();
     if (dados.erro) {
-      listaEl.innerHTML = `<div class="vazio">${dados.erro}</div>`;
+      listaEl.innerHTML = `<div class="vazio">${escaparHtml(dados.erro)}</div>`;
       return;
     }
-    // bridge retorna { caminho, entradas: [{nome, tipo, tamanho}] }
     const entradas = dados.entradas || [];
     if (!entradas.length) {
       listaEl.innerHTML = '<div class="vazio">Pasta vazia</div>';
       return;
     }
-    // Adiciona campo caminho completo a cada entrada
     const itens = entradas.map(e => ({
       ...e,
       caminho: caminho.replace(/\/$/, '') + '/' + e.nome,
     }));
-    renderListaArquivos(listaEl, itens, painel, caminho);
+    renderLista(listaEl, itens, painel, caminho);
   } catch(e) {
     listaEl.innerHTML = '<div class="vazio">Erro ao listar</div>';
   }
 }
 
-function renderListaArquivos(el, itens, painel, caminhoBase) {
-  // Entrada para subir um nível
+function renderLista(el, itens, painel, caminhoBase) {
   let html = '';
+
+  // Entrada ".." para subir nível
   const partes = caminhoBase.split('/').filter(Boolean);
   if (partes.length > 1) {
     const pai = '/' + partes.slice(0, -1).join('/');
     const navFn = painel === 'interno'
-      ? `navInterno('${escapar(pai)}')`
-      : `navRemovivel('${escapar(pai)}')`;
-    html += `
-      <div class="item-arquivo" onclick="${navFn}">
-        <span class="arq-icone">↩</span>
-        <span class="arq-nome" style="color:#2a2a2a">..</span>
-      </div>`;
+      ? `navInterno('${esc(pai)}')`
+      : `navRemovivel('${esc(pai)}')`;
+    html += `<div class="item-arquivo" onclick="${navFn}">
+      <span class="arq-icone">↩</span>
+      <span class="arq-nome" style="color:#1a1a1a">..</span>
+      <span class="arq-tam"></span>
+      <span class="arq-data"></span>
+    </div>`;
   }
 
   itens.forEach(item => {
-    const caminho = item.caminho;
-    const nome    = item.nome;
-    const ehDir   = item.tipo === 'dir';
-    const icone   = ehDir ? '📁' : iconeArquivo(nome);
-    const tam     = ehDir ? '' : formatarTamanho(item.tamanho || 0);
+    const { caminho, nome, tipo, tamanho, modificado } = item;
+    const ehDir  = tipo === 'dir';
+    const icone  = ehDir ? '📁' : iconeArquivo(nome);
+    const tam    = ehDir ? '' : formatarTamanho(tamanho || 0);
+    const data   = modificado ? formatarData(modificado) : '';
+    const sel    = st.selecionados.has(caminho) ? ' selecionado' : '';
 
-    const clicavel = ehDir
-      ? (painel === 'interno'
-          ? `navInterno('${escapar(caminho)}')`
-          : `navRemovivel('${escapar(caminho)}')`)
-      : '';
-
-    html += `
-      <div class="item-arquivo"
-           draggable="true"
-           data-caminho="${escapar(caminho)}"
-           data-painel="${painel}"
-           onclick="${clicavel}"
-           ondragstart="dragStart(event,'${escapar(caminho)}','${painel}')"
-           ondragend="dragEnd(event)">
-        <span class="arq-icone">${icone}</span>
-        <span class="arq-nome">${escaparHtml(nome)}</span>
-        ${tam ? `<span class="arq-tam">${tam}</span>` : ''}
-      </div>`;
+    html += `<div class="item-arquivo${sel}"
+         data-caminho="${escaparHtml(caminho)}"
+         data-tipo="${tipo}"
+         draggable="true"
+         onclick="clicarItem(event,'${esc(caminho)}','${painel}','${tipo}')"
+         ondblclick="dblClicarItem(event,'${esc(caminho)}','${painel}','${tipo}')"
+         ondragstart="dragStart(event,'${esc(caminho)}','${painel}','${tipo}')"
+         ondragend="dragEnd(event)"
+         ondragover="dragOverItem(event,'${painel}')"
+         ondragleave="dragLeaveItem(event)"
+         ondrop="dropItem(event,'${painel}')">
+      <span class="arq-icone">${icone}</span>
+      <span class="arq-nome">${escaparHtml(nome)}</span>
+      <span class="arq-tam">${tam}</span>
+      <span class="arq-data">${data}</span>
+    </div>`;
   });
 
   el.innerHTML = html;
 }
 
-// ── Painel direito: removível ─────────────────────────────────────────────────
+// ── Seleção ───────────────────────────────────────────────────────────────────
+function clicarItem(event, caminho, painel, tipo) {
+  // Troca de painel: limpa seleção anterior
+  if (painel !== st.painelAtivo) {
+    limparSelecao(st.painelAtivo);
+    st.painelAtivo = painel;
+  }
+
+  if (event.ctrlKey || event.metaKey) {
+    // Ctrl+click: toggle seleção sem navegar
+    if (st.selecionados.has(caminho)) {
+      st.selecionados.delete(caminho);
+    } else {
+      st.selecionados.add(caminho);
+    }
+    atualizarSelecaoVisual(painel);
+  } else if (tipo === 'dir') {
+    // Clique simples em pasta: navega
+    st.selecionados.clear();
+    if (painel === 'interno') navInterno(caminho);
+    else navRemovivel(caminho);
+    return;
+  } else {
+    // Clique simples em arquivo: seleciona só este
+    st.selecionados.clear();
+    st.selecionados.add(caminho);
+    atualizarSelecaoVisual(painel);
+  }
+
+  definirPainelAtivo(painel);
+  atualizarBotoes();
+  atualizarStatusBar();
+}
+
+function dblClicarItem(event, caminho, painel, tipo) {
+  // Duplo clique em pasta com Ctrl não navega, só seleciona — já tratado
+  if (tipo === 'dir' && !event.ctrlKey) return; // já navegou no click simples
+}
+
+function definirPainelAtivo(painel) {
+  st.painelAtivo = painel;
+  document.getElementById('painel-esquerdo').classList.toggle('ativo', painel === 'interno');
+  document.getElementById('painel-direito').classList.toggle('ativo', painel === 'removivel');
+}
+
+function limparSelecao(painel) {
+  if (painel === st.painelAtivo || painel === undefined) {
+    st.selecionados.clear();
+    if (painel) atualizarSelecaoVisual(painel);
+  }
+}
+
+function atualizarSelecaoVisual(painel) {
+  const el = document.getElementById(`lista-${painel}`);
+  el.querySelectorAll('.item-arquivo').forEach(item => {
+    const c = item.dataset.caminho;
+    item.classList.toggle('selecionado', c ? st.selecionados.has(c) : false);
+  });
+}
+
+// ── Botões de ação ────────────────────────────────────────────────────────────
+function atualizarBotoes() {
+  const n = st.selecionados.size;
+  const outroCaminho = st.painelAtivo === 'interno'
+    ? st.caminhoRemovivel
+    : st.caminhoInterno;
+
+  setBtn('btn-renomear', n === 1);
+  setBtn('btn-deletar',  n >= 1);
+  setBtn('btn-copiar',   n >= 1 && !!outroCaminho);
+  setBtn('btn-mover',    n >= 1 && !!outroCaminho);
+}
+
+function setBtn(id, enabled) {
+  document.getElementById(id).disabled = !enabled;
+}
+
+// ── Nova pasta ────────────────────────────────────────────────────────────────
+function novaPasta() {
+  const painel = st.painelAtivo;
+  mostrarModal(painel, 'Nova pasta — nome:', '', async (nome) => {
+    if (!nome) return;
+    const baseDir = painel === 'interno' ? st.caminhoInterno : st.caminhoRemovivel;
+    if (!baseDir) { atualizarStatus('Painel sem pasta selecionada'); return; }
+    const caminho = baseDir.replace(/\/$/, '') + '/' + nome;
+    try {
+      const res = await fetch('/api/files/mkdir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: caminho }),
+      });
+      const d = await res.json();
+      if (d.ok) {
+        atualizarStatus('Pasta criada');
+        await listarPainel(painel, baseDir);
+      } else {
+        atualizarStatus(`Erro: ${d.erro || 'falha'}`);
+      }
+    } catch(e) { atualizarStatus('Erro ao criar pasta'); }
+  });
+}
+
+// ── Renomear ──────────────────────────────────────────────────────────────────
+function renomear() {
+  if (st.selecionados.size !== 1) return;
+  const [src] = st.selecionados;
+  const nomeAtual = src.split('/').pop();
+  const painel = st.painelAtivo;
+  mostrarModal(painel, 'Renomear para:', nomeAtual, async (novoNome) => {
+    if (!novoNome || novoNome === nomeAtual) return;
+    try {
+      const res = await fetch('/api/files/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ src, name: novoNome }),
+      });
+      const d = await res.json();
+      if (d.ok) {
+        atualizarStatus('Renomeado');
+        st.selecionados.clear();
+        const baseDir = painel === 'interno' ? st.caminhoInterno : st.caminhoRemovivel;
+        await listarPainel(painel, baseDir);
+      } else {
+        atualizarStatus(`Erro: ${d.erro || 'falha'}`);
+      }
+    } catch(e) { atualizarStatus('Erro ao renomear'); }
+    atualizarBotoes();
+    atualizarStatusBar();
+  });
+}
+
+// ── Deletar ───────────────────────────────────────────────────────────────────
+function deletar() {
+  const n = st.selecionados.size;
+  if (n === 0) return;
+  const label = n === 1
+    ? `Deletar "${[...st.selecionados][0].split('/').pop()}"?`
+    : `Deletar ${n} itens?`;
+  mostrarConfirm(label, async () => {
+    const itens = [...st.selecionados];
+    const painel = st.painelAtivo;
+    let erros = 0;
+    for (const caminho of itens) {
+      try {
+        const res = await fetch('/api/files/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: caminho }),
+        });
+        const d = await res.json();
+        if (!d.ok) erros++;
+      } catch(e) { erros++; }
+    }
+    st.selecionados.clear();
+    const baseDir = painel === 'interno' ? st.caminhoInterno : st.caminhoRemovivel;
+    await listarPainel(painel, baseDir);
+    atualizarBotoes();
+    atualizarStatusBar();
+    atualizarStatus(erros ? `${erros} erro(s) ao deletar` : `${itens.length} item(ns) deletado(s)`);
+  });
+}
+
+// ── Copiar para outro painel ──────────────────────────────────────────────────
+async function copiar() {
+  const dstDir = st.painelAtivo === 'interno' ? st.caminhoRemovivel : st.caminhoInterno;
+  if (!dstDir) { atualizarStatus('Destino não definido'); return; }
+  const itens = [...st.selecionados];
+  let erros = 0;
+  atualizarStatus(`Copiando ${itens.length} item(ns)...`);
+  for (const src of itens) {
+    const nome = src.split('/').pop();
+    const dst  = dstDir.replace(/\/$/, '') + '/' + nome;
+    try {
+      const res = await fetch('/api/files/copy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ src, dst }),
+      });
+      const d = await res.json();
+      if (!d.ok) erros++;
+    } catch(e) { erros++; }
+  }
+  const outroPainel = st.painelAtivo === 'interno' ? 'removivel' : 'interno';
+  await listarPainel(outroPainel, dstDir);
+  atualizarStatus(erros ? `${erros} erro(s) ao copiar` : `${itens.length} item(ns) copiado(s)`);
+}
+
+// ── Mover para outro painel ───────────────────────────────────────────────────
+async function moverOutroPainel() {
+  const dstDir = st.painelAtivo === 'interno' ? st.caminhoRemovivel : st.caminhoInterno;
+  if (!dstDir) { atualizarStatus('Destino não definido'); return; }
+  const itens = [...st.selecionados];
+  const painelOrigem = st.painelAtivo;
+  let erros = 0;
+  atualizarStatus(`Movendo ${itens.length} item(ns)...`);
+  for (const src of itens) {
+    const nome = src.split('/').pop();
+    const dst  = dstDir.replace(/\/$/, '') + '/' + nome;
+    try {
+      const res = await fetch('/api/files/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ src, dst }),
+      });
+      const d = await res.json();
+      if (!d.ok) erros++;
+    } catch(e) { erros++; }
+  }
+  st.selecionados.clear();
+  const outroPainel = painelOrigem === 'interno' ? 'removivel' : 'interno';
+  const origemDir   = painelOrigem === 'interno' ? st.caminhoInterno : st.caminhoRemovivel;
+  await Promise.all([
+    listarPainel(painelOrigem, origemDir),
+    listarPainel(outroPainel, dstDir),
+  ]);
+  atualizarBotoes();
+  atualizarStatusBar();
+  atualizarStatus(erros ? `${erros} erro(s) ao mover` : `${itens.length} item(ns) movido(s)`);
+}
+
+// ── Executar mover (usado pelo DnD) ──────────────────────────────────────────
+async function executarMover(src, dst, painelRecarregar) {
+  const nome = src.split('/').pop();
+  atualizarStatus(`Movendo ${nome}...`);
+  try {
+    const res = await fetch('/api/files/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ src, dst }),
+    });
+    const d = await res.json();
+    if (d.ok) {
+      atualizarStatus(`${nome} movido`);
+      // Recarrega os painéis afetados
+      const recargas = [];
+      if (!painelRecarregar || painelRecarregar === 'interno') {
+        recargas.push(listarPainel('interno', st.caminhoInterno));
+      }
+      if (!painelRecarregar || painelRecarregar === 'removivel') {
+        if (st.caminhoRemovivel)
+          recargas.push(listarPainel('removivel', st.caminhoRemovivel));
+      }
+      await Promise.all(recargas);
+    } else {
+      atualizarStatus(`Erro: ${d.erro || 'falha ao mover'}`);
+    }
+  } catch(e) { atualizarStatus('Erro ao mover'); }
+}
+
+// ── Drag and Drop ─────────────────────────────────────────────────────────────
+function dragStart(event, caminho, painel, tipo) {
+  st.arrastando = { caminho, painel, tipo };
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', caminho);
+  // Pequeno delay para evitar que a classe seja aplicada antes do drag "tirar" o elemento
+  requestAnimationFrame(() => event.currentTarget.classList.add('arrastando'));
+}
+
+function dragEnd(event) {
+  event.currentTarget.classList.remove('arrastando');
+  // Limpa todos os highlights de pasta
+  document.querySelectorAll('.drag-over-folder').forEach(el => el.classList.remove('drag-over-folder'));
+}
+
+// Dragover no container da lista (cross-panel)
+function dragOver(event, painel) {
+  if (!st.arrastando || st.arrastando.painel === painel) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  document.getElementById(`lista-${painel}`).classList.add('drag-over');
+}
+
+function dragLeave(event, painel) {
+  const el = document.getElementById(`lista-${painel}`);
+  if (!el.contains(event.relatedTarget)) el.classList.remove('drag-over');
+}
+
+// Drop no container (cross-panel: move para o dir atual do painel destino)
+async function dropLista(event, painelDestino) {
+  event.preventDefault();
+  document.getElementById(`lista-${painelDestino}`).classList.remove('drag-over');
+
+  const src = st.arrastando;
+  st.arrastando = null;
+  if (!src || src.painel === painelDestino) return;
+
+  const dstDir = painelDestino === 'interno' ? st.caminhoInterno : st.caminhoRemovivel;
+  if (!dstDir) { atualizarStatus('Destino não definido'); return; }
+
+  const nome = src.caminho.split('/').pop();
+  const dst  = dstDir.replace(/\/$/, '') + '/' + nome;
+  await executarMover(src.caminho, dst, null);
+}
+
+// Dragover num item específico (intra-painel: só aceita se o item for pasta)
+function dragOverItem(event, painel) {
+  if (!st.arrastando || st.arrastando.painel !== painel) return;
+  const item = event.currentTarget;
+  if (item.dataset.tipo !== 'dir') return;
+  if (item.dataset.caminho === st.arrastando.caminho) return;
+  event.preventDefault();
+  event.stopPropagation(); // impede que o container marque drag-over também
+  item.classList.add('drag-over-folder');
+}
+
+function dragLeaveItem(event) {
+  event.currentTarget.classList.remove('drag-over-folder');
+}
+
+// Drop num item (intra-painel: move para dentro da pasta)
+async function dropItem(event, painel) {
+  event.stopPropagation();
+  const item = event.currentTarget;
+  item.classList.remove('drag-over-folder');
+
+  const src = st.arrastando;
+  if (!src || src.painel !== painel) return;
+  if (item.dataset.tipo !== 'dir') return;
+
+  event.preventDefault();
+  st.arrastando = null;
+
+  const dstFolder = item.dataset.caminho;
+  if (!dstFolder || dstFolder === src.caminho) return;
+
+  const nome = src.caminho.split('/').pop();
+  const dst  = dstFolder + '/' + nome;
+  await executarMover(src.caminho, dst, painel);
+}
+
+// ── Painel removível ──────────────────────────────────────────────────────────
 async function carregarDispositivos() {
   try {
     const res = await fetch('/api/usb/list');
-    const dados = await res.json();
-    estado.dispositivos = dados.dispositivos || [];
-    renderSeletorUSB();
+    const d = await res.json();
+    st.dispositivos = d.dispositivos || [];
   } catch(e) {
-    estado.dispositivos = [];
-    renderSeletorUSB();
+    st.dispositivos = [];
   }
+  renderSeletorUSB();
 }
 
 function renderSeletorUSB() {
   const sel = document.getElementById('select-usb');
-  const devs = estado.dispositivos;
+  const devs = st.dispositivos;
   sel.innerHTML = '<option value="">— selecione —</option>' +
     devs.map(d => {
       const label = d.montagem
-        ? `${d.dispositivo} (montado: ${d.montagem})`
-        : `${d.dispositivo} ${d.tamanho ? '[' + d.tamanho + ']' : ''}`;
+        ? `${d.dispositivo} ↳ ${d.montagem}`
+        : `${d.dispositivo}${d.tamanho ? ' [' + d.tamanho + ']' : ''}`;
       return `<option value="${escaparHtml(d.dispositivo)}">${escaparHtml(label)}</option>`;
     }).join('');
-
-  // Reseleciona o dispositivo ativo se ainda existir
-  if (estado.dispositivoAtivo) {
-    sel.value = estado.dispositivoAtivo.dispositivo;
-  }
+  if (st.dispositivoAtivo) sel.value = st.dispositivoAtivo.dispositivo;
 }
 
 async function selecionarDispositivo() {
   const sel = document.getElementById('select-usb');
-  const dev = estado.dispositivos.find(d => d.dispositivo === sel.value);
-  estado.dispositivoAtivo = dev || null;
+  const dev = st.dispositivos.find(d => d.dispositivo === sel.value) || null;
+  st.dispositivoAtivo = dev;
 
   if (!dev) {
     document.getElementById('lista-removivel').innerHTML =
-      '<div class="vazio">Nenhum dispositivo selecionado</div>';
+      '<div class="vazio">Nenhum dispositivo conectado</div>';
     atualizarBreadcrumb('removivel', '');
-    estado.caminhoRemovivel = null;
+    st.caminhoRemovivel = null;
+    st.diskCache.removivel = '';
+    atualizarBotoes();
+    atualizarStatusBar();
     return;
   }
 
@@ -430,7 +950,7 @@ async function selecionarDispositivo() {
     document.getElementById('lista-removivel').innerHTML =
       '<div class="vazio">Dispositivo não montado — clique em Montar</div>';
     atualizarBreadcrumb('removivel', '');
-    estado.caminhoRemovivel = null;
+    st.caminhoRemovivel = null;
   }
 }
 
@@ -444,133 +964,112 @@ async function montarSelecionado() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ device: sel.value }),
     });
-    const dados = await res.json();
-    if (dados.ok) {
+    const d = await res.json();
+    if (d.ok) {
       await carregarDispositivos();
-      if (dados.montagem) await navRemovivel(dados.montagem);
+      if (d.montagem) await navRemovivel(d.montagem);
       atualizarStatus('Dispositivo montado');
     } else {
-      atualizarStatus(`Erro: ${dados.erro || 'falha ao montar'}`);
+      atualizarStatus(`Erro: ${d.erro || 'falha ao montar'}`);
     }
-  } catch(e) {
-    atualizarStatus('Erro ao montar');
-  }
+  } catch(e) { atualizarStatus('Erro ao montar'); }
 }
 
 async function ejetarSelecionado() {
-  const dev = estado.dispositivoAtivo;
+  const dev = st.dispositivoAtivo;
   if (!dev || !dev.montagem) { atualizarStatus('Dispositivo não montado'); return; }
   atualizarStatus(`Ejetando ${dev.dispositivo}...`);
   try {
     const res = await fetch('/api/usb/unmount', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // bridge usa udisksctl unmount -b <dispositivo>, não o ponto de montagem
       body: JSON.stringify({ point: dev.dispositivo }),
     });
-    const dados = await res.json();
-    if (dados.ok) {
-      estado.dispositivoAtivo = null;
-      estado.caminhoRemovivel = null;
+    const d = await res.json();
+    if (d.ok) {
+      st.dispositivoAtivo = null;
+      st.caminhoRemovivel = null;
+      st.diskCache.removivel = '';
       document.getElementById('lista-removivel').innerHTML =
         '<div class="vazio">Dispositivo ejetado</div>';
       atualizarBreadcrumb('removivel', '');
       await carregarDispositivos();
+      atualizarBotoes();
+      atualizarStatusBar();
       atualizarStatus('Ejetado com segurança');
     } else {
-      atualizarStatus(`Erro: ${dados.erro || 'falha ao ejetar'}`);
+      atualizarStatus(`Erro: ${d.erro || 'falha ao ejetar'}`);
     }
-  } catch(e) {
-    atualizarStatus('Erro ao ejetar');
-  }
+  } catch(e) { atualizarStatus('Erro ao ejetar'); }
 }
 
-async function navRemovivel(caminho) {
-  estado.caminhoRemovivel = caminho;
-  atualizarBreadcrumb('removivel', caminho);
-  await listarPainel('removivel', caminho);
-}
-
-// ── Drag and Drop ─────────────────────────────────────────────────────────────
-function dragStart(event, caminho, painel) {
-  estado.arrastando = { caminho, painel };
-  event.dataTransfer.effectAllowed = 'move';
-  event.dataTransfer.setData('text/plain', caminho);
-  event.currentTarget.classList.add('arrastando');
-}
-
-function dragEnd(event) {
-  event.currentTarget.classList.remove('arrastando');
-}
-
-function dragOver(event, painel) {
-  // Só aceita drop se vier do painel oposto
-  if (!estado.arrastando || estado.arrastando.painel === painel) return;
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-  document.getElementById(`lista-${painel}`).classList.add('drag-over');
-}
-
-function dragLeave(event, painel) {
-  // Verifica se saiu do contêiner (não apenas para um filho)
-  const el = document.getElementById(`lista-${painel}`);
-  if (!el.contains(event.relatedTarget)) {
-    el.classList.remove('drag-over');
-  }
-}
-
-async function drop(event, painelDestino) {
-  event.preventDefault();
-  const listaEl = document.getElementById(`lista-${painelDestino}`);
-  listaEl.classList.remove('drag-over');
-
-  if (!estado.arrastando || estado.arrastando.painel === painelDestino) return;
-
-  const src = estado.arrastando.caminho;
-  const dstDir = painelDestino === 'interno'
-    ? estado.caminhoInterno
-    : estado.caminhoRemovivel;
-
-  estado.arrastando = null;
-
-  if (!dstDir) {
-    atualizarStatus('Pasta de destino não selecionada');
-    return;
-  }
-
-  const nome = src.split('/').pop();
-  const dst  = dstDir.replace(/\/$/, '') + '/' + nome;
-
-  atualizarStatus(`Movendo ${nome}...`);
+// ── Disk space ────────────────────────────────────────────────────────────────
+async function buscarDiskSpace(painel, caminho) {
   try {
-    const res = await fetch('/api/files/move', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ src, dst }),
-    });
-    const dados = await res.json();
-    if (dados.ok) {
-      atualizarStatus(`${nome} movido`);
-      // Recarrega ambos os painéis
-      await Promise.all([
-        listarPainel('interno', estado.caminhoInterno),
-        estado.caminhoRemovivel
-          ? listarPainel('removivel', estado.caminhoRemovivel)
-          : Promise.resolve(),
-      ]);
-    } else {
-      atualizarStatus(`Erro: ${dados.erro || 'falha ao mover'}`);
+    const res = await fetch('/api/files/diskspace?path=' + encodeURIComponent(caminho));
+    const d = await res.json();
+    if (d.livre !== undefined) {
+      st.diskCache[painel] = formatarTamanho(d.livre);
+      atualizarStatusBar();
     }
-  } catch(e) {
-    atualizarStatus('Erro ao mover arquivo');
+  } catch(e) {}
+}
+
+// ── Modal input ───────────────────────────────────────────────────────────────
+function mostrarModal(painel, label, valorInicial, callback) {
+  st.modalCallback = callback;
+  document.getElementById(`modal-${painel}-label`).textContent = label;
+  const campo = document.getElementById(`modal-${painel}-campo`);
+  campo.value = valorInicial;
+  document.getElementById(`modal-${painel}`).style.display = 'flex';
+  requestAnimationFrame(() => { campo.focus(); campo.select(); });
+}
+
+function modalConfirmar(painel) {
+  const valor = document.getElementById(`modal-${painel}-campo`).value.trim();
+  document.getElementById(`modal-${painel}`).style.display = 'none';
+  if (st.modalCallback) {
+    const cb = st.modalCallback;
+    st.modalCallback = null;
+    cb(valor);
   }
+}
+
+function modalCancelar(painel) {
+  document.getElementById(`modal-${painel}`).style.display = 'none';
+  st.modalCallback = null;
+}
+
+function modalTecla(event, painel) {
+  if (event.key === 'Enter')  modalConfirmar(painel);
+  if (event.key === 'Escape') modalCancelar(painel);
+}
+
+// ── Confirm dialog ────────────────────────────────────────────────────────────
+function mostrarConfirm(texto, callback) {
+  st.confirmCallback = callback;
+  document.getElementById('confirm-texto').textContent = texto;
+  document.getElementById('confirm-box').style.display = 'flex';
+}
+
+function confirmOk() {
+  document.getElementById('confirm-box').style.display = 'none';
+  if (st.confirmCallback) {
+    const cb = st.confirmCallback;
+    st.confirmCallback = null;
+    cb();
+  }
+}
+
+function confirmCancelar() {
+  document.getElementById('confirm-box').style.display = 'none';
+  st.confirmCallback = null;
 }
 
 // ── Breadcrumb ────────────────────────────────────────────────────────────────
 function atualizarBreadcrumb(painel, caminho) {
   const el = document.getElementById(`breadcrumb-${painel}`);
   if (!caminho) { el.innerHTML = ''; return; }
-
   const partes = caminho.split('/').filter(Boolean);
   let html = '';
   partes.forEach((parte, i) => {
@@ -581,38 +1080,75 @@ function atualizarBreadcrumb(painel, caminho) {
       html += `<span class="breadcrumb-parte atual">${escaparHtml(parte)}</span>`;
     } else {
       const fn = painel === 'interno'
-        ? `navInterno('${escapar(ate)}')`
-        : `navRemovivel('${escapar(ate)}')`;
+        ? `navInterno('${esc(ate)}')`
+        : `navRemovivel('${esc(ate)}')`;
       html += `<span class="breadcrumb-parte" onclick="${fn}">${escaparHtml(parte)}</span>`;
     }
   });
   el.innerHTML = html;
 }
 
+// ── Status bar ────────────────────────────────────────────────────────────────
+function atualizarStatus(msg) {
+  document.getElementById('status-bar').textContent = msg;
+  // Limpa após 4 s e restaura o status de contagem
+  clearTimeout(atualizarStatus._t);
+  atualizarStatus._t = setTimeout(atualizarStatusBar, 4000);
+}
+
+function atualizarStatusBar() {
+  const n = st.selecionados.size;
+  let partes = [];
+  if (n > 0) partes.push(`${n} ${n === 1 ? 'item selecionado' : 'itens selecionados'}`);
+  const disk = st.diskCache[st.painelAtivo];
+  if (disk) partes.push(`${disk} livres`);
+  document.getElementById('status-bar').textContent = partes.join(' · ') || '—';
+}
+
+// ── Atualizar tudo ────────────────────────────────────────────────────────────
+async function atualizar() {
+  atualizarStatus('Atualizando...');
+  await Promise.all([
+    carregarDispositivos(),
+    navInterno(st.caminhoInterno),
+  ]);
+  if (st.caminhoRemovivel) await navRemovivel(st.caminhoRemovivel);
+  atualizarStatusBar();
+}
+
 // ── Utilitários ───────────────────────────────────────────────────────────────
 function iconeArquivo(nome) {
-  const ext = nome.split('.').pop().toLowerCase();
+  const ext = (nome.split('.').pop() || '').toLowerCase();
   const mapa = {
-    pdf: '📄', txt: '📝', md: '📝',
-    jpg: '🖼', jpeg: '🖼', png: '🖼', gif: '🖼', webp: '🖼', svg: '🖼',
-    mp4: '🎬', mkv: '🎬', avi: '🎬', mov: '🎬', webm: '🎬',
-    mp3: '🎵', ogg: '🎵', flac: '🎵', wav: '🎵',
-    zip: '🗜', tar: '🗜', gz: '🗜', bz2: '🗜', xz: '🗜', rar: '🗜',
-    sh: '⚙', py: '⚙', js: '⚙', html: '⚙', css: '⚙',
+    pdf: '📄', txt: '📝', md: '📝', doc: '📝', docx: '📝', odt: '📝',
+    jpg: '🖼', jpeg: '🖼', png: '🖼', gif: '🖼', webp: '🖼', svg: '🖼', bmp: '🖼',
+    mp4: '🎬', mkv: '🎬', avi: '🎬', mov: '🎬', webm: '🎬', flv: '🎬',
+    mp3: '🎵', ogg: '🎵', flac: '🎵', wav: '🎵', m4a: '🎵', aac: '🎵',
+    zip: '🗜', tar: '🗜', gz: '🗜', bz2: '🗜', xz: '🗜', rar: '🗜', '7z': '🗜',
+    sh: '⚙', py: '⚙', js: '⚙', ts: '⚙', html: '⚙', css: '⚙', json: '⚙',
     deb: '📦', rpm: '📦', appimage: '📦',
+    iso: '💿', img: '💿',
+    xls: '📊', xlsx: '📊', ods: '📊', csv: '📊',
+    ppt: '📑', pptx: '📑', odp: '📑',
   };
   return mapa[ext] || '📄';
 }
 
 function formatarTamanho(bytes) {
-  if (bytes === 0) return '0 B';
-  const unidades = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + unidades[i];
+  if (!bytes || bytes === 0) return '0 B';
+  const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), u.length - 1);
+  return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
 }
 
-function escapar(str) {
-  // Escapa aspas simples para uso em onclick inline
+function formatarData(ts) {
+  if (!ts) return '';
+  const d = new Date(ts * 1000);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+}
+
+function esc(str) {
+  // Escapa aspas simples para onclick inline
   return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
@@ -624,28 +1160,29 @@ function escaparHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function atualizarStatus(msg) {
-  document.getElementById('status-bar').textContent = msg;
-}
-
 function fechar() {
   try { window.close(); } catch(e) {}
 }
 
-async function atualizar() {
-  atualizarStatus('Atualizando...');
-  await Promise.all([
-    carregarDispositivos(),
-    listarPainel('interno', estado.caminhoInterno),
-  ]);
-  if (estado.caminhoRemovivel) {
-    await listarPainel('removivel', estado.caminhoRemovivel);
-  }
-  atualizarStatus('Atualizado');
-}
-
+// ── Teclado global ────────────────────────────────────────────────────────────
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') fechar();
+  if (e.key === 'Escape') {
+    // Fecha confirm/modal abertos antes de fechar a janela
+    if (document.getElementById('confirm-box').style.display !== 'none') {
+      confirmCancelar(); return;
+    }
+    if (document.getElementById('modal-interno').style.display !== 'none') {
+      modalCancelar('interno'); return;
+    }
+    if (document.getElementById('modal-removivel').style.display !== 'none') {
+      modalCancelar('removivel'); return;
+    }
+    fechar();
+  }
+  if (e.key === 'F5') atualizar();
+  if (e.key === 'Delete' && !e.ctrlKey) {
+    if (document.activeElement.tagName !== 'INPUT') deletar();
+  }
 });
 
 // ── Inicialização ─────────────────────────────────────────────────────────────
@@ -655,7 +1192,8 @@ document.addEventListener('keydown', (e) => {
     navInterno('/home/jett'),
     carregarDispositivos(),
   ]);
-  atualizarStatus('—');
+  atualizarBotoes();
+  atualizarStatusBar();
 })();
 </script>
 </body>

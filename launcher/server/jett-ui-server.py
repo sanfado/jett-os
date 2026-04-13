@@ -30,6 +30,7 @@
 #   POST /api/wifi/connect         → conecta rede (body: {"ssid":"...","senha":"..."})
 #   POST /api/wifi/disconnect      → desconecta WiFi atual
 #   GET  /api/files/list?path=     → lista diretório (padrão: /home/jett)
+#   GET  /api/files/diskspace?path= → espaço livre do dispositivo (padrão: /home/jett)
 #   POST /api/files/move           → move arquivo (body: {"src":"...","dst":"..."})
 #   POST /api/files/copy           → copia arquivo (body: {"src":"...","dst":"..."})
 #   POST /api/files/rename         → renomeia (body: {"src":"...","name":"..."})
@@ -312,6 +313,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             params = parse_qs(parsed.query)
             path = params.get('path', ['/home/jett'])[0]
             self.responder_json(bridge('files', 'list', path))
+            return
+
+        if caminho == '/api/files/diskspace':
+            params = parse_qs(parsed.query)
+            path = params.get('path', ['/home/jett'])[0]
+            self.responder_json(bridge('files', 'diskspace', path))
             return
 
         self.send_response(404)

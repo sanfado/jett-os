@@ -32,6 +32,7 @@
 #   files rename <src> <novo>     — renomeia dentro do mesmo dir
 #   files delete <caminho>        — remove arquivo ou dir vazio
 #   files mkdir <caminho>         — cria diretório
+#   files diskspace [caminho]     — espaço livre/total do dispositivo (JSON)
 #
 #   nav status                    — volume e rede atuais (JSON)
 #   nav navigate <url>            — faz o navegador acessar a URL via xdotool
@@ -409,15 +410,17 @@ files_list() {
     # Monta array de objetos JSON: diretórios primeiro, depois arquivos
     local -a entradas=()
     for entrada in "${dirs[@]}"; do
-        local nome
+        local nome mtime
         nome=$(basename "$entrada")
-        entradas+=("{\"nome\":\"${nome//\"/\\\"}\",\"tipo\":\"dir\",\"tamanho\":0}")
+        mtime=$(stat -c%Y "$entrada" 2>/dev/null || echo 0)
+        entradas+=("{\"nome\":\"${nome//\"/\\\"}\",\"tipo\":\"dir\",\"tamanho\":0,\"modificado\":${mtime}}")
     done
     for entrada in "${arqs[@]}"; do
-        local nome tamanho
+        local nome tamanho mtime
         nome=$(basename "$entrada")
         tamanho=$(stat -c%s "$entrada" 2>/dev/null || echo 0)
-        entradas+=("{\"nome\":\"${nome//\"/\\\"}\",\"tipo\":\"file\",\"tamanho\":${tamanho}}")
+        mtime=$(stat -c%Y  "$entrada" 2>/dev/null || echo 0)
+        entradas+=("{\"nome\":\"${nome//\"/\\\"}\",\"tipo\":\"file\",\"tamanho\":${tamanho},\"modificado\":${mtime}}")
     done
 
     local json_entradas=""
@@ -496,6 +499,16 @@ files_mkdir() {
     mkdir -p -- "$real" \
         || erro_json "falha ao criar diretório: ${real}"
     printf '{"ok":true,"caminho":"%s"}\n' "${real//\"/\\\"}"
+}
+
+files_diskspace() {
+    local caminho="${1:-${RAIZ_INTERNA}}"
+    local real
+    real=$(validar_caminho "$caminho")
+    local livre total
+    livre=$(df -B1 --output=avail "$real" 2>/dev/null | tail -1 | tr -d ' ')
+    total=$(df -B1 --output=size  "$real" 2>/dev/null | tail -1 | tr -d ' ')
+    printf '{"livre":%s,"total":%s}\n' "${livre:-0}" "${total:-0}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -964,12 +977,13 @@ case "$COMANDO" in
         esac ;;
     files)
         case "$SUBCOMANDO" in
-            list)   files_list "$ARG1" ;;
-            move)   files_move "$ARG1" "$ARG2" ;;
-            copy)   files_copy "$ARG1" "$ARG2" ;;
-            rename) files_rename "$ARG1" "$ARG2" ;;
-            delete) files_delete "$ARG1" ;;
-            mkdir)  files_mkdir "$ARG1" ;;
+            list)      files_list "$ARG1" ;;
+            move)      files_move "$ARG1" "$ARG2" ;;
+            copy)      files_copy "$ARG1" "$ARG2" ;;
+            rename)    files_rename "$ARG1" "$ARG2" ;;
+            delete)    files_delete "$ARG1" ;;
+            mkdir)     files_mkdir "$ARG1" ;;
+            diskspace) files_diskspace "$ARG1" ;;
             *)      erro_json "subcomando de files inválido: ${SUBCOMANDO}" ;;
         esac ;;
     nav)
