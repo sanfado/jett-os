@@ -86,6 +86,21 @@ SWAYMIN
         log_aviso "launcher/ui/ não encontrado — interfaces HTML não instaladas."
     fi
 
+    # ── Cria /etc/jett-os/ e arquivo de versão ────────────────────────────────
+    log_info "Inicializando /etc/jett-os/..."
+    mkdir -p /etc/jett-os
+    if [[ ! -f /etc/jett-os/versao.conf ]]; then
+        cat > /etc/jett-os/versao.conf << 'VERSAOEOF'
+# Versão instalada do Jett OS
+# Usado por: jett-bridge (system version) e jett-updater (comparação com GitHub)
+# Formato: JETT_VERSAO="vX.Y.Z-sufixo"  — consulte docs/VERSIONING.md
+JETT_VERSAO="v0.1.0-alpha"
+VERSAOEOF
+        log_ok "/etc/jett-os/versao.conf criado (v0.1.0-alpha)."
+    else
+        log_info "/etc/jett-os/versao.conf já existe — mantido."
+    fi
+
     # ── Cria serviços systemd do usuário ──────────────────────────────────────
     mkdir -p "$systemd_user_dir"
 

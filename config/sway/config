@@ -176,14 +176,7 @@ for_window [title="^Jett OS — Wizard"] {
     focus
 }
 
-# Assistente de configuração — overlay centralizado 700×500
-for_window [title="^Jett OS — Config"] {
-    floating   enable
-    border     none
-    resize     set 700 500
-    move       position center
-    focus
-}
+# Futuras janelas de configuração avançada devem ser adicionadas aqui quando implementadas.
 
 # Gerenciador de arquivos — overlay centralizado 900×580
 for_window [title="^Jett OS — Arquivos"] {

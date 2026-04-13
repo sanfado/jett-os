@@ -43,6 +43,10 @@ PACOTES_INSTALAR=(
     "networkd-dispatcher"  # hooks de evento para systemd-networkd
     "network-manager"      # gerenciador de redes (nmcli usado pelo jett-bridge)
 
+    # Bluetooth
+    "bluetooth"            # serviço bluetoothd (requerido por bluetoothctl)
+    "bluez"                # stack Bluetooth (bluetoothctl, pairing, conexão)
+
     # Interfaces e controle do sistema
     "udisks2"              # montagem de dispositivos USB sem root (udisksctl)
     "python3"              # runtime para jett-ui-server

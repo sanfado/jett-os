@@ -49,9 +49,9 @@ jett-os/
 │   │   ├── lib.sh             # Variáveis, cores e funções de log compartilhadas
 │   │   ├── 01-update.sh       # Atualiza repositórios e sistema base
 │   │   ├── 02-remove-bloat.sh # Remove pacotes desnecessários
-│   │   ├── 03-install-packages.sh # Instala Sway, fontes, áudio, utilitários
-│   │   ├── 04-user.sh         # Cria e configura o usuário kiosk 'jett'
-│   │   ├── 05-sway.sh         # Configura Sway, serviços systemd e scripts
+│   │   ├── 03-install-packages.sh # Instala Sway, fontes, áudio, bluetooth, utilitários
+│   │   ├── 04-user.sh         # Cria e configura o usuário kiosk 'jett' + sudoers
+│   │   ├── 05-sway.sh         # Configura Sway, serviços systemd, scripts e /etc/jett-os/
 │   │   ├── 06-network.sh      # DHCP via systemd-networkd e hook de DNS
 │   │   └── 07-bbr.sh          # TCP BBR e configuração do navegador padrão
 │   └── browsers/              # Scripts de instalação de cada navegador
@@ -63,7 +63,11 @@ jett-os/
 │
 ├── config/
 │   ├── sway/
-│   │   └── config             # Configuração do Sway (atalhos, for_window, exec)
+│   │   ├── config             # Configuração do Sway (atalhos, for_window, exec)
+│   │   ├── jett-sudoers       # Regras sudo do launcher (instaladas em /etc/sudoers.d/)
+│   │   └── sway-kiosk.service # Serviço systemd do compositor (referência)
+│   ├── systemd/
+│   │   └── jett-updater.service # Serviço do daemon de atualizações automáticas
 │   └── browsers/              # Perfis de flags de cada navegador
 │       ├── brave.conf
 │       ├── edge.conf
@@ -75,24 +79,40 @@ jett-os/
 │   ├── scripts/               # Executáveis do launcher (instalados em /usr/local/bin/)
 │   │   ├── jett-launcher.py   # UI tkinter de seleção de navegador (Super+B)
 │   │   ├── jett-switch.sh     # Troca o navegador ativo em runtime
-│   │   ├── jett-exit-confirm  # Dialog HTML de confirmação de saída (Super+Shift+E)
-│   │   ├── jett-bridge.sh     # Ponte HTML → OS (volume, rede, USB, energia)
+│   │   ├── jett-exit-confirm  # Dialog de confirmação de saída do Sway (Super+Shift+E)
+│   │   ├── jett-bridge.sh     # Ponte HTML → OS (volume, rede, wifi, bluetooth, USB, arquivos)
 │   │   ├── jett-nav-toggle.sh # Alterna a barra de navegação (Super sozinho)
-│   │   └── jett-menu-toggle.sh # Alterna o menu de sistema (Super+X)
+│   │   ├── jett-menu-toggle.sh # Alterna o menu de sistema (Super+X)
+│   │   ├── jett-files-toggle.sh # Alterna o gerenciador de arquivos (Super+F)
+│   │   ├── jett-firstboot.sh  # Inicia o wizard de primeiro boot
+│   │   └── jett-updater.sh    # Daemon de verificação de atualizações (a cada 6h)
 │   ├── server/
-│   │   └── jett-ui-server.py  # Servidor HTTP 127.0.0.1:1312 (API + HTML)
+│   │   └── jett-ui-server.py  # Servidor HTTP 127.0.0.1:1312 (API REST + HTML)
 │   └── ui/                    # Interfaces HTML servidas pelo jett-ui-server
-│       ├── nav.html           # Barra de navegação (relógio, rede, volume)
-│       ├── menu.html          # Menu de sistema (volume, rede, navegadores, energia)
-│       ├── wizard.html        # Assistente de primeiro boot
-│       └── files.html         # Gerenciador de dispositivos USB
+│       ├── nav.html           # Barra de navegação flutuante (endereço, abas, relógio, status)
+│       ├── menu.html          # Menu de sistema (volume, WiFi, Bluetooth, USB, apps, energia)
+│       ├── wizard.html        # Assistente de primeiro boot (navegador + senha + WiFi)
+│       └── files.html         # Gerenciador de arquivos dual-panel (DnD, multi-select, USB)
 │
 ├── docs/
+│   ├── VERSIONING.md          # Esquema de versões (v0.x-alpha → v1.0-beta → v1.0)
 │   └── LICENSE                # Licença MIT
 │
 ├── tests/                     # Scripts de teste de latência e validação
 └── README.md
 ```
+
+---
+
+## Atalhos de Teclado
+
+| Atalho        | Ação                                             |
+|---------------|--------------------------------------------------|
+| Super         | Abre/fecha a barra de navegação flutuante        |
+| Super+X       | Abre/fecha o menu de sistema                     |
+| Super+F       | Abre/fecha o gerenciador de arquivos             |
+| Super+B       | Abre o seletor de navegador (tkinter)            |
+| Super+Shift+E | Dialog de confirmação para sair do Sway          |
 
 ---
 
@@ -123,12 +143,12 @@ qemu-system-x86_64 -enable-kvm -m 2G -cdrom build/output/jett-os.iso -vga virtio
 
 ## Camadas de Desenvolvimento
 
-| Camada | Descrição                                      | Status       |
-|--------|------------------------------------------------|--------------|
-| 1      | Fundação — base do sistema + um navegador      | Concluída    |
-| 2      | Launcher — GRUB customizado + Super+B          | Concluída    |
-| 3      | Todos os navegadores com perfis técnicos       | Concluída    |
-| 4      | ISO bootável para distribuição                 | Em andamento |
+| Camada | Descrição                                                         | Status       |
+|--------|-------------------------------------------------------------------|--------------|
+| 1      | Fundação — base Debian + Sway + kiosk + um navegador             | Concluída    |
+| 2      | Launcher — barra de navegação, menu de sistema, primeiro boot    | Concluída    |
+| 3      | Todos os navegadores + gerenciador de arquivos + atualizações    | Concluída    |
+| 4      | ISO bootável para distribuição                                    | Em andamento |
 
 ---
 
