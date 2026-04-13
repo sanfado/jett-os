@@ -33,6 +33,13 @@
 #   files delete <caminho>        — remove arquivo ou dir vazio
 #   files mkdir <caminho>         — cria diretório
 #
+#   nav status                    — volume e rede atuais (JSON)
+#   nav navigate <url>            — faz o navegador acessar a URL via xdotool
+#   nav newtab                    — nova aba no navegador (Ctrl+T via xdotool)
+#   nav closetab                  — fecha aba atual (Ctrl+W via xdotool)
+#   nav nexttab                   — próxima aba (Ctrl+Tab via xdotool)
+#   nav prevtab                   — aba anterior (Ctrl+Shift+Tab via xdotool)
+#
 #   system info                   — hostname, uptime, OS, arch (JSON)
 #
 # Segurança de arquivos:
@@ -445,6 +452,97 @@ files_mkdir() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# NAV — Controle da barra de navegação via xdotool
+# ─────────────────────────────────────────────────────────────────────────────
+# Todos os comandos nav_* usam xdotool para enviar teclas ao navegador kiosk.
+# Requer: xdotool instalado e DISPLAY configurado (XWayland ativo no Sway).
+
+# Encontra o Window ID do navegador kiosk ativo.
+# Tenta múltiplos class names para cobrir todos os navegadores suportados.
+_nav_encontrar_browser() {
+    cmd_disponivel xdotool || erro_json "xdotool não encontrado"
+    local classes=(
+        "brave-browser" "Brave-browser"
+        "microsoft-edge" "Microsoft-edge"
+        "thorium-browser" "Thorium-browser"
+        "opera" "Opera"
+        "Navigator" "firefox" "Firefox"
+    )
+    local wid
+    for cls in "${classes[@]}"; do
+        wid=$(xdotool search --classname "$cls" 2>/dev/null | head -1)
+        [[ -n "$wid" ]] && { printf '%s' "$wid"; return 0; }
+    done
+    for cls in "${classes[@]}"; do
+        wid=$(xdotool search --class "$cls" 2>/dev/null | head -1)
+        [[ -n "$wid" ]] && { printf '%s' "$wid"; return 0; }
+    done
+    return 1
+}
+
+nav_status() {
+    # Reutiliza volume_get e network_info para retornar status consolidado
+    local vol_json rede_json
+    vol_json=$(volume_get 2>/dev/null || printf '{}')
+    rede_json=$(network_info 2>/dev/null || printf '{}')
+    printf '{"volume":%s,"rede":%s}\n' "$vol_json" "$rede_json"
+}
+
+nav_navigate() {
+    local url="${1:-}"
+    [[ -z "$url" ]] && erro_json "URL não especificada"
+    cmd_disponivel xdotool || erro_json "xdotool não encontrado"
+
+    local wid
+    wid=$(_nav_encontrar_browser) || erro_json "janela do navegador não encontrada"
+
+    # Foca o navegador, abre a barra de endereços nativa, digita e confirma
+    xdotool windowfocus --sync "$wid"
+    xdotool key --window "$wid" ctrl+l
+    sleep 0.15
+    xdotool key --window "$wid" ctrl+a
+    xdotool type --window "$wid" --clearmodifiers -- "$url"
+    xdotool key --window "$wid" Return
+    printf '{"ok":true,"url":"%s"}\n' "${url//\"/\\\"}"
+}
+
+nav_newtab() {
+    cmd_disponivel xdotool || erro_json "xdotool não encontrado"
+    local wid
+    wid=$(_nav_encontrar_browser) || erro_json "janela do navegador não encontrada"
+    xdotool windowfocus --sync "$wid"
+    xdotool key --window "$wid" ctrl+t
+    printf '{"ok":true}\n'
+}
+
+nav_closetab() {
+    cmd_disponivel xdotool || erro_json "xdotool não encontrado"
+    local wid
+    wid=$(_nav_encontrar_browser) || erro_json "janela do navegador não encontrada"
+    xdotool windowfocus --sync "$wid"
+    xdotool key --window "$wid" ctrl+w
+    printf '{"ok":true}\n'
+}
+
+nav_nexttab() {
+    cmd_disponivel xdotool || erro_json "xdotool não encontrado"
+    local wid
+    wid=$(_nav_encontrar_browser) || erro_json "janela do navegador não encontrada"
+    xdotool windowfocus --sync "$wid"
+    xdotool key --window "$wid" ctrl+Tab
+    printf '{"ok":true}\n'
+}
+
+nav_prevtab() {
+    cmd_disponivel xdotool || erro_json "xdotool não encontrado"
+    local wid
+    wid=$(_nav_encontrar_browser) || erro_json "janela do navegador não encontrada"
+    xdotool windowfocus --sync "$wid"
+    xdotool key --window "$wid" ctrl+shift+Tab
+    printf '{"ok":true}\n'
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # SISTEMA
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -514,6 +612,16 @@ case "$COMANDO" in
             delete) files_delete "$ARG1" ;;
             mkdir)  files_mkdir "$ARG1" ;;
             *)      erro_json "subcomando de files inválido: ${SUBCOMANDO}" ;;
+        esac ;;
+    nav)
+        case "$SUBCOMANDO" in
+            status)   nav_status ;;
+            navigate) nav_navigate "$ARG1" ;;
+            newtab)   nav_newtab ;;
+            closetab) nav_closetab ;;
+            nexttab)  nav_nexttab ;;
+            prevtab)  nav_prevtab ;;
+            *)        erro_json "subcomando de nav inválido: ${SUBCOMANDO}" ;;
         esac ;;
     system)
         case "$SUBCOMANDO" in

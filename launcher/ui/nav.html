@@ -10,7 +10,7 @@
     width: 100%;
     height: 56px;
     overflow: hidden;
-    background: #0a0a0a;
+    background: rgba(0,0,0,0.88);
     color: #fff;
     font-family: 'DejaVu Sans', 'Noto Sans', sans-serif;
     font-size: 12px;
@@ -21,162 +21,338 @@
   #barra {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     height: 56px;
-    padding: 0 18px;
-    gap: 12px;
+    padding: 0 14px;
+    gap: 10px;
   }
 
-  /* ── Lado esquerdo: logo ── */
+  /* ── Logo ── */
   #logo {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: #444;
-    text-transform: uppercase;
-    white-space: nowrap;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    cursor: default;
+    line-height: 1;
+  }
+
+  /* ── Campo de endereço ── */
+  #campo-endereco {
+    flex: 1;
+    height: 30px;
+    background: #111;
+    border: 1px solid #1e1e1e;
+    border-radius: 15px;
+    padding: 0 16px;
+    color: #ccc;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    min-width: 0;
+    caret-color: #fff;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  #campo-endereco::placeholder {
+    color: #2a2a2a;
+    font-size: 12px;
+  }
+  #campo-endereco:focus {
+    border-color: #333;
+    background: #161616;
+    color: #fff;
+  }
+
+  /* ── Controles de aba ── */
+  #controles-aba {
+    display: flex;
+    align-items: center;
+    gap: 2px;
     flex-shrink: 0;
   }
 
-  /* ── Centro: relógio ── */
-  #relogio {
-    font-size: 22px;
-    font-weight: bold;
-    color: #fff;
-    letter-spacing: 2px;
+  .btn-aba {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-aba:hover { color: #888; border-color: #1e1e1e; background: #111; }
+  .btn-aba:active { background: #1a1a1a; }
+
+  /* ── Indicador de aba ── */
+  #indicador-aba {
+    font-size: 10px;
+    color: #2a2a2a;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 28px;
     text-align: center;
-    flex: 1;
   }
 
-  /* ── Lado direito: status ── */
+  /* ── Separador ── */
+  .sep {
+    width: 1px;
+    height: 20px;
+    background: #111;
+    flex-shrink: 0;
+  }
+
+  /* ── Relógio ── */
+  #relogio {
+    font-size: 14px;
+    color: #444;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    cursor: default;
+  }
+
+  /* ── Status (rede + volume) ── */
   #status {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 12px;
     flex-shrink: 0;
   }
 
   .item-status {
     display: flex;
     align-items: center;
-    gap: 5px;
-    color: #888;
+    gap: 4px;
+    color: #333;
     font-size: 11px;
+    white-space: nowrap;
   }
 
-  .item-status .icone {
-    font-size: 14px;
-    line-height: 1;
-  }
+  .item-status .icone { font-size: 13px; line-height: 1; }
+  .item-status .valor { min-width: 24px; text-align: right; }
 
-  .item-status .valor {
-    min-width: 28px;
-    text-align: right;
-  }
-
-  /* Volume: barra visual */
-  #vol-barra {
-    width: 48px;
-    height: 3px;
-    background: #222;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  #vol-fill {
-    height: 100%;
-    background: #555;
-    border-radius: 2px;
-    transition: width 0.3s;
-  }
-
-  /* Indicador de rede */
+  /* Dot de rede */
   #rede-dot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: #333;
-    flex-shrink: 0;
+    background: #222;
     transition: background 0.5s;
   }
-  #rede-dot.online   { background: #3a3; }
-  #rede-dot.offline  { background: #733; }
+  #rede-dot.online  { background: #2a5; }
+  #rede-dot.offline { background: #733; }
 </style>
 </head>
 <body>
 
 <div id="barra">
-  <div id="logo">JETT OS</div>
 
-  <div id="relogio">--:--:--</div>
+  <!-- Logo -->
+  <div id="logo">J</div>
 
+  <!-- Campo de endereço/busca -->
+  <input id="campo-endereco" type="text"
+         placeholder="Pesquisar ou acessar URL..."
+         autocomplete="off" spellcheck="false"
+         onkeydown="teclaEndereco(event)"
+         oninput="resetarAutoHide()"
+         onfocus="resetarAutoHide()">
+
+  <!-- Controles de aba -->
+  <div id="controles-aba">
+    <button class="btn-aba" title="Nova aba (Ctrl+T)"    onclick="acaoAba('newtab')">+</button>
+    <button class="btn-aba" title="Fechar aba (Ctrl+W)"  onclick="acaoAba('closetab')">✕</button>
+    <button class="btn-aba" title="Aba anterior"         onclick="acaoAba('prevtab')">◂</button>
+    <button class="btn-aba" title="Próxima aba"          onclick="acaoAba('nexttab')">▸</button>
+  </div>
+
+  <!-- Indicador de aba -->
+  <span id="indicador-aba">—</span>
+
+  <div class="sep"></div>
+
+  <!-- Relógio -->
+  <span id="relogio">--:--:--</span>
+
+  <!-- Status -->
   <div id="status">
-    <!-- Rede -->
     <div class="item-status" title="Rede">
       <div id="rede-dot"></div>
       <span id="rede-iface" class="valor">---</span>
     </div>
-
-    <!-- Volume -->
     <div class="item-status" title="Volume">
       <span id="vol-icone" class="icone">🔈</span>
-      <div id="vol-barra"><div id="vol-fill"></div></div>
       <span id="vol-valor" class="valor">--%</span>
     </div>
   </div>
+
 </div>
 
 <script>
-// ── Relógio ──────────────────────────────────────────────────────────────────
+// ── Estado ────────────────────────────────────────────────────────────────────
+const abas = { atual: 1, total: 1 };
+let _autoHideTimer = null;
+const AUTO_HIDE_MS = 5000;
+
+// ── Relógio ───────────────────────────────────────────────────────────────────
 function atualizarRelogio() {
-  const agora = new Date();
-  const h = String(agora.getHours()).padStart(2, '0');
-  const m = String(agora.getMinutes()).padStart(2, '0');
-  const s = String(agora.getSeconds()).padStart(2, '0');
-  document.getElementById('relogio').textContent = `${h}:${m}:${s}`;
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  document.getElementById('relogio').textContent = `${hh}:${mm}:${ss}`;
 }
 
-// ── Status do sistema ─────────────────────────────────────────────────────────
+// ── Status ────────────────────────────────────────────────────────────────────
 async function atualizarStatus() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch('/api/nav/status');
     if (!res.ok) return;
-    const dados = await res.json();
+    const d = await res.json();
 
-    // Volume
-    if (dados.volume && !dados.volume.erro) {
-      const vol = dados.volume.volume ?? 0;
-      const mudo = dados.volume.mudo;
-      document.getElementById('vol-icone').textContent = mudo ? '🔇' : (vol < 30 ? '🔈' : '🔊');
-      document.getElementById('vol-valor').textContent = mudo ? 'mudo' : `${vol}%`;
-      document.getElementById('vol-fill').style.width = `${vol}%`;
+    if (d.volume) {
+      const vol  = d.volume.volume ?? 0;
+      const mudo = d.volume.mudo;
+      document.getElementById('vol-icone').textContent =
+        mudo ? '🔇' : (vol < 30 ? '🔈' : '🔊');
+      document.getElementById('vol-valor').textContent =
+        mudo ? 'mudo' : `${vol}%`;
     }
 
-    // Rede
-    if (dados.rede) {
+    if (d.rede) {
       const dot = document.getElementById('rede-dot');
-      const iface = document.getElementById('rede-iface');
-      if (dados.rede.conectado) {
-        dot.className = dados.rede.status === 'online' ? 'online' : 'offline';
-        iface.textContent = dados.rede.interface || 'lan';
+      if (d.rede.conectado) {
+        dot.className = d.rede.status === 'online' ? 'online' : 'offline';
+        document.getElementById('rede-iface').textContent =
+          d.rede.interface || 'lan';
       } else {
         dot.className = 'offline';
-        iface.textContent = 'off';
+        document.getElementById('rede-iface').textContent = 'off';
       }
     }
-  } catch (e) {
-    // Servidor temporariamente indisponível — ignora silenciosamente
+  } catch (_) {}
+}
+
+// ── Indicador de abas ─────────────────────────────────────────────────────────
+function atualizarIndicador() {
+  document.getElementById('indicador-aba').textContent =
+    `${abas.atual}/${abas.total}`;
+}
+
+// ── Ações de aba (via bridge) ─────────────────────────────────────────────────
+async function acaoAba(acao) {
+  resetarAutoHide();
+  try {
+    await fetch(`/api/nav/${acao}`, { method: 'POST' });
+  } catch (_) {}
+
+  // Atualiza contador local
+  switch (acao) {
+    case 'newtab':
+      abas.total++;
+      abas.atual = abas.total;
+      break;
+    case 'closetab':
+      if (abas.total > 1) {
+        abas.total--;
+        if (abas.atual > abas.total) abas.atual = abas.total;
+      }
+      break;
+    case 'nexttab':
+      abas.atual = abas.atual < abas.total ? abas.atual + 1 : 1;
+      break;
+    case 'prevtab':
+      abas.atual = abas.atual > 1 ? abas.atual - 1 : abas.total;
+      break;
   }
+  atualizarIndicador();
+}
+
+// ── Navegação / busca ─────────────────────────────────────────────────────────
+function ehUrl(texto) {
+  // URL se começa com protocolo, ou é domínio (contém ponto e sem espaços)
+  if (/^https?:\/\//i.test(texto)) return true;
+  if (/^[a-z0-9][\w.-]+\.[a-z]{2,}(\/[^\s]*)?$/i.test(texto) && !texto.includes(' '))
+    return true;
+  return false;
+}
+
+function normalizarUrl(texto) {
+  if (/^https?:\/\//i.test(texto)) return texto;
+  return 'https://' + texto;
+}
+
+async function navegar(texto) {
+  const entrada = texto.trim();
+  if (!entrada) return;
+
+  const url = ehUrl(entrada)
+    ? normalizarUrl(entrada)
+    : 'https://www.google.com/search?q=' + encodeURIComponent(entrada);
+
+  document.getElementById('campo-endereco').value = url;
+
+  try {
+    await fetch('/api/nav/navigate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+  } catch (_) {}
+
+  fechar();
+}
+
+function teclaEndereco(e) {
+  resetarAutoHide();
+  if (e.key === 'Enter') {
+    navegar(e.target.value);
+  } else if (e.key === 'Escape') {
+    fechar();
+  }
+}
+
+// ── Auto-hide ─────────────────────────────────────────────────────────────────
+function resetarAutoHide() {
+  clearTimeout(_autoHideTimer);
+  _autoHideTimer = setTimeout(fechar, AUTO_HIDE_MS);
+}
+
+// ── Fechar ────────────────────────────────────────────────────────────────────
+function fechar() {
+  try { window.close(); } catch (_) {}
 }
 
 // ── Inicialização ─────────────────────────────────────────────────────────────
 atualizarRelogio();
 atualizarStatus();
+atualizarIndicador();
 
 setInterval(atualizarRelogio, 1000);
 setInterval(atualizarStatus, 5000);
 
-// Esc fecha a barra
+// Foca automaticamente o campo de endereço ao abrir
+window.addEventListener('load', () => {
+  document.getElementById('campo-endereco').focus();
+  document.getElementById('campo-endereco').select();
+  resetarAutoHide();
+});
+
+// Qualquer interação com a página reinicia o timer
+document.addEventListener('mousedown', resetarAutoHide);
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { try { window.close(); } catch(err) {} }
+  resetarAutoHide();
+  if (e.key === 'Escape') fechar();
 });
 </script>
 </body>

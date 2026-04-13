@@ -243,6 +243,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(dados)
             return
 
+        if caminho == '/api/nav/status':
+            self.responder_json(bridge('nav', 'status'))
+            return
+
         if caminho == '/api/files/list':
             params = parse_qs(parsed.query)
             path = params.get('path', ['/home/jett'])[0]
@@ -363,6 +367,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.responder_json(bridge('files', 'mkdir', path))
             else:
                 self.responder_json({'erro': 'campo "path" ausente'}, 400)
+
+        # Nav — controle da barra de navegação via xdotool
+        elif caminho == '/api/nav/navigate':
+            corpo = self.ler_corpo_json()
+            url = corpo.get('url', '')
+            if url:
+                self.responder_json(bridge('nav', 'navigate', url))
+            else:
+                self.responder_json({'erro': 'campo "url" ausente'}, 400)
+
+        elif caminho in ('/api/nav/newtab', '/api/nav/closetab',
+                         '/api/nav/nexttab', '/api/nav/prevtab'):
+            subcmd = caminho.split('/')[-1]   # newtab | closetab | nexttab | prevtab
+            self.responder_json(bridge('nav', subcmd))
 
         else:
             self.send_response(404)

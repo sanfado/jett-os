@@ -48,6 +48,7 @@ PACOTES_INSTALAR=(
     "python3"              # runtime para jett-ui-server
     "jq"                   # parsing de JSON em scripts shell
     "brightnessctl"        # controle de brilho do backlight
+    "xdotool"              # controle de janelas X11 (nav — atalhos de teclado ao navegador)
 )
 
 instalar_pacotes_essenciais() {
