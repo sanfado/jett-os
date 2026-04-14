@@ -1,30 +1,38 @@
 #!/usr/bin/env bash
 # =============================================================================
-# jett-firstboot.sh — Gerencia o primeiro boot do Jett OS
+# jett-firstboot.sh — Wizard de primeiro boot do Jett OS
 # =============================================================================
 # Uso:
-#   jett-firstboot          (chamado no exec do Sway)
+#   Chamado pelo jett-firstboot.service (Before=sway-kiosk.service).
+#   Não deve ser invocado diretamente durante uma sessão Sway ativa.
 #
-# Comportamento:
-#   1. Aguarda o jett-ui-server estar disponível em 127.0.0.1:1312
-#   2. Se /etc/jett-os/firstboot.done existir: inicia diretamente o kiosk
-#   3. Caso contrário: abre o wizard com --kiosk em http://127.0.0.1:1312/wizard,
-#      aguarda firstboot.done ser criado (via POST /api/wizard/complete),
-#      fecha janelas residuais, então inicia o kiosk com o navegador escolhido
+# Fluxo:
+#   1. Se firstboot.done existir: sai imediatamente (código 0).
+#      O systemd então inicia o sway-kiosk.service normalmente.
 #
-# Arquivo de conclusão aceito em dois locais:
-#   /etc/jett-os/firstboot.done          (criado via sudo por bridge)
-#   ~/.config/jett-os/firstboot.done     (fallback, gravável sem sudo)
+#   2. Se firstboot.done não existir:
+#      a. Aguarda o jett-ui-server estar pronto (127.0.0.1:1312)
+#      b. Inicia o Cage com o wizard em tela cheia:
+#            cage -- [browser] --kiosk http://127.0.0.1:1312/wizard
+#      c. Monitora firstboot.done; quando criado (via POST /api/wizard/complete),
+#         encerra o Cage e sai (código 0).
+#      d. Failsafe: se o Cage encerrar sem criar firstboot.done, cria-o mesmo assim.
 #
-# Log:
-#   /tmp/jett-firstboot.log
+#   Após o script sair, o systemd inicia automaticamente o sway-kiosk.service
+#   (ordenado por After=jett-firstboot.service no sway-kiosk.service).
+#
+# Arquivo de conclusão aceito em:
+#   /etc/jett-os/firstboot.done          (criado via sudo pelo jett-bridge)
+#   ~/.config/jett-os/firstboot.done     (fallback, gravável sem root)
+#
+# Log: /tmp/jett-firstboot.log
 #
 # Instalação:
 #   sudo cp launcher/scripts/jett-firstboot.sh /usr/local/bin/jett-firstboot
 #   sudo chmod +x /usr/local/bin/jett-firstboot
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 FIRSTBOOT_DONE_SYSTEM="/etc/jett-os/firstboot.done"
 FIRSTBOOT_DONE_USER="${HOME}/.config/jett-os/firstboot.done"
@@ -34,7 +42,14 @@ JETT_UI_SERVER_URL="http://127.0.0.1:1312/api/status"
 log() { printf '[%s] jett-firstboot: %s\n' "$(date '+%H:%M:%S')" "$*" >> /tmp/jett-firstboot.log 2>&1; }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Aguarda o jett-ui-server responder (até 10 s)
+# Verifica se o firstboot já foi concluído (em qualquer dos dois locais)
+# ─────────────────────────────────────────────────────────────────────────────
+firstboot_concluido() {
+    [[ -f "$FIRSTBOOT_DONE_SYSTEM" ]] || [[ -f "$FIRSTBOOT_DONE_USER" ]]
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Aguarda o jett-ui-server responder (até 10 s, intervalo de 0.5 s)
 # ─────────────────────────────────────────────────────────────────────────────
 aguardar_servidor() {
     log "Aguardando jett-ui-server em 127.0.0.1:1312..."
@@ -45,21 +60,14 @@ aguardar_servidor() {
         fi
         sleep 0.5
     done
-    log "AVISO: jett-ui-server não respondeu em 10 s — continuando assim mesmo."
+    log "AVISO: jett-ui-server não respondeu em 10 s — continuando mesmo assim."
     return 0
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Verifica se o firstboot já foi concluído
+# Retorna o primeiro navegador disponível no sistema
 # ─────────────────────────────────────────────────────────────────────────────
-firstboot_concluido() {
-    [[ -f "$FIRSTBOOT_DONE_SYSTEM" ]] || [[ -f "$FIRSTBOOT_DONE_USER" ]]
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Inicia o wizard em background; retorna o PID do processo do browser
-# ─────────────────────────────────────────────────────────────────────────────
-abrir_wizard() {
+encontrar_browser() {
     local candidatos=(
         brave-browser
         microsoft-edge-stable
@@ -70,129 +78,84 @@ abrir_wizard() {
     )
     for bin in "${candidatos[@]}"; do
         if command -v "$bin" &>/dev/null; then
-            log "Abrindo wizard com $bin (kiosk)"
-            if [[ "$bin" == "firefox" ]]; then
-                # --kiosk remove barras e abre em tela cheia; --new-instance evita usar sessão existente
-                "$bin" --kiosk --new-instance "$URL_WIZARD" &
-            else
-                # --app remove abas/barra de endereços; --kiosk bloqueia UI do browser
-                "$bin" "--app=${URL_WIZARD}" --kiosk --no-first-run &
-            fi
-            echo $!
+            echo "$bin"
             return 0
         fi
     done
-    log "ERRO: nenhum navegador encontrado para abrir o wizard"
-    echo ""
     return 1
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Fecha o wizard e limpa janelas residuais antes de iniciar o kiosk
+# Cria firstboot.done no local de fallback (sem root)
 # ─────────────────────────────────────────────────────────────────────────────
-fechar_wizard() {
-    local pid="${1:-}"
-
-    # Mata o processo do wizard se ainda estiver rodando
-    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-        log "Fechando wizard (PID ${pid})..."
-        kill "$pid" 2>/dev/null || true
-        sleep 0.5
-        kill -9 "$pid" 2>/dev/null || true
-    fi
-
-    # Remove janelas residuais de todos os navegadores via Sway
-    for app in firefox chromium brave-browser "microsoft-edge-stable" "thorium-browser" opera; do
-        swaymsg "[app_id=\"${app}\"] kill" 2>/dev/null || true
-    done
-    sleep 0.5
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Inicia o navegador kiosk configurado (nunca retorna em condições normais)
-# ─────────────────────────────────────────────────────────────────────────────
-iniciar_kiosk() {
-    log "Iniciando kiosk..."
-
-    # Carrega configuração do navegador
-    local nav_cmd=""
-    if [[ -f /etc/jett-os/navegador.conf ]]; then
-        # shellcheck disable=SC1091
-        source /etc/jett-os/navegador.conf 2>/dev/null || true
-        nav_cmd="${JETT_NAVEGADOR_CMD:-}"
-    fi
-
-    if [[ -n "$nav_cmd" ]]; then
-        log "Usando nav configurado: ${nav_cmd%% *}"
-        exec bash -c "$nav_cmd"
-    fi
-
-    # Fallback: primeiro candidato disponível em modo kiosk
-    local candidatos_kiosk=(
-        "brave-browser --kiosk --no-session-restore"
-        "microsoft-edge-stable --kiosk --no-first-run --no-session-restore"
-        "thorium-browser --kiosk --no-session-restore"
-        "opera --kiosk"
-        "chromium --kiosk --no-session-restore"
-        "firefox --kiosk"
-    )
-    for cmd_kiosk in "${candidatos_kiosk[@]}"; do
-        local bin="${cmd_kiosk%% *}"
-        if command -v "$bin" &>/dev/null; then
-            log "Fallback: usando $bin --kiosk"
-            exec $cmd_kiosk
-        fi
-    done
-
-    log "ERRO FATAL: nenhum navegador encontrado para o kiosk"
-    exit 1
+criar_firstboot_done() {
+    mkdir -p "$(dirname "$FIRSTBOOT_DONE_USER")"
+    date > "$FIRSTBOOT_DONE_USER"
+    log "firstboot.done criado em ${FIRSTBOOT_DONE_USER}."
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 main() {
-    log "Iniciando..."
+    log "Iniciando (PID $$)..."
+
+    # Caminho rápido: firstboot já concluído em boot anterior
+    if firstboot_concluido; then
+        log "Firstboot já concluído — saindo para iniciar o Sway."
+        exit 0
+    fi
+
+    log "Primeiro boot detectado — iniciando fluxo do wizard."
     aguardar_servidor
 
-    if firstboot_concluido; then
-        log "Firstboot já concluído — boot direto no kiosk."
-        iniciar_kiosk
+    # Determina o browser disponível
+    local browser
+    if ! browser=$(encontrar_browser); then
+        log "ERRO FATAL: nenhum navegador encontrado — criando firstboot.done e passando para o Sway."
+        criar_firstboot_done
+        exit 0
+    fi
+    log "Browser selecionado para o wizard: ${browser}"
+
+    # Constrói o comando Cage segundo o browser:
+    #   Chromium-based: --app=URL --kiosk  (remove tabs, barra, abas; tela cheia)
+    #   Firefox:        --kiosk URL         (modo kiosk nativo; tela cheia)
+    local -a cmd_cage
+    if [[ "$browser" == "firefox" ]]; then
+        cmd_cage=(cage -- "$browser" --kiosk "$URL_WIZARD")
+    else
+        cmd_cage=(cage -- "$browser" --kiosk --no-first-run "--app=${URL_WIZARD}")
     fi
 
-    log "Primeiro boot — abrindo wizard."
-    local wizard_pid
-    wizard_pid=$(abrir_wizard) || {
-        log "Falha ao abrir wizard — criando firstboot.done e iniciando kiosk."
-        mkdir -p "$(dirname "$FIRSTBOOT_DONE_USER")"
-        date > "$FIRSTBOOT_DONE_USER"
-        iniciar_kiosk
-    }
+    log "Iniciando Cage: ${cmd_cage[*]}"
+    "${cmd_cage[@]}" &
+    local cage_pid=$!
+    log "Cage iniciado (PID ${cage_pid}). Monitorando firstboot.done..."
 
-    if [[ -z "$wizard_pid" ]]; then
-        log "Nenhum browser disponível — criando firstboot.done e iniciando kiosk."
-        mkdir -p "$(dirname "$FIRSTBOOT_DONE_USER")"
-        date > "$FIRSTBOOT_DONE_USER"
-        iniciar_kiosk
-    fi
-
-    # Aguarda o wizard concluir (bridge POST /api/wizard/complete cria firstboot.done)
-    log "Wizard aberto (PID ${wizard_pid}). Aguardando conclusão..."
-    while ! firstboot_concluido; do
+    # Loop de monitoramento: aguarda firstboot.done OU o Cage encerrar
+    while kill -0 "$cage_pid" 2>/dev/null; do
         sleep 1
-        # Se o wizard foi fechado sem concluir, cria done como failsafe
-        if ! kill -0 "$wizard_pid" 2>/dev/null; then
-            log "Wizard fechou sem completar — criando firstboot.done por segurança."
-            mkdir -p "$(dirname "$FIRSTBOOT_DONE_USER")"
-            date > "$FIRSTBOOT_DONE_USER"
+        if firstboot_concluido; then
+            log "Wizard concluído (firstboot.done detectado). Encerrando Cage..."
+            kill "$cage_pid" 2>/dev/null || true
+            sleep 0.5
+            kill -9 "$cage_pid" 2>/dev/null || true
             break
         fi
     done
 
-    log "Wizard concluído — fechando janelas residuais..."
-    fechar_wizard "$wizard_pid"
-    log "Iniciando kiosk."
-    iniciar_kiosk
+    # Aguarda o processo Cage encerrar de fato antes de prosseguir
+    wait "$cage_pid" 2>/dev/null || true
+
+    # Failsafe: Cage encerrou sem o wizard criar firstboot.done
+    if ! firstboot_concluido; then
+        log "Cage encerrou sem wizard completar — criando firstboot.done por segurança."
+        criar_firstboot_done
+    fi
+
+    log "Wizard finalizado. Sway será iniciado pelo systemd (sway-kiosk.service)."
+    exit 0
 }
 
 main "$@"

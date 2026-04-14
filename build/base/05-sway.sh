@@ -138,7 +138,7 @@ EOF
 
 [Unit]
 Description=Jett OS — Sway Kiosk Session
-After=default.target jett-ui-server.service
+After=default.target jett-ui-server.service jett-firstboot.service
 Wants=jett-ui-server.service
 
 [Service]
@@ -195,6 +195,7 @@ Environment=WAYLAND_DISPLAY=wayland-1
 Environment=MOZ_ENABLE_WAYLAND=1
 Environment=GDK_BACKEND=wayland
 Environment=QT_QPA_PLATFORM=wayland
+Environment=WLR_DRM_NO_ATOMIC=1
 EnvironmentFile=-/etc/jett-os/navegador.conf
 ExecStart=/usr/bin/cage -- \${JETT_NAVEGADOR_CMD:-${cmd_navegador}}
 Restart=always
@@ -205,6 +206,15 @@ StandardInput=null
 WantedBy=default.target
 EOF
     log_info "Serviço cage-kiosk.service criado (fallback, desabilitado)."
+
+    # ── Instala serviço de wizard de primeiro boot ────────────────────────────
+    local firstboot_svc="${PROJETO_DIR}/config/systemd/jett-firstboot.service"
+    if [[ -f "$firstboot_svc" ]]; then
+        cp "$firstboot_svc" "${systemd_user_dir}/jett-firstboot.service"
+        log_info "config/systemd/jett-firstboot.service → ${systemd_user_dir}/jett-firstboot.service"
+    else
+        log_aviso "config/systemd/jett-firstboot.service não encontrado — wizard de primeiro boot não instalado."
+    fi
 
     # ── Instala serviço do daemon de atualizações ─────────────────────────────
     local updater_svc="${PROJETO_DIR}/config/systemd/jett-updater.service"
@@ -224,9 +234,9 @@ EOF
     uid_jett=$(id -u "$USUARIO_JETT" 2>/dev/null || echo "")
     local systemctl_user="XDG_RUNTIME_DIR=/run/user/${uid_jett} systemctl --user"
 
-    log_info "Habilitando jett-ui-server.service, sway-kiosk.service e jett-updater.service..."
+    log_info "Habilitando jett-ui-server.service, jett-firstboot.service, sway-kiosk.service e jett-updater.service..."
     su -l "$USUARIO_JETT" -c \
-        "${systemctl_user} enable jett-ui-server.service sway-kiosk.service jett-updater.service" \
+        "${systemctl_user} enable jett-ui-server.service jett-firstboot.service sway-kiosk.service jett-updater.service" \
         >> "$LOG_ARQUIVO" 2>&1 \
         || log_aviso "Não foi possível habilitar serviços — serão ativados no próximo boot."
 
@@ -250,7 +260,11 @@ if [[ -z "${WAYLAND_DISPLAY}" && -z "${DISPLAY}" && "$(tty)" == "/dev/tty1" ]] \
    && ! pgrep -x sway > /dev/null 2>&1; then
     echo "[$(date '+%H:%M:%S')] Iniciando sessão Jett OS via .bash_profile" >> /tmp/jett-session.log
 
-    if systemctl --user is-enabled sway-kiosk.service &>/dev/null; then
+    if systemctl --user is-enabled jett-firstboot.service &>/dev/null; then
+        # jett-firstboot.service: gerencia wizard via Cage (se necessário) e
+        # ao concluir, o systemd inicia automaticamente o sway-kiosk.service
+        exec systemctl --user start jett-firstboot.service
+    elif systemctl --user is-enabled sway-kiosk.service &>/dev/null; then
         exec systemctl --user start jett-ui-server.service sway-kiosk.service
     elif systemctl --user is-enabled cage-kiosk.service &>/dev/null; then
         exec systemctl --user start cage-kiosk.service
@@ -267,7 +281,7 @@ PROFILE
         "$home_jett/.config" \
         "$profile_jett"
 
-    log_ok "Sway configurado como sessão automática (Cage mantido como fallback)."
+    log_ok "Sway configurado: jett-firstboot.service (Cage/wizard) → sway-kiosk.service (kiosk)."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

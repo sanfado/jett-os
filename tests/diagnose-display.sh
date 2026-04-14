@@ -239,7 +239,7 @@ fi
 secao "8. Serviços systemd do Jett OS"
 # ─────────────────────────────────────────────────────────────────────────────
 if command -v systemctl &>/dev/null; then
-    for svc in sway-kiosk.service jett-ui-server.service jett-updater.service; do
+    for svc in jett-firstboot.service jett-ui-server.service sway-kiosk.service jett-updater.service; do
         status=$(systemctl --user is-active "$svc" 2>/dev/null || echo "inativo/desconhecido")
         enabled=$(systemctl --user is-enabled "$svc" 2>/dev/null || echo "?")
         if [[ "$status" == "active" ]]; then

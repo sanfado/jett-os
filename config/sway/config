@@ -33,7 +33,6 @@ set $jett_exit_confirm  /usr/local/bin/jett-exit-confirm
 set $jett_nav_toggle    /usr/local/bin/jett-nav-toggle
 set $jett_menu_toggle   /usr/local/bin/jett-menu-toggle
 set $jett_files_toggle  /usr/local/bin/jett-files-toggle
-set $jett_firstboot     /usr/local/bin/jett-firstboot
 
 # ─────────────────────────────────────────────────────────────────────────────
 # APARÊNCIA — ZERO DECORAÇÕES
@@ -185,17 +184,8 @@ for_window [title="^Jett OS — Menu"] {
     focus
 }
 
-# Wizard de primeiro boot — flutuante centralizado 700×520
-# Aberto pelo jett-firstboot na primeira inicialização do sistema.
-# O floating enable sobrescreve a regra fullscreen do browser (app_id).
-for_window [title="^Jett OS — Wizard"] {
-    floating   enable
-    fullscreen disable
-    border     none
-    resize     set 700 520
-    move       position center
-    focus
-}
+# Wizard de primeiro boot — gerenciado pelo Cage (compositor separado, jett-firstboot.service).
+# Não aparece no Sway; regra for_window não é necessária.
 
 # Futuras janelas de configuração avançada devem ser adicionadas aqui quando implementadas.
 
@@ -311,12 +301,11 @@ exec pulseaudio --start --daemonize=no
 # ── XDG autostart (compatibilidade com apps que usam xdg-open) ───────────────
 exec /usr/lib/xdg-user-dirs-update 2>/dev/null || true
 
-# ── Inicia o sistema (firstboot ou kiosk direto) ─────────────────────────────
-# jett-firstboot verifica /etc/jett-os/firstboot.done:
-#   - Se não existe: abre o wizard de configuração inicial e aguarda
-#   - Se existe: inicia diretamente o navegador kiosk configurado
-# O script já inclui a espera pelo jett-ui-server (127.0.0.1:1312).
-exec $jett_firstboot
+# ── Inicia o navegador kiosk ─────────────────────────────────────────────────
+# O wizard de primeiro boot é gerenciado pelo jett-firstboot.service (Cage).
+# Quando o Sway inicia, firstboot.done já existe — apenas lança o kiosk.
+# O navegador e a URL são lidos de /etc/jett-os/navegador.conf (gravado pelo wizard).
+exec bash -c 'source /etc/jett-os/navegador.conf 2>/dev/null; exec ${JETT_NAVEGADOR_CMD:-firefox --kiosk}'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SEAT — Permissões de dispositivo de entrada

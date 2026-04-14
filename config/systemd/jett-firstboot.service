@@ -1,0 +1,50 @@
+# =============================================================================
+# jett-firstboot.service — Wizard de primeiro boot do Jett OS
+# =============================================================================
+# Serviço de usuário (systemd --user) que gerencia o wizard de primeiro boot.
+#
+# Fluxo:
+#   Se firstboot.done não existe → inicia Cage com o wizard em tela cheia.
+#   Após o wizard concluir (ou Cage encerrar), este serviço sai (code 0)
+#   e o systemd inicia automaticamente o sway-kiosk.service.
+#
+# Ordenação:
+#   - Inicia DEPOIS de jett-ui-server.service (wizard precisa da API)
+#   - Inicia ANTES de sway-kiosk.service (Before=)
+#   - Puxa sway-kiosk.service ao completar (Wants=)
+#
+# Instalação:
+#   cp config/systemd/jett-firstboot.service ~/.config/systemd/user/
+#   systemctl --user enable jett-firstboot.service
+#
+# Instalado automaticamente por: build/base/05-sway.sh
+#
+# Logs:
+#   journalctl --user -u jett-firstboot
+#   cat /tmp/jett-firstboot.log
+# =============================================================================
+
+[Unit]
+Description=Jett OS — Wizard de Primeiro Boot (Cage)
+After=default.target jett-ui-server.service
+Wants=jett-ui-server.service sway-kiosk.service
+Before=sway-kiosk.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+# Variáveis de ambiente necessárias para o Cage (compositor Wayland do wizard)
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=XDG_SESSION_TYPE=wayland
+Environment=MOZ_ENABLE_WAYLAND=1
+Environment=GDK_BACKEND=wayland
+# Intel HD Graphics: desabilita atomic modesetting para evitar page-flip failures
+# (ex: HP ProDesk HD 630, monitor VGA/DP-2 — sintoma: tela branca + "page-flip failed")
+Environment=WLR_DRM_NO_ATOMIC=1
+ExecStart=/usr/local/bin/jett-firstboot
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jett-firstboot
+
+[Install]
+WantedBy=default.target
