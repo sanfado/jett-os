@@ -148,6 +148,14 @@ main() {
     # Aguarda o processo Cage encerrar de fato antes de prosseguir
     wait "$cage_pid" 2>/dev/null || true
 
+    # Encerra processos de browser remanescentes do wizard.
+    # Evita que o Sway abra o browser com diálogo "restaurar sessão anterior".
+    log "Encerrando processos de browser remanescentes do wizard..."
+    for _bin in firefox brave-browser microsoft-edge-stable thorium-browser chromium opera; do
+        pkill -f "$_bin" 2>/dev/null || true
+    done
+    sleep 0.5
+
     # Failsafe: Cage encerrou sem o wizard criar firstboot.done
     if ! firstboot_concluido; then
         log "Cage encerrou sem wizard completar — criando firstboot.done por segurança."

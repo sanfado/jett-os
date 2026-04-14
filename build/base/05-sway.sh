@@ -86,6 +86,21 @@ SWAYMIN
         log_aviso "launcher/ui/ não encontrado — interfaces HTML não instaladas."
     fi
 
+    # ── Instala scripts de instalação de navegadores ──────────────────────────
+    # Necessário para jett-bridge wizard_install_browsers() em runtime
+    local browsers_src="${PROJETO_DIR}/build/browsers"
+    local browsers_dest="/usr/local/share/jett-os/build/browsers"
+    log_info "Instalando scripts de instalação de navegadores em ${browsers_dest}/..."
+    mkdir -p "$browsers_dest"
+    if [[ -d "$browsers_src" ]]; then
+        cp "${browsers_src}"/install-*.sh "$browsers_dest/" 2>/dev/null && \
+            chmod +x "${browsers_dest}"/install-*.sh && \
+            log_ok "build/browsers/install-*.sh → ${browsers_dest}/" || \
+            log_aviso "Nenhum script install-*.sh encontrado em build/browsers/."
+    else
+        log_aviso "build/browsers/ não encontrado — instalação de navegadores pelo wizard indisponível."
+    fi
+
     # ── Cria /etc/jett-os/ e arquivo de versão ────────────────────────────────
     log_info "Inicializando /etc/jett-os/..."
     mkdir -p /etc/jett-os

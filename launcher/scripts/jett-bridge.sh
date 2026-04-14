@@ -843,17 +843,29 @@ _FIRSTBOOT_DONE_USER="${HOME}/.config/jett-os/firstboot.done"
 wizard_install_browsers() {
     local nav_id="${1:-firefox}"
     local prog="$_WIZARD_PROG_FILE"
+    local build_dir="/usr/local/share/jett-os/build/browsers"
 
     # Lança instalação em background e acompanha com progresso simulado
     (
         printf '{"status":"em_andamento","progresso":5,"mensagem":"Preparando instalação..."}\n' > "$prog"
 
+        # Mapeia nav_id → script de instalação dedicado
+        local script_instalador=""
+        case "$nav_id" in
+            firefox)   script_instalador="${build_dir}/install-firefox.sh" ;;
+            edge)      script_instalador="${build_dir}/install-edge.sh" ;;
+            thorium)   script_instalador="${build_dir}/install-thorium.sh" ;;
+            opera-gx)  script_instalador="${build_dir}/install-opera-gx.sh" ;;
+        esac
+
         local ok=true
-        if cmd_disponivel jett-switch.sh; then
-            # jett-switch.sh configura e instala o navegador escolhido
-            jett-switch.sh "$nav_id" >> /tmp/jett-bridge.log 2>&1 &
+        if [[ -n "$script_instalador" && -x "$script_instalador" ]]; then
+            sudo -n bash "$script_instalador" >> /tmp/jett-bridge.log 2>&1 &
+        elif [[ "$nav_id" == "brave" ]]; then
+            # Brave: sem script próprio — repositório configurado pela build, instala via apt
+            sudo -n apt-get install -y brave-browser >> /tmp/jett-bridge.log 2>&1 &
         else
-            # Fallback: tenta sudo apt-get diretamente
+            # Fallback genérico (não deve ser atingido com navegadores conhecidos)
             sudo -n apt-get install -y "$nav_id" >> /tmp/jett-bridge.log 2>&1 &
         fi
         local install_pid=$!

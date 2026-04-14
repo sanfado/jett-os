@@ -40,7 +40,7 @@ set -euo pipefail
 VERSAO_SCRIPT="1.0.0"
 CONF_DIR="/etc/jett-os"
 CONF_NAVEGADOR="${CONF_DIR}/navegador.conf"
-LOG_ARQUIVO="/var/log/jett-os-switch.log"
+LOG_ARQUIVO="/tmp/jett-os-switch.log"
 
 # Tempo máximo de espera por encerramento gracioso (segundos)
 TIMEOUT_ENCERRAMENTO=5
