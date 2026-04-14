@@ -150,6 +150,10 @@ Environment=GDK_BACKEND=wayland
 Environment=QT_QPA_PLATFORM=wayland
 Environment=CLUTTER_BACKEND=wayland
 Environment=SDL_VIDEODRIVER=wayland
+# Intel HD Graphics: desabilita atomic modesetting para evitar page-flip failures
+# (ex: HP ProDesk HD 630, monitor VGA/DP-2 — sintoma: tela branca + log "page-flip failed")
+# Para renderização por software como último recurso: Environment=WLR_RENDERER=pixman
+Environment=WLR_DRM_NO_ATOMIC=1
 ExecStart=/usr/bin/sway
 Restart=always
 RestartSec=3
@@ -237,6 +241,10 @@ EOF
 # Fallback: inicia o Sway caso o systemd --user não tenha disparado o serviço.
 # Executa apenas no tty1 e somente se o Sway não estiver rodando — evita
 # iniciar uma segunda sessão gráfica ao logar nos tty2-6.
+
+# Workaround para Intel HD Graphics: desabilita atomic modesetting DRM
+# que causa "page-flip failed on output DP-X" em hardware como HP ProDesk HD 630.
+export WLR_DRM_NO_ATOMIC=1
 
 if [[ -z "${WAYLAND_DISPLAY}" && -z "${DISPLAY}" && "$(tty)" == "/dev/tty1" ]] \
    && ! pgrep -x sway > /dev/null 2>&1; then

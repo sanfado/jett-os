@@ -63,6 +63,27 @@ hide_edge_borders both
 output * bg #000000 solid_color
 
 # ─────────────────────────────────────────────────────────────────────────────
+# HARDWARE — WORKAROUNDS DE RENDERIZAÇÃO (DRM/Intel)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Intel HD Graphics (HD 530, HD 630, UHD 620, etc.) expostos via VGA/DP
+# podem causar "page-flip failed on output DP-X" com tela branca ou preta.
+# O problema é o atomic modesetting do DRM, problemático no driver i915
+# com algumas gerações de hardware (ex: HP ProDesk + Dell E1914H via VGA→DP).
+#
+# Solução principal: WLR_DRM_NO_ATOMIC=1
+#   Desabilita atomic modesetting — resolve page-flip failures em GPUs Intel.
+#   Deve ser definida ANTES de o Sway iniciar:
+#     sway-kiosk.service  →  Environment=WLR_DRM_NO_ATOMIC=1
+#     .bash_profile       →  export WLR_DRM_NO_ATOMIC=1
+#
+# Solução alternativa (último recurso — renderização por software, mais lento):
+#   Environment=WLR_RENDERER=pixman no sway-kiosk.service
+#
+# Propagação do ambiente Wayland/wlroots para apps lançados dentro do Sway:
+exec_always dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE MOZ_ENABLE_WAYLAND GDK_BACKEND WLR_DRM_NO_ATOMIC
+
+# ─────────────────────────────────────────────────────────────────────────────
 # ENTRADA (INPUT) — TECLADO E MOUSE
 # ─────────────────────────────────────────────────────────────────────────────
 

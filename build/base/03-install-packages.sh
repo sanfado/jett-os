@@ -53,6 +53,11 @@ PACOTES_INSTALAR=(
     "jq"                   # parsing de JSON em scripts shell
     "brightnessctl"        # controle de brilho do backlight
     "xdotool"              # controle de janelas X11 (nav — atalhos de teclado ao navegador)
+
+    # GPU / drivers de vídeo — Intel HD Graphics e Mesa
+    "mesa-utils"               # glxinfo, eglinfo — diagnóstico de GPU/OpenGL
+    "libgl1-mesa-dri"          # driver DRI/Mesa para Intel/AMD/VMware via DRM
+    "xserver-xorg-video-intel" # driver X11 Intel (legacy 2D; necessário para VGA via i915)
 )
 
 instalar_pacotes_essenciais() {
